@@ -1,6 +1,6 @@
 # editor
 
-experimental next generation editor for dreamlab
+experimental next generation editor for the Rebur engine
 
 - semantic html and vanilla css and vanilla js, driven by game events & html events
 - does not use `game.paused` to tell between edit mode and play mode, uses facade entities for camera and rigidbody2d

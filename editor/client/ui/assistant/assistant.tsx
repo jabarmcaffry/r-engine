@@ -24,9 +24,13 @@ export class Assistant {
     try {
       const coderBaseUrl = new URL("coder-manager", httpServer).toString();
 
+      // AI assistant requires a self-hosted chatbot UI server.
+      // Set REBUR_CODE_EDITOR_YJS_URL and run your own chatbot service.
       const chatbotUIUrl = coderBaseUrl.includes("localhost")
         ? "http://localhost:5177"
-        : "https://ai-chatbot.dreamlab.gg/";
+        : null;
+
+      if (!chatbotUIUrl) return;
 
       const iframeUrl = `${chatbotUIUrl}/?directory=${decodeURIComponent(
         serviceId,

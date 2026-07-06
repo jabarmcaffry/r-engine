@@ -17,7 +17,7 @@ type ValuesToDefine = Map<string, BehaviorValueOpts<unknown>>;
  *
  * Accepts an adapter such as {@link EntityRef}, {@link Vector2Adapter}, etc.
  *
- * https://docs.dreamlab.gg/guide/Synced-Values-and-Adapters
+ * See the Rebur documentation for details on Synced Values and Adapters.
  */
 export function value<B extends Behavior, T>(
   opts?: Except<BehaviorValueOpts<T>, "hidden"> & { hidden?: boolean },

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/gravity.ts"],
+  "sourcesContent": ["import { Behavior, value, Vector2, Vector2Adapter } from \"@rebur/engine\";\n\nexport default class Gravity extends Behavior {\n  @value({ type: Vector2Adapter })\n  gravity: Vector2 = Vector2.ZERO;\n\n  onInitialize(): void {\n    this.game.physics.world.gravity = this.gravity;\n  }\n}\n"],
+  "mappings": "gIAAA,OAAS,SAAU,MAAO,QAAS,mBAAsB,gBAAzD,0BAEqB,SAArB,MAAqB,iBAAgB,YACnC,cAAC,MAAM,CAAE,KAAM,cAAe,CAAC,GADI,GAAS,CAA9C,kCAEE,6BAAmB,kBAAnB,aAAmB,QAAQ,OAA3B,iCAEA,cAAqB,CACnB,KAAK,KAAK,QAAQ,MAAM,QAAU,KAAK,OACzC,CACF,EAPA,2BAEE,oCADA,aADmB,UAArB,0BAAqB,UAAyB,2BAA9C,IAAqB,QAArB",
+  "names": []
+}

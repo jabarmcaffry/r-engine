@@ -410,7 +410,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         const cloneProcess = new Deno.Command("git", {
           args: [
             "clone",
-            `${CONFIG.DISTRIBUTION_PUBLIC_URL}/${body.sourceProject}.git`,
+            `${CONFIG.DISTRIBUTION_PUBLIC_URL ?? (() => { throw new Error("REBUR_DISTRIBUTION_PUBLIC_URL is not configured"); })()}/${body.sourceProject}.git`,
             sourceProjectDir,
           ],
         }).spawn();

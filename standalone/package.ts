@@ -32,7 +32,7 @@ await fs.ensureDir("./out/worlds");
 const sourceWorldDir = path.join(Deno.cwd(), "../multiplayer/worlds/", world);
 const worldDir = path.join("./out/worlds/", world);
 if (!(await fs.exists(sourceWorldDir))) {
-  throw new Error("not yet implemented: clone worlds from distribution.dreamlab.gg");
+  throw new Error("not yet implemented: clone worlds from a remote distribution server");
 } else {
   const copy = async (rel: string) => {
     const source = path.join(sourceWorldDir, rel);

@@ -99,7 +99,7 @@ body {
   }
 }
 
-dreamlab-connect-form {
+rebur-connect-form {
   & > dialog[open] {
     background: rgb(var(--color-bg-0) / 1);
     border: 1px solid rgb(var(--color-bg-2) / 1);

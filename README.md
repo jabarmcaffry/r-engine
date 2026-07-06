@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/a8a539ea-c39b-462c-835a-d1c906b4507e
 - In-browser script editor*
 
 ## Setup
-We recommend [using Rebur in your browser with no setup required](https://app.dreamlab.gg/). This version has all the features, including built-in version control and an in-browser script editor. AI features are currently unavailable locally but we will include documentation on importing your own OpenAI/Anthropic key very soon.
+You can run Rebur locally with the following steps. AI features are currently unavailable locally — documentation on self-hosting AI features will be added soon.
 However, you can run it locally with the following:
 
 ```bash

@@ -1,4 +1,4 @@
-// copied from https://github.com/WorldQL/dreamlab-kv-store/blob/trunk/crypto.ts
+// crypto utilities for KV store signing/verification
 import { decodeBase64Url, encodeBase64Url } from "@rebur/vendor/std__encoding.ts";
 import { getPublicKeyAsync, signAsync, verifyAsync } from "jsr:@noble/ed25519@3.0.0";
 

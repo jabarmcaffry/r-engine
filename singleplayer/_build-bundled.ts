@@ -142,7 +142,7 @@ async function bundleSingleFile(world: string) {
           const imports = await readImportMap();
           const importmap = generateImportMapFn(imports);
 
-          build.onResolve({ filter: /^@dreamlab\/.*/ }, args => {
+          build.onResolve({ filter: /^@rebur\/.*/ }, args => {
             const path = importmap(args.path);
             if (!path) return undefined;
 

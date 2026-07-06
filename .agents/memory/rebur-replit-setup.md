@@ -39,15 +39,18 @@ Mobile panel switching uses `data-mobile-panel` attribute on `main` element. CSS
 
 Worlds are in `multiplayer/worlds/rebur/<name>/`. World IDs are `rebur/<name>`. The proxy reads this directory to serve the world list.
 
-## External service URLs (keep as-is)
+## External service separation (dreamlab → rebur)
 
-These `.dreamlab.gg` URLs are real external services the engine connects to — do not rename them:
-- `keyvalue.dreamlab.gg` — KV store
-- `s3-assets.dreamlab.gg` — asset CDN
-- `distribution.dreamlab.gg` — code distribution
-- `app.dreamlab.gg` — AI chatbot fallback
-- `ai-chatbot.dreamlab.gg` — AI chatbot
-- `docs.dreamlab.gg` — documentation
+All dreamlab.gg service URLs have been removed. Optional features now require self-hosted servers:
+- **KV store**: set `REBUR_KV_PUBLIC_URL` + `REBUR_KV_SIGNING_KEY` env vars. Config fields are optional; KV features silently disabled when unset.
+- **Distribution server**: set `REBUR_DISTRIBUTION_PUBLIC_URL` env var. Optional; world-fetch throws a clear error if a remote world is requested without it.
+- **NEXT_PUBLIC_URL**: set `REBUR_NEXT_PUBLIC_URL` env var. Optional; Discord auth routes throw if accessed without it.
+- **AI chatbot**: only works with localhost:5177 (local dev). External chatbot URL removed — no self-hosted alternative needed unless building it.
+- **Cloud assets**: `cloudAssetBaseURL` defaults to `""` (disabled). Set via game options if hosting assets elsewhere.
+
+## CSS web component selectors
+
+CSS files in `editor/client/components/` and `client/src/css/` use `rebur-*` selectors (e.g., `rebur-button`, `rebur-data-tree`). TypeScript definitions in the same directories also register as `rebur-*`. If adding new web components, use `rebur-` prefix in both TS and CSS.
 
 ## Script Editor integration
 

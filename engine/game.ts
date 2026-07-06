@@ -144,7 +144,7 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   worldScriptBaseURL: string = "";
-  cloudAssetBaseURL: string = "https://s3-assets.dreamlab.gg/";
+  cloudAssetBaseURL: string = "";
 
   /** Resolves res:// and cloud:// URIs to https:// URLs */
   protected resolveResourceURL(uri: string): URL {

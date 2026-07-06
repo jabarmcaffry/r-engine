@@ -35,6 +35,7 @@ const userInfo = async (
     const params = new URLSearchParams();
     params.set("discordId", profile.id);
 
+    if (!CONFIG.NEXT_PUBLIC_URL) throw new Error("REBUR_NEXT_PUBLIC_URL is not configured");
     const url = `${CONFIG.NEXT_PUBLIC_URL}/api/applications/lookup-user?${params}`;
     const resp = await fetch(url, {
       headers: { Authorization: `Bearer ${CONFIG.MULTIPLAYER_AUTH_TOKEN}` },
@@ -83,6 +84,7 @@ export const serveDiscordRoutes = async (router: Router) => {
         }),
       },
       async (_ctx, { body }) => {
+        if (!CONFIG.NEXT_PUBLIC_URL) throw new JsonAPIError(Status.InternalServerError, "REBUR_NEXT_PUBLIC_URL is not configured");
         const detailsResp = await fetch(
           `${CONFIG.NEXT_PUBLIC_URL}/api/applications/details/${body.application_id}`,
           { headers: { Authorization: `Bearer ${CONFIG.MULTIPLAYER_AUTH_TOKEN}` } },

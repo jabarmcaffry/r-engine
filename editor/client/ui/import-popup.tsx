@@ -116,7 +116,7 @@ export class ImportPopup extends ReburEditorUIComponent {
 
   openGenerator = () => {
     if (this.game.instanceId === NIL_UUID)
-      window.open("https://app.dreamlab.gg/create/asset", "_blank", "noopener,noreferrer");
+      window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
     else window.parent.postMessage({ type: "SHOW_ASSET_CREATOR" }, "*");
     this.hide();
   };

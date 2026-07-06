@@ -21,7 +21,7 @@
     </style>
     <script>
       function getSubdomain() {
-        // Get the full hostname (e.g., cities.dreamlab.gg)
+        // Get the subdomain from the hostname (e.g., cities.example.com → "cities")
         const hostname = window.location.hostname;
 
         // Split the hostname by dots
@@ -35,8 +35,8 @@
         }
       }
 
-      async function fetchGameId(sd) {
-        const url = `https://app.dreamlab.gg/api/project/subdomain-to-id?subdomain=${sd}`;
+      async function fetchWorldId(sd) {
+        const url = `/api/project/subdomain-to-id?subdomain=${sd}`;
 
         try {
           const response = await fetch(url);
@@ -49,28 +49,48 @@
 
           return data;
         } catch (error) {
-          document.getElementById("result").textContent = `Error: ${error.message}`;
+          document.getElementById("remark").textContent = `Error: ${error.message}`;
         }
+      }
+
+      async function startInstance(worldId) {
+        const response = await fetch("/api/dashboard/start-instance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ world_id: worldId }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to start game instance");
+        }
+
+        const data = await response.json();
+        return data.instance_id;
       }
 
       async function setup() {
         const subdomain = getSubdomain();
-        const data = await fetchGameId(subdomain);
-        if (data.found) {
-          document.getElementById("remark").remove();
-          document.getElementById("loading").remove();
-
-          createGameIframe(data.id);
-        } else {
+        const data = await fetchWorldId(subdomain);
+        if (!data || !data.found) {
           document.getElementById("remark").innerText =
             "Error: Game with given subdomain not found.";
+          return;
+        }
+
+        try {
+          const instanceId = await startInstance(data.id);
+          document.getElementById("remark").remove();
+          document.getElementById("loading").remove();
+          createGameIframe(instanceId);
+        } catch (error) {
+          document.getElementById("remark").innerText = `Error: ${error.message}`;
         }
       }
 
-      function createGameIframe(worldId) {
+      function createGameIframe(instanceId) {
         const iframe = document.createElement("iframe");
         iframe.id = "gameiframe";
-        iframe.src = `https://gameclient.dreamlab.gg/?projectId=${worldId}`;
+        iframe.src = `/?instance=${instanceId}`;
         iframe.style.border = "none";
         document.body.appendChild(iframe);
 

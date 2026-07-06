@@ -1,15 +1,15 @@
-dreamlab-button-group {
+rebur-button-group {
   display: flex;
   align-items: center;
 
-  & > dreamlab-icon-button {
+  & > rebur-icon-button {
     --rounded: 0;
   }
 
   &[data-direction="row"] {
     flex-direction: row;
 
-    & > dreamlab-icon-button {
+    & > rebur-icon-button {
       &:first-child {
         --rounded: var(--border-radius) 0 0 var(--border-radius);
       }
@@ -27,7 +27,7 @@ dreamlab-button-group {
   &[data-direction="column"] {
     flex-direction: column;
 
-    & > dreamlab-icon-button {
+    & > rebur-icon-button {
       &:first-child {
         --rounded: var(--border-radius) var(--border-radius) 0 0;
       }
@@ -45,7 +45,7 @@ dreamlab-button-group {
   &[data-direction="row-reverse"] {
     flex-direction: row-reverse;
 
-    & > dreamlab-icon-button {
+    & > rebur-icon-button {
       &:first-child {
         --rounded: 0 var(--border-radius) var(--border-radius) 0;
       }
@@ -63,7 +63,7 @@ dreamlab-button-group {
   &[data-direction="column-reverse"] {
     flex-direction: column-reverse;
 
-    & > dreamlab-icon-button {
+    & > rebur-icon-button {
       &:first-child {
         --rounded: 0 0 var(--border-radius) var(--border-radius);
       }

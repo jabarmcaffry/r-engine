@@ -47,7 +47,7 @@ export class WelcomeMenu implements InspectorUIWidget {
           <a
             className="simple-open-tutorial-button"
             target="_blank"
-            href="https://docs.dreamlab.gg/quick-start"
+            href="/docs"
             rel="noreferrer"
           >
             Open Tutorial!

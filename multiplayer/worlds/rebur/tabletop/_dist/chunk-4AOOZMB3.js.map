@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/dropzone.ts"],
+  "sourcesContent": ["import { Behavior } from \"@rebur/engine\";\n\nexport default class Dropzone extends Behavior {\n  width: number = 1;\n  height: number = 1;\n\n  onInitialize(): void {\n    this.defineValues(Dropzone, \"width\", \"height\");\n  }\n}\n"],
+  "mappings": "gHAAA,OAAS,aAAgB,gBAEzB,IAAqB,SAArB,MAAqB,kBAAiB,QAAS,CAF/C,MAE+C,yBAC7C,MAAgB,EAChB,OAAiB,EAEjB,cAAqB,CACnB,KAAK,aAAa,UAAU,QAAS,QAAQ,CAC/C,CACF",
+  "names": []
+}

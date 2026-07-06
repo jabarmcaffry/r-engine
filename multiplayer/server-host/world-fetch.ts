@@ -20,6 +20,12 @@ export const fetchWorld = async (instance: GameInstance) => {
     instance.logs.debug("Fetching world", { world, revision });
     await fs.ensureDir(path.dirname(dir));
 
+    if (!CONFIG.DISTRIBUTION_PUBLIC_URL) {
+      throw new Error(
+        "REBUR_DISTRIBUTION_PUBLIC_URL is not configured. " +
+          "Set this environment variable to a git distribution server URL to fetch remote worlds.",
+      );
+    }
     const distributionUrl = CONFIG.DISTRIBUTION_PUBLIC_URL.endsWith("/git")
       ? CONFIG.DISTRIBUTION_PUBLIC_URL
       : `${CONFIG.DISTRIBUTION_PUBLIC_URL}/git`;

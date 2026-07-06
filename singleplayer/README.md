@@ -10,7 +10,7 @@ $ rm -r web/runtime web/worlds
 $ # build a specific world (into web/worlds/<world id>)
 $ # note: the world must exist in ../multiplayer/worlds
 $ deno task build-world "rebur/test-world"
-Building world dreamlab/test-world...
+Building world rebur/test-world...
 $ # set the world id that will be loaded by default:
 $ export DEFAULT_WORLD_ID="rebur/test-world"
 $ # build the singleplayer runtime (into web/runtime):

@@ -68,16 +68,22 @@ export class GameSession {
       worldResourcesUseSubdirectory: true,
       worldSubdirectory: opts.worldSubDirectory,
       editMode: opts.editMode,
-      kv: {
-        url: CONFIG.KV_PUBLIC_URL,
-        signingKey: CONFIG.KV_SIGNING_KEY,
-      },
+      kv:
+        CONFIG.KV_PUBLIC_URL && CONFIG.KV_SIGNING_KEY
+          ? {
+              url: CONFIG.KV_PUBLIC_URL,
+              signingKey: CONFIG.KV_SIGNING_KEY,
+            }
+          : undefined,
       inspect: parent.info.inspect,
       rewriteStackTraces: CONFIG.MULTIPLAYER_REWRITE_STACK_TRACES,
     };
     if (parent.info.variant === "discord") {
       const discordURLBase = "https://" + parent.info.discordClientId! + ".discordsays.com";
-      ipcData.kv!.clientUrl = discordURLBase + "/.proxy/kv";
+      // Only set the Discord KV proxy URL if KV is actually configured.
+      if (ipcData.kv) {
+        ipcData.kv.clientUrl = discordURLBase + "/.proxy/kv";
+      }
       ipcData.worldResourcesBaseUrl = discordURLBase + "/.proxy/mp/worlds";
     }
     this.ipc = new IPCWorker(ipcData, parent.logs, CONFIG.MULTIPLAYER_USE_SYSTEMD_LIMITS);

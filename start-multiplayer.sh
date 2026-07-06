@@ -20,8 +20,10 @@ REBUR_NEXT_GAME_JWT_SECRET="token"
 # /worlds/* on this domain is proxied by start-editor.sh's proxy to port 8000.
 REBUR_MULTIPLAYER_PUBLIC_URL="${PUBLIC_URL}"
 
-REBUR_KV_PUBLIC_URL="https://keyvalue.dreamlab.gg"
-REBUR_KV_SIGNING_KEY="e9GYhoAu7HUTt49MujMC8GVKpd8xcpU7jyHjSVHOnEI"
+# KV store is optional. Set these to enable persistent synchronized values.
+# You must run your own KV server — see the engine/kv directory.
+# REBUR_KV_PUBLIC_URL=""
+# REBUR_KV_SIGNING_KEY=""
 
 REBUR_CODE_EDITOR_YJS_URL=""
 EOF

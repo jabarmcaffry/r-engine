@@ -77,12 +77,12 @@ export const CONFIG = createEnv({
     MULTIPLAYER_PUBLIC_URL: z
       .url()
       .default(`http://${early.BIND_ADDRESS.hostname}:${early.BIND_ADDRESS.port}`),
-    DISTRIBUTION_PUBLIC_URL: z.url().default("https://distribution.dreamlab.gg/v1/git"),
+    DISTRIBUTION_PUBLIC_URL: z.url().optional(),
     MULTIPLAYER_AUTH_TOKEN: z.string().min(1),
     NEXT_GAME_JWT_SECRET: z.string().min(1),
-    KV_PUBLIC_URL: z.url(),
-    KV_SIGNING_KEY: z.string().min(1),
-    NEXT_PUBLIC_URL: z.url().default("https://app.dreamlab.gg"),
+    KV_PUBLIC_URL: z.url().optional(),
+    KV_SIGNING_KEY: z.string().min(1).optional(),
+    NEXT_PUBLIC_URL: z.url().optional(),
     CODE_EDITOR_YJS_URL: z.url().optional(),
     MULTIPLAYER_USE_SYSTEMD_LIMITS: BoolSchema,
     MULTIPLAYER_REWRITE_STACK_TRACES: BoolSchema,
