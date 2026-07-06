@@ -1,0 +1,248 @@
+#gameview {
+  --toolbar-height: 26px;
+}
+
+#toolbar {
+  width: 100%;
+  height: var(--toolbar-height);
+  background-color: rgb(var(--color-bg-1) / 1);
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  /* &[data-mode="play"] {
+  } */
+
+  & > div {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 600px) {
+  #toolbar {
+    display: none !important;
+  }
+
+  #overlays {
+    display: none !important;
+  }
+}
+
+#toolbar button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  height: calc(100% - 4px);
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+
+  color: rgb(var(--color-text-darker));
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s;
+
+  &[data-active] {
+    color: rgb(var(--color-text));
+    background: rgb(var(--color-bg-2));
+    border-bottom: 2px solid rgb(var(--color-primary) / 1);
+  }
+
+  & > svg {
+    width: auto;
+    height: calc(var(--toolbar-height) * 0.7);
+  }
+
+  &:hover {
+    color: rgb(var(--color-text));
+    background-color: rgb(var(--color-bg-2) / 1);
+  }
+}
+
+#toolbar div.toolbar-select {
+  all: unset;
+  display: flex;
+  align-items: center;
+  height: calc(100% - 4px);
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+
+  color: rgb(var(--color-text-darker));
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s;
+
+  &[data-active] {
+    color: rgb(var(--color-text));
+    background: rgb(var(--color-bg-2));
+    border-bottom: 2px solid rgb(var(--color-primary) / 1);
+  }
+
+  &:hover,
+  &:has(> select:open) {
+    color: rgb(var(--color-text));
+    background-color: rgb(var(--color-bg-2) / 1);
+  }
+
+  & > select {
+    height: 100%;
+    all: unset;
+
+    &:open {
+      color: rgb(var(--color-text));
+      background-color: rgb(var(--color-bg-2) / 1);
+    }
+  }
+
+  & > svg {
+    width: auto;
+    height: calc(var(--toolbar-height) * 0.7);
+  }
+
+  &:has(> svg) {
+    padding-right: 0.25rem;
+  }
+
+  div#gameview[data-aspect-disabled] & {
+    pointer-events: none;
+    opacity: 0.7;
+    font-style: italic;
+  }
+}
+
+#toolbar #gizmo-buttons {
+  display: flex;
+  height: 100%;
+}
+
+#overlays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#overlays #cursor-overlay {
+  position: absolute;
+  bottom: 0em;
+  left: 0em;
+  border-radius: 0 var(--border-radius) 0 0;
+
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  padding: 0.5em;
+  background-color: rgb(var(--color-bg-2) / 1);
+  width: auto;
+  font-size: 0.7em;
+  opacity: 0.5;
+
+  pointer-events: none;
+
+  & * {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  svg {
+    width: 1em;
+    height: 1em;
+  }
+
+  & > :nth-child(3) {
+    margin-right: 0.5rem;
+  }
+  & > :nth-child(6) {
+    margin-right: 0.5rem;
+  }
+}
+
+#toolbar .restart-required {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgb(var(--color-danger));
+  font-weight: 300;
+}
+
+#toolbar .restart-required .trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+#toolbar .restart-required .restart-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -4px);
+  margin-top: 4px;
+  min-width: 260px;
+  background: rgb(var(--color-bg-2));
+  color: rgb(var(--color-text));
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#toolbar .restart-required:hover .restart-dropdown {
+  display: flex;
+}
+
+#toolbar .restart-required .restart-dropdown p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+#toolbar .restart-required .restart-dropdown button {
+  all: unset;
+  background: rgb(var(--color-danger));
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+
+#toolbar .restart-required .restart-dropdown button:hover {
+  filter: brightness(1.1);
+}
+
+#toolbar .restart-required .restart-dropdown ul {
+  list-style: disc;
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.7rem;
+}
+
+#toolbar .restart-required .restart-dropdown li {
+  margin: 0;
+}
+
+#toolbar .restart-required .trigger svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}

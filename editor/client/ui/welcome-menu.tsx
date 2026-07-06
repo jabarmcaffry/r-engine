@@ -1,0 +1,72 @@
+import type { ClientGame } from "@dreamlab/engine";
+import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
+
+export class WelcomeMenu implements InspectorUIWidget {
+  private welcomeCard: HTMLElement | null = null;
+
+  constructor(private game: ClientGame) {}
+  setup(_ui: InspectorUI): void {}
+
+  showSubscribe() {
+    window.parent.postMessage({ type: "SHOW_SUBSCRIBE_MODAL" }, "*");
+  }
+
+  show(uiRoot: HTMLElement): void {
+    return; // disable this component;
+
+    const worldId = this.game.worldId;
+    if (worldId.toLowerCase().includes("dreamlab_tutorial")) return;
+
+    const storageKey = `@dreamlab___2welcomeCardDismissed_${worldId}`;
+    const isDismissed = localStorage.getItem(storageKey);
+    if (isDismissed) return;
+
+    const onClick = () => {
+      this.hide();
+      localStorage.setItem(storageKey, "true");
+    };
+
+    this.welcomeCard = (
+      <div className="simple-welcome-card">
+        <div className="simple-welcome-card-header">
+          <h1 className="simple-welcome-card-title">Welcome to Rebur Engine!</h1>
+          <button
+            type="button"
+            className="simple-welcome-card-close-button"
+            title="Close"
+            onClick={onClick}
+          >
+            &times;
+          </button>
+        </div>
+
+        <div className="simple-welcome-card-content">
+          <p>
+            This is the tutorial project. Click the button below to open the guide in a new tab.
+          </p>
+          <a
+            className="simple-open-tutorial-button"
+            target="_blank"
+            href="https://docs.dreamlab.gg/quick-start"
+            rel="noreferrer"
+          >
+            Open Tutorial!
+          </a>
+          <br />
+          <button type="button" onClick={this.showSubscribe} style={{ marginTop: "10px" }}>
+            Get Pro for live development help
+          </button>
+        </div>
+      </div>
+    ) as HTMLDivElement;
+
+    uiRoot.appendChild(this.welcomeCard);
+  }
+
+  hide(): void {
+    if (this.welcomeCard) {
+      this.welcomeCard.remove();
+      this.welcomeCard = null;
+    }
+  }
+}

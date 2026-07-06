@@ -1,0 +1,97 @@
+#context-menu-container {
+  position: fixed;
+  top: var(--cursor-y);
+  left: var(--cursor-x);
+  z-index: 1000;
+  visibility: hidden;
+}
+#context-menu-container:has(#context-menu[data-open]) {
+  visibility: visible;
+}
+
+#context-menu {
+  position: relative;
+  z-index: 99;
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  visibility: hidden;
+}
+#context-menu[data-open] {
+  visibility: visible;
+}
+
+#context-menu section {
+  min-width: 180px;
+  background: rgb(var(--color-bg-2));
+  color: rgb(var(--color-text));
+  border: 1px solid rgb(var(--color-text) / 40%);
+  border-radius: 4px;
+  padding: 4px 0;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+#context-menu a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  height: 26px;
+  text-decoration: none;
+  color: inherit;
+  user-select: none;
+  cursor: default;
+  white-space: nowrap;
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+#context-menu a[data-group]::after {
+  content: "";
+  margin-left: auto;
+  border: solid currentColor;
+  border-width: 0 1px 1px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(-45deg);
+  opacity: 0.5;
+}
+
+#context-menu a:hover,
+#context-menu a[data-selected] {
+  background: rgb(var(--color-primary) / 20%);
+  color: rgb(var(--color-text));
+}
+.theme-darker #context-menu a:hover,
+.theme-darker #context-menu a[data-selected] {
+  background: rgb(var(--color-primary) / 16.5%);
+}
+
+#context-menu a[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+#context-menu a[aria-disabled="true"]:hover {
+  background: transparent;
+}
+
+.context-menu-hint {
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.6;
+}
+#context-menu a:hover .context-menu-hint,
+#context-menu a[data-selected] .context-menu-hint {
+  opacity: 0.8;
+}
+
+.context-menu-separator {
+  height: 1px;
+  margin: 4px 0;
+  background: rgb(var(--color-text) / 20%);
+  border: none;
+}

@@ -1,0 +1,50 @@
+dreamlab-icon-button {
+  --size: 2em;
+  --color: rgb(var(--color-primary) / 1);
+  --color-hover: rgb(var(--color-primary-lighter) / 1);
+  --color-active: rgb(var(--color-primary-lighter) / 1);
+  --rounded: var(--border-radius);
+
+  & > button[type="button"] {
+    all: unset;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: var(--size);
+    min-width: var(--size);
+    background-color: var(--color);
+    border-radius: var(--rounded);
+    user-select: none;
+
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+
+    &:hover {
+      background-color: var(--color-hover);
+    }
+    &:active {
+      background-color: var(--color-active);
+    }
+
+    &:disabled {
+      opacity: 0.85;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    & > svg {
+      width: var(--size);
+      height: var(--size);
+      padding: 0.25em;
+      flex-shrink: 0;
+    }
+
+    &.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: default;
+    }
+  }
+}

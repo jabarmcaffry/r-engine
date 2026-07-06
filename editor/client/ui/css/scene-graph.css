@@ -1,0 +1,199 @@
+#scene-graph {
+  display: flex;
+  flex-direction: column;
+}
+
+#scene-graph-tree {
+  flex: 1;
+  --summary-height: 1.5em;
+}
+
+#scene-graph-tree details > summary {
+  position: relative;
+}
+
+#scene-graph-tree summary::marker {
+  content: "";
+}
+
+#scene-graph-tree summary::-webkit-details-marker {
+  display: none;
+}
+
+#scene-graph-tree details {
+  font-size: 0.875rem;
+}
+
+#scene-graph-tree details > summary input {
+  width: calc(100% - 4em);
+}
+
+#scene-graph-tree details > summary {
+  position: sticky;
+  top: calc(var(--depth, 0) * var(--summary-height) - 8px);
+  z-index: calc(100 - var(--depth, 0));
+  background-color: rgb(var(--color-bg-1));
+  border-radius: var(--border-radius);
+  padding: 0.25em;
+  padding-left: calc(var(--depth, 0) * 1em + 0.25em);
+  user-select: none;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(var(--color-bg-2) / 1);
+  }
+}
+
+#scene-graph-tree details.drag-target > summary {
+  box-shadow: 0 0 4px 1px rgb(var(--color-primary) / 1);
+}
+
+#scene-graph-tree details[data-enabled="false"] {
+  opacity: 0.5;
+
+  & > summary {
+    background-color: rgb(var(--color-bg-1));
+    opacity: 1;
+
+    &:hover {
+      background-color: rgb(var(--color-bg-2) / 0.5);
+    }
+  }
+
+  & details {
+    background-color: transparent;
+    opacity: 1;
+  }
+}
+
+#scene-graph-tree details.selected > summary {
+  --alpha: 1;
+  background-color: rgb(var(--color-primary) / var(--alpha));
+
+  .theme-darker & {
+    --alpha: 16.5%;
+  }
+
+  &:hover {
+    background-color: rgb(var(--color-primary) / var(--alpha));
+  }
+}
+
+#scene-graph-tree[data-multiple-selection] details.selected > summary {
+  border-radius: 0;
+}
+
+#scene-graph-tree .icon {
+  display: inline-block;
+}
+
+#scene-graph-tree details > summary::before {
+  display: inline-block;
+  width: 1ch;
+  max-width: 1ch;
+  margin-right: 1ch;
+  content: "";
+}
+
+#scene-graph-tree details:not(:has(> details)) > summary > div.arrow > svg {
+  display: none;
+}
+
+#scene-graph-tree details > summary > div.arrow {
+  position: absolute;
+  top: 0;
+  left: calc(var(--depth, 0) * 1em);
+  height: 100%;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  & > svg {
+    width: 1.25em;
+    height: 1.25em;
+    transform: rotate(-90deg);
+    transition: transform 0.1s ease;
+  }
+}
+
+#scene-graph-tree details[open] > summary > div.arrow > svg {
+  transform: rotate(0deg);
+}
+
+#scene-graph-tree details[data-prefab-instance] span.name {
+  color: #9cedff;
+}
+
+.menu-button,
+#scene-graph-menu-button {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  border-radius: var(--border-radius);
+  color: rgba(var(--color-text) / 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.menu-button:hover,
+#scene-graph-menu-button:hover {
+  background-color: rgb(var(--color-bg-2) / 0.5);
+}
+
+#scene-graph:has(#too-many-total-entities) #scene-graph-menu-button {
+  opacity: 30%;
+  pointer-events: none;
+}
+
+#scene-graph-tree > #too-many-total-entities {
+  width: 100%;
+  text-wrap: wrap;
+  line-height: 1.3rem;
+}
+
+#scene-graph-tree details[data-locked] {
+  filter: grayscale(100%);
+  opacity: 0.85;
+}
+
+#scene-graph-tree details[data-locked]:not(.selected) > summary:hover {
+  background-color: rgb(var(--color-bg-2) / 0.5);
+}
+
+#scene-graph-tree details[data-locked] .name {
+  text-decoration: none;
+}
+
+#scene-graph-tree details > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+#scene-graph-tree details > summary > a {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#scene-graph-tree .lock-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.9;
+}
+#scene-graph-tree .lock-badge > svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+#scene-graph-tree details[data-locked].selected > summary {
+  background-color: rgb(var(--color-primary) / 16.5%);
+}

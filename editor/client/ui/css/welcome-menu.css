@@ -1,0 +1,144 @@
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 15px));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.simple-welcome-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  max-width: 90%;
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  z-index: 1000;
+  font-family: sans-serif;
+  background: linear-gradient(145deg, rgb(var(--color-bg-2)) 0%, rgb(var(--color-bg-1)) 100%);
+  border: 1px solid rgba(var(--color-primary), 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeUp 0.35s ease forwards;
+}
+
+.simple-welcome-card-header {
+  position: relative;
+  padding: 20px;
+  text-align: center;
+  background-color: transparent;
+  border-bottom: 1px solid rgba(var(--color-primary), 0.2);
+}
+
+.simple-welcome-card-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: rgb(var(--color-text));
+}
+
+.simple-welcome-card-close-button {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: rgb(var(--color-text));
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
+}
+
+.simple-welcome-card-close-button:hover {
+  color: color-mix(in srgb, rgb(var(--color-primary)), white 60%);
+  background: rgba(var(--color-primary) / 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(var(--color-primary) / 0.2);
+}
+
+.simple-welcome-card-content {
+  padding: 10px;
+  color: rgb(var(--color-text));
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.simple-welcome-card-content p {
+  margin-bottom: 16px;
+}
+
+.simple-open-tutorial-button {
+  color: color-mix(in srgb, rgb(var(--color-primary)), white 50%);
+  display: inline-flex;
+  font-size: 16px;
+  align-items: center;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(var(--color-primary) / 0.1);
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(var(--color-primary) / 0.2);
+}
+
+.simple-open-tutorial-button:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--color-primary) / 0.2),
+    transparent
+  );
+  transition: left 0.7s ease;
+}
+
+.simple-open-tutorial-button:hover {
+  color: color-mix(in srgb, rgb(var(--color-primary)), white 60%);
+  background: rgba(var(--color-primary) / 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(var(--color-primary) / 0.2);
+}
+
+.simple-open-tutorial-button:hover:before {
+  left: 100%;
+}
+
+.simple-open-tutorial-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(var(--color-primary) / 0.1);
+}
+
+@keyframes tutorialFlashBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255 255 0 / 0.8);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px rgba(255 255 0 / 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255 255 0 / 0.8);
+  }
+}
+
+.tutorial-flash-border {
+  border: 3px solid rgba(var(--color-yellow)) !important;
+  animation: tutorialFlashBorder 1s ease-in-out infinite;
+  position: relative;
+  z-index: 10;
+}

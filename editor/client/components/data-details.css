@@ -1,0 +1,63 @@
+dreamlab-data-details {
+  display: block;
+
+  &[data-hidden] {
+    display: none;
+  }
+
+  & > details > summary {
+    display: flex;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+
+    --arrow-pad: 1.25em;
+
+    &::marker {
+      content: "";
+    }
+    &::-webkit-details-marker {
+      display: none;
+    }
+    &::before {
+      display: inline-block;
+      width: calc(var(--arrow-pad) + 0.25em);
+      content: "";
+    }
+
+    & > .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: -0.1em;
+      left: 0;
+      height: var(--arrow-pad);
+      width: var(--arrow-pad);
+      cursor: pointer;
+    }
+
+    & > header {
+      display: flex;
+      height: var(--arrow-pad);
+      align-items: center;
+      width: 100%;
+      margin-bottom: 0.5em;
+    }
+
+    & :is(h1, h2, h3) {
+      margin: 0;
+    }
+  }
+
+  & > details > summary > .arrow > svg {
+    height: 100%;
+    width: auto;
+    transform: rotate(-90deg);
+    transition: transform 0.1s ease;
+  }
+
+  & > details[open] > summary > .arrow > svg {
+    transform: rotate(0);
+  }
+}

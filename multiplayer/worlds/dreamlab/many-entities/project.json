@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": ["res://src/entities/inert-entity.js"],
+      "world": [
+        {
+          "type": "@core/Sprite",
+          "name": "Sprite",
+          "values": {
+            "static": false,
+            "hidden": false,
+            "width": 1,
+            "height": 1,
+            "alpha": 1,
+            "texture": ""
+          },
+          "transform": {
+            "position": {
+              "x": -2.5,
+              "y": -2.5
+            },
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "ref": "ent_pid2rmwx051ynw75aryiwkrp"
+        },
+        {
+          "type": "@core/Empty",
+          "name": "EntitySpawner",
+          "transform": {
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_eo3vje8gaybsgcp3z58ybev9",
+              "script": "res://src/entity-creator.ts",
+              "values": {
+                "width": 100,
+                "height": 100
+              }
+            }
+          ],
+          "children": [
+            {
+              "type": "@many-entities-custom/InertEntity",
+              "name": "EntityContainer",
+              "transform": {
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "ref": "ent_kro7btlbtmgv3gc6w89ini0u"
+            },
+            {
+              "type": "@core/Empty",
+              "name": "Empty",
+              "transform": {
+                "scale": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "ref": "ent_qfyl2v631adarqtfs2cr09kv"
+            }
+          ],
+          "ref": "ent_lgdp8w884rlda5d26ihstryf"
+        }
+      ],
+      "local": [
+        {
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "smooth": 0.1,
+            "unlocked": false
+          },
+          "transform": {
+            "scale": {
+              "x": 10,
+              "y": 10
+            }
+          },
+          "behaviors": [
+            {
+              "ref": "bhv_yshyjk7cln6ztrrnngtk8bbc",
+              "script": "res://src/camera-pan.ts",
+              "values": {}
+            }
+          ],
+          "ref": "ent_yru1u95cfs3repsg27whulhu"
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}

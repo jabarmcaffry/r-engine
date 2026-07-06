@@ -1,0 +1,21 @@
+@import url(./fonts/inter/inter.css);
+@import url(./fonts/iosevka/iosevka.css);
+@import url(./fonts/easvhs/easvhs.css);
+
+:root {
+  /* TODO: more detailed font stack maybe? */
+  --font-sans: Inter, sans-serif;
+  --font-mono: Iosevka, monospace;
+
+  font-family: var(--font-sans);
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1; /* fix for Chrome */
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+}

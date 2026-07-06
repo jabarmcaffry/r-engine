@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dreamlab</title>
+
+    <link rel="stylesheet" href="./runtime/client-main.css" />
+  </head>
+  <body>
+    <div id="loading">Loading...</div>
+
+    <main id="layout">
+      <div id="viewport"><div id="game"></div></div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@dreamlab/vendor/": "./runtime/vendor/",
+          "@dreamlab/engine": "./runtime/engine.js",
+          "@dreamlab/ui": "./runtime/ui.js",
+          "@dreamlab/ui/jsx-runtime": "./runtime/ui-jsx.js"
+        }
+      }
+    </script>
+    <script type="module" src="./runtime/client-main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_cneSSPUlVA",
+          "type": "@core/Tilemap",
+          "name": "Tilemap",
+          "enabled": true,
+          "data": "AIOAgJkBOAAAAQABAQACAAADAQAEAQAhAAAiAAAgAQEAAQEBAAECAAEDAQEEAQEiAQEhAQEgAQIAAAIBAQICAAIDAQIEAQIiAQIhAQIgAQMAAQMBAAMCAAMDAAMEAQMiAQMhGB8DIAsEAAAEAQAEAgEEAwwEBAEEIgEEIQsEIAEFAAAFAQEFAgEFAwEFBAEFIAAFIgsFIQsGAAEGAQEGAgEGAwEGBAAGIQEGIAAGIgsHAAEHAQEHAgEHAwEHBAEHIAEHIQEHIgEgAAEgAQEgAgAgAwEgBAEgIQAgIgAgIAEiABMiAQEiAhQiAwEiBAEiIgAiIAEiIQwkAAEkAQEkAgEkAwEkBAEkIgEkIQEkIAEjAAEjAQEjAgEjAwEjBAEjIgEjIQ0jIBEhAAEhAQEhAg4hAwEhBAEhIAEhIQEhIgE",
+          "values": {
+            "resolution": 32,
+            "atlas": "res://assets/grass.png"
+          }
+        }
+      ],
+      "local": [
+        {
+          "ref": "ent_alYcS9c9jP",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "enabled": true,
+          "values": {
+            "active": true,
+            "zoom": 0.5
+          }
+        }
+      ],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}

@@ -1,0 +1,275 @@
+import {
+  Behavior,
+  BehaviorConstructor,
+  BehaviorDestroyed,
+  BehaviorSpawned,
+  ClientGame,
+  Entity,
+  JsonValue,
+} from "@dreamlab/engine";
+import * as internal from "@dreamlab/engine/internal";
+import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
+import { element as elem } from "@dreamlab/ui";
+import { EditorMetadataEntity } from "../../../common/mod.ts";
+import { DataTable } from "../../components/mod.ts";
+import { createInputField } from "../../util/easy-input.ts";
+import { InspectorUI } from "../inspector.ts";
+import { BehaviorEditor } from "./behavior-editor.ts";
+
+export class BehaviorList {
+  container = elem("div");
+
+  editors = new Map<string, BehaviorEditor>();
+
+  behaviors: SceneDescBehavior[] = [];
+  addBehavior(behavior: SceneDescBehavior) {
+    if (this.behaviors.find(it => it.ref === behavior.ref))
+      throw new Error(
+        "Behavior with given ref already exists in entity metadata:" + behavior.ref,
+      );
+    this.behaviors.push(behavior);
+  }
+
+  game: ClientGame;
+
+  constructor(
+    private ui: InspectorUI,
+    public entity: Entity,
+    public useEditorMetadata: boolean,
+  ) {
+    this.game = ui.game;
+
+    this.container.addEventListener("dragover", event => {
+      event.preventDefault();
+    });
+
+    this.container.addEventListener("drop", async event => {
+      event.preventDefault();
+
+      const dragTarget = document.querySelector(
+        "[data-file][data-dragging]",
+      ) as HTMLElement | null;
+      if (!dragTarget) return;
+
+      const file = dragTarget.dataset.file as string;
+      const scriptPath = `res://${file}`;
+
+      // quick hack to exclude anything that cannot be a behavior
+      // TODO: solve this better
+      if (!scriptPath.startsWith("res://src/")) return;
+
+      try {
+        const info = await ui.behaviorTypeInfo.get(scriptPath);
+        const values = Object.fromEntries(
+          info.values.map(({ key }) => [key, undefined] as const),
+        );
+
+        const behavior = { ref: Behavior.createRef(), script: scriptPath, values };
+        const editor = new BehaviorEditor(ui, behavior, this);
+        this.editors.set(behavior.ref, editor);
+        this.addBehavior(behavior);
+        this.sync();
+      } catch (error) {
+        // FIXME: uhh catch onInitialize() throwing and deal with it better
+        console.log(error);
+      }
+    });
+
+    if (useEditorMetadata) {
+      const editorMetadata = EditorMetadataEntity.getInstanceFor(entity);
+
+      this.behaviors = SceneDescBehaviorSchema.array().parse(
+        JSON.parse(editorMetadata.behaviorsJson),
+      );
+
+      editorMetadata.values.get("behaviorsJson")?.onChanged(newValue => {
+        const newBehaviors = SceneDescBehaviorSchema.array().parse(
+          JSON.parse(newValue as string),
+        );
+
+        for (const newBehavior of newBehaviors) {
+          const existingEditor = this.editors.get(newBehavior.ref);
+          if (existingEditor) {
+            existingEditor.resolveUpdate(newBehavior);
+          } else {
+            const editor = new BehaviorEditor(ui, newBehavior, this);
+            this.editors.set(newBehavior.ref, editor);
+            this.addBehavior(newBehavior);
+          }
+        }
+
+        this.behaviors = this.behaviors.filter(oldBehavior => {
+          // O(n*m) but n and m are small :)
+          if (newBehaviors.find(it => it.ref === oldBehavior.ref) !== undefined) return true;
+          const editor = this.editors.get(oldBehavior.ref);
+          if (!editor) return true;
+          this.editors.delete(oldBehavior.ref);
+          editor.details.remove();
+          return false;
+        });
+      });
+    } else {
+      this.behaviors = [];
+      for (const behavior of this.entity.behaviors) {
+        const behaviorType = behavior.constructor as BehaviorConstructor;
+        const script = this.game[internal.behaviorLoader].lookup(behaviorType);
+        if (!script) continue;
+        const values: SceneDescBehavior["values"] = {};
+        const newBehavior = { ref: behavior.ref, script, values };
+
+        for (const [key, value] of behavior.values.entries()) {
+          const updateValue = () => {
+            values[key] = value.adapter
+              ? value.adapter.convertToPrimitive(value.value)
+              : (value.value as JsonValue);
+          };
+
+          value.onChanged(() => {
+            updateValue();
+            const existingEditor = this.editors.get(newBehavior.ref);
+            if (existingEditor) {
+              existingEditor.resolveUpdate(newBehavior);
+            }
+          });
+          updateValue();
+
+          values[key] = value.adapter
+            ? value.adapter.convertToPrimitive(value.value)
+            : (value.value as JsonValue);
+        }
+
+        this.addBehavior(newBehavior);
+      }
+
+      this.entity.on(BehaviorSpawned, ({ behavior }) => {
+        const behaviorType = behavior.constructor as BehaviorConstructor;
+        const script = this.game[internal.behaviorLoader].lookup(behaviorType);
+        if (!script) return;
+        const values: SceneDescBehavior["values"] = {};
+        for (const [key, value] of behavior.values.entries()) {
+          values[key] = value.adapter
+            ? value.adapter.convertToPrimitive(value.value)
+            : (value.value as JsonValue);
+        }
+
+        const newBehavior = { ref: behavior.ref, script, values };
+        const editor = new BehaviorEditor(ui, newBehavior, this);
+        this.editors.set(newBehavior.ref, editor);
+        this.addBehavior(newBehavior);
+      });
+
+      this.entity.on(BehaviorDestroyed, ({ behavior }) => {
+        const existingBehaviorIdx = this.behaviors.findIndex(it => it.ref === behavior.ref);
+        if (existingBehaviorIdx !== -1) this.behaviors.splice(existingBehaviorIdx, 1);
+
+        const editor = this.editors.get(behavior.ref);
+        if (!editor) return;
+        this.editors.delete(behavior.ref);
+        editor.details.remove();
+      });
+    }
+
+    this.#drawAddBehavior(ui);
+
+    for (const behavior of this.behaviors) {
+      const editor = new BehaviorEditor(ui, behavior, this);
+      this.editors.set(behavior.ref, editor);
+    }
+  }
+
+  #drawAddBehavior(ui: InspectorUI) {
+    const table = new DataTable();
+    const submitButton = elem("button", { type: "submit", disabled: true }, ["Add Behavior"]);
+
+    // deno-lint-ignore prefer-const
+    let scriptField: HTMLInputElement;
+    let script: string = "";
+
+    const setScript = async (newScriptValue: string) => {
+      submitButton.disabled = true;
+      script = newScriptValue;
+      if (newScriptValue === "") {
+        return;
+      }
+
+      try {
+        await ui.behaviorTypeInfo.get(script);
+        scriptField.setCustomValidity("");
+        scriptField.reportValidity();
+        submitButton.disabled = false;
+      } catch (_err) {
+        scriptField.setCustomValidity("Script URI could not be loaded");
+        scriptField.reportValidity();
+        submitButton.disabled = true;
+        return;
+      }
+    };
+
+    [scriptField] = createInputField({
+      get: () => script,
+      set: setScript,
+      convert: v => v,
+    });
+    scriptField.name = "script";
+
+    table.addEntry(
+      "script",
+      "Script",
+      "Can be dragged from the project panel or typed with 'res://<path>'.",
+      scriptField,
+    );
+    table.addFullWidthEntry("add-behavior", submitButton);
+
+    const form = elem("form", { id: "add-behavior" }, [table]);
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      if (script === "") return;
+
+      this.addBehavior({
+        ref: Behavior.createRef(),
+        script,
+      });
+
+      this.sync();
+    });
+
+    this.container.append(form);
+  }
+
+  sync() {
+    if (this.useEditorMetadata) {
+      const editorMetadata = EditorMetadataEntity.getInstanceFor(this.entity);
+      editorMetadata.behaviorsJson = JSON.stringify(this.behaviors);
+    } else {
+      for (const behavior of this.behaviors) {
+        const behaviorObj = this.entity.behaviors.find(b => b.ref === behavior.ref);
+        if (behaviorObj === undefined) {
+          this.game.loadBehavior(behavior.script).then(behaviorType => {
+            // check if the behavior loaded while we were waiting for the promise:
+            const newBehaviorObj = this.entity.behaviors.find(b => b.ref === behavior.ref);
+            if (newBehaviorObj !== undefined) return;
+
+            this.entity.addBehavior({
+              _ref: behavior.ref,
+              type: behaviorType,
+              values: behavior.values,
+            });
+          });
+        } else {
+          for (const [key, value] of Object.entries(behavior.values ?? {})) {
+            const valueObj = behaviorObj.values.get(key);
+            if (valueObj === undefined) continue;
+            valueObj.value = valueObj.adapter
+              ? valueObj.adapter.convertFromPrimitive(value as JsonValue)
+              : value;
+          }
+        }
+      }
+
+      for (const behaviorObj of this.entity.behaviors) {
+        const behavior = this.behaviors.find(b => b.ref === behaviorObj.ref);
+        if (behavior === undefined) behaviorObj.destroy();
+      }
+    }
+  }
+}

@@ -1,0 +1,263 @@
+main {
+  --drag-handle-size: 0.5em;
+  --left-sidebar-width: 4fr;
+  --right-sidebar-width: 4fr;
+  --bottom-bar-height: 4fr;
+  --left-center-height: 50%;
+  --right-center-height: 60%;
+
+  padding: 0 0.5em 0.5em 0.5em;
+
+  width: 100vw;
+  height: 100dvh;
+
+  display: grid;
+
+  grid-template-areas:
+    "top    top      top       top      top"
+    "left   drag-l   viewport  drag-r   right"
+    "left   drag-l   drag-b    drag-r   right"
+    "left   drag-l   bottom    drag-r   right";
+
+  grid-template-columns:
+    minmax(8em, var(--left-sidebar-width)) var(--drag-handle-size) /* left */
+    minmax(0, 16fr) /* viewport */
+    var(--drag-handle-size) minmax(8em, var(--right-sidebar-width)); /* right */
+  grid-template-rows: 3em 12fr calc(var(--drag-handle-size) * 1.5) minmax(
+      3em,
+      var(--bottom-bar-height)
+    );
+}
+
+@media only screen and (max-width: 600px) {
+  main {
+    /* A single column, two rows */
+    grid-template-areas:
+      "top" /* first row  ─ top bar */
+      "viewport"; /* second row ─ game view */
+
+    /* one column */
+    grid-template-columns: 1fr;
+    /* top bar gets its natural height; the rest is 1fr  */
+    grid-template-rows: auto 1fr;
+
+    padding: 0;
+
+    /* Hide every immediate child *except* the pieces
+   we want to keep on screen. */
+    & > :not(#top-bar):not(#gameview) {
+      display: none !important;
+    }
+  }
+}
+
+main > div {
+  all: unset;
+  display: block;
+}
+
+#top-bar {
+  grid-area: top;
+}
+
+#left-sidebar {
+  grid-area: left;
+  margin-top: 0.5em;
+
+  & > :first-child {
+    height: var(--left-center-height);
+  }
+}
+
+#gameview {
+  grid-area: viewport;
+  overflow: hidden;
+  margin-top: 0.5em;
+  display: flex;
+  flex-direction: column;
+}
+
+#viewport {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:first-child {
+    height: 100%;
+  }
+
+  &:not(:first-child) {
+    height: calc(100% - var(--toolbar-height));
+    @media (max-width: 600px) {
+      height: 100%;
+    }
+  }
+
+  &.white-background {
+    background-color: white;
+  }
+
+  & > div#games {
+    aspect-ratio: var(--aspect-ratio, unset);
+    width: 100%;
+    height: 100%;
+    background-color: black;
+
+    &[data-aspect="v"] {
+      width: 100%;
+      height: auto;
+    }
+
+    &[data-aspect="h"] {
+      width: auto;
+      height: 100%;
+    }
+
+    & > div {
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+  }
+
+  &.white-background > div#games {
+    background-color: white;
+  }
+}
+
+#right-sidebar {
+  grid-area: right;
+  margin-top: 0.5em;
+
+  & > :first-child {
+    height: var(--right-center-height);
+  }
+}
+
+#bottom-bar {
+  grid-area: bottom;
+  overflow: auto;
+}
+
+#left-sidebar,
+#right-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.5em - 4px);
+}
+
+#left-sidebar-drag {
+  grid-area: drag-l;
+  margin-top: 0.5em;
+  justify-self: start;
+}
+#right-sidebar-drag {
+  grid-area: drag-r;
+  margin-top: 0.5em;
+  justify-self: end;
+}
+#bottom-bar-drag {
+  --handle-height: 4px;
+
+  grid-area: drag-b;
+  cursor: row-resize;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: " ";
+    width: 100%;
+    height: var(--handle-height);
+    border-radius: 4px;
+    background-color: transparent;
+    pointer-events: none;
+    transition: background-color 0.3s;
+  }
+
+  &:hover::after {
+    background-color: #999;
+  }
+
+  & > div {
+    width: 100%;
+    height: var(--handle-height);
+    max-width: 12rem;
+    background-color: #99999960;
+    border-radius: 4px;
+  }
+}
+
+#left-sidebar-drag,
+#right-sidebar-drag {
+  width: 4px;
+  cursor: col-resize;
+  transition: background-color 0.3s;
+}
+
+#left-sidebar-drag,
+#right-sidebar-drag,
+#left-center-drag,
+#right-center-drag {
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #999;
+  }
+}
+
+#left-center-drag,
+#right-center-drag {
+  height: 4px;
+  cursor: row-resize;
+  border-radius: 4px;
+}
+
+.col-resize {
+  cursor: col-resize !important;
+}
+
+.row-resize {
+  cursor: row-resize !important;
+}
+
+html[data-popout="true"],
+html[data-popout="true"] body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html[data-popout="true"] main {
+  display: block !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+}
+
+html[data-popout="true"] main > :not(#gameview) {
+  display: none !important;
+}
+
+html[data-popout="true"] #gameview {
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+html[data-popout="true"] #viewport {
+  height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+html[data-popout="true"] #viewport > div#games {
+  width: 100% !important;
+  height: 100% !important;
+}

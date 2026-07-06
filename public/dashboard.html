@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebur Engine</title>
+<link rel="icon" href="/favicon-64.png">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #161b2a; --surface: #1f2640; --card: #242d45; --card-hover: #2a3450;
+    --border: #2f3a5a; --accent: #6c8ef5; --accent2: #4ecdc4;
+    --red: #f25757; --green: #4ecdc4; --yellow: #f5c842;
+    --text: #e8ecf5; --muted: #7a859e; --radius: 10px;
+  }
+
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  /* ── Header ── */
+  .header {
+    padding: 24px 40px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #1a2038 0%, var(--bg) 100%);
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .header-logo { font-size: 36px; line-height: 1; }
+  .header-text h1 {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .header-text p { color: var(--muted); font-size: 13px; margin-top: 3px; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .header-link {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 6px 14px; font-size: 13px; color: var(--muted);
+    text-decoration: none; transition: color 0.15s, border-color 0.15s;
+  }
+  .header-link:hover { color: var(--text); border-color: var(--accent); }
+  .instances-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-size: 13px; color: var(--muted); }
+  .instances-badge span { color: var(--accent2); font-weight: 600; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; align-items: center; gap: 10px; padding: 16px 40px; border-bottom: 1px solid var(--border); background: var(--surface); flex-wrap: wrap; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tab { background: none; border: 1px solid transparent; border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 500; padding: 6px 13px; transition: all 0.15s; }
+  .tab:hover { color: var(--text); background: var(--card); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .search { margin-left: auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; padding: 7px 14px; width: 210px; transition: border-color 0.15s; }
+  .search::placeholder { color: var(--muted); }
+  .search:focus { border-color: var(--accent); }
+  @media (max-width: 520px) { .search { width: 100%; } }
+
+  /* ── Grid ── */
+  .main { padding: 28px 40px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; margin-top: 28px; }
+  .section-label:first-child { margin-top: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+
+  /* ── Card ── */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; position: relative; transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s; overflow: hidden; }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+  .card-top { padding: 18px 18px 12px; display: flex; gap: 12px; align-items: flex-start; }
+  .card-icon { font-size: 30px; line-height: 1; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: 10px; flex-shrink: 0; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-id { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .card-meta { padding: 0 18px 10px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .badge { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; padding: 2px 7px; flex-shrink: 0; }
+  .badge-Games     { background: rgba(108,142,245,0.18); color: var(--accent); }
+  .badge-Templates { background: rgba(78,205,196,0.18);  color: var(--accent2); }
+  .badge-Examples  { background: rgba(245,200,66,0.18);  color: var(--yellow); }
+  .badge-Dev       { background: rgba(242,87,87,0.18);   color: var(--red); }
+  .badge-Other     { background: rgba(122,133,158,0.18); color: var(--muted); }
+  .card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .card-status { padding: 0 18px 8px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; min-height: 24px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.running  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.starting { background: var(--yellow); animation: pulse 1.2s infinite; }
+  .status-dot.error    { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .card-actions { padding: 10px 18px 14px; display: flex; gap: 7px; border-top: 1px solid var(--border); margin-top: auto; }
+  .btn { border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; padding: 8px 12px; transition: all 0.15s; display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-edit { background: var(--accent); color: #fff; }
+  .btn-edit:hover:not(:disabled) { background: #7c9ef8; }
+  .btn-play { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+  .btn-play:hover:not(:disabled) { background: var(--card-hover); border-color: var(--accent2); color: var(--accent2); }
+
+  /* Card loading overlay */
+  .card-overlay { position: absolute; inset: 0; background: rgba(22,27,42,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border-radius: var(--radius); backdrop-filter: blur(2px); }
+  .card-overlay.visible { display: flex; }
+  .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .overlay-msg { font-size: 12px; color: var(--muted); text-align: center; padding: 0 14px; }
+  .overlay-cancel { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 12px; padding: 5px 12px; }
+  .overlay-cancel:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── Toast ── */
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; font-size: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 999; max-width: 340px; text-align: center; }
+  #toast.show    { transform: translateX(-50%) translateY(0); }
+  #toast.error   { border-color: var(--red); color: var(--red); }
+  #toast.success { border-color: var(--green); color: var(--green); }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 60px 0; color: var(--muted); }
+  .empty p { font-size: 13px; margin-top: 8px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .header, .toolbar, .main { padding-left: 16px; padding-right: 16px; }
+    .header { padding-top: 16px; padding-bottom: 16px; }
+    .header-text h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">🎮</div>
+  <div class="header-text">
+    <h1>Rebur Engine</h1>
+    <p>Multiplayer 2D Game Engine · <span id="world-count">…</span> worlds available</p>
+  </div>
+  <div class="header-right">
+    <a class="header-link" href="/docs">📚 Docs</a>
+    <div class="instances-badge" title="Running game instances"><span id="instance-count">0</span> running</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-cat="All">All</button>
+    <button class="tab" data-cat="Games">🎮 Games</button>
+    <button class="tab" data-cat="Templates">📋 Templates</button>
+    <button class="tab" data-cat="Examples">💡 Examples</button>
+    <button class="tab" data-cat="Dev">🔬 Dev</button>
+  </div>
+  <input class="search" id="search" type="search" placeholder="Search worlds…">
+</div>
+
+<div class="main" id="main">
+  <div class="empty">
+    <div class="spinner" style="width:38px;height:38px;margin:0 auto 14px"></div>
+    <p>Loading worlds…</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── World metadata ──────────────────────────────────────────────────────────
+const META = {
+  'dreamlab/spaceship-demo':    { name:'Spaceship Demo',        cat:'Games',     icon:'🚀', desc:'Top-down multiplayer space shooter' },
+  'dreamlab/galactic-conquest': { name:'Galactic Conquest',     cat:'Games',     icon:'🌌', desc:'Space strategy game' },
+  'dreamlab/clicker':           { name:'Clicker',               cat:'Games',     icon:'👆', desc:'Click counter game' },
+  'dreamlab/simple-clicker':    { name:'Simple Clicker',        cat:'Games',     icon:'🖱️', desc:'Simple clicking game' },
+  'dreamlab/dreamlab-paint':    { name:'Rebur Paint',           cat:'Games',     icon:'🎨', desc:'Collaborative drawing canvas' },
+  'dreamlab/piano':             { name:'Piano',                 cat:'Games',     icon:'🎹', desc:'Play piano together' },
+  'dreamlab/tabletop':          { name:'Tabletop',              cat:'Games',     icon:'🎲', desc:'Board game framework' },
+  'dreamlab/advanced-platformer':{ name:'Advanced Platformer',  cat:'Templates', icon:'🏃', desc:'Fully-featured platformer starter' },
+  'dreamlab/template-project':  { name:'New Game',              cat:'Templates', icon:'📋', desc:'Blank project template' },
+  'dreamlab/tutorial':          { name:'Tutorial',              cat:'Templates', icon:'📚', desc:'Learn the engine step by step' },
+  'dreamlab/physics':           { name:'Physics Demo',          cat:'Examples',  icon:'⚽', desc:'Physics simulation' },
+  'dreamlab/lighting':          { name:'Lighting Demo',         cat:'Examples',  icon:'💡', desc:'Dynamic 2D lighting system' },
+  'dreamlab/audio':             { name:'Audio Demo',            cat:'Examples',  icon:'🔊', desc:'Sound and music playback' },
+  'dreamlab/grid-movement':     { name:'Grid Movement',         cat:'Examples',  icon:'🕹️', desc:'Grid-based movement system' },
+  'dreamlab/many-entities':     { name:'Many Entities',         cat:'Examples',  icon:'🌊', desc:'Performance stress test' },
+  'dreamlab/tilemap':           { name:'Tilemap',               cat:'Examples',  icon:'🗺️', desc:'Tile-based world editor' },
+  'dreamlab/tilemap-test':      { name:'Tilemap Test',          cat:'Examples',  icon:'🧩', desc:'Tilemap system test' },
+  'dreamlab/rich-text':         { name:'Rich Text',             cat:'Examples',  icon:'📝', desc:'Advanced text rendering' },
+  'dreamlab/react-ui':          { name:'React UI',              cat:'Examples',  icon:'⚛️', desc:'React components in game UI' },
+  'dreamlab/behavior-test':     { name:'Behavior Test',         cat:'Examples',  icon:'🧪', desc:'Behavior component test' },
+  'dreamlab/arm':               { name:'Arm IK',                cat:'Examples',  icon:'🦾', desc:'Inverse kinematics demo' },
+  'dreamlab/hot-reload':        { name:'Hot Reload',            cat:'Examples',  icon:'🔄', desc:'Live code reload demo' },
+  'dreamlab/sync-test':         { name:'Sync Test',             cat:'Dev',       icon:'🔁', desc:'Entity synchronisation test' },
+  'dreamlab/whereami':          { name:'Where Am I',            cat:'Dev',       icon:'📍', desc:'Connection info debugger' },
+  'dreamlab/http-api-test':     { name:'HTTP API Test',         cat:'Dev',       icon:'🌐', desc:'HTTP API test world' },
+  'dreamlab/hrt':               { name:'HRT',                   cat:'Dev',       icon:'🧬', desc:'HRT test world' },
+  'dreamlab/test-world':        { name:'Test World',            cat:'Dev',       icon:'🔬', desc:'General purpose test world' },
+  'dreamlab/broken':            { name:'Broken World',          cat:'Dev',       icon:'💥', desc:'Intentionally broken (error testing)' },
+  'dreamlab/youtube-test':      { name:'YouTube Test',          cat:'Dev',       icon:'📺', desc:'YouTube embed test' },
+};
+
+function getMeta(id) {
+  if (META[id]) return META[id];
+  const slug = id.split('/').pop() ?? id;
+  return { name: slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()), cat:'Other', icon:'🎮', desc:'' };
+}
+
+// Stable element ID — used consistently for both render AND lookup
+function wid(worldId) { return 'w_' + worldId.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+// ── State ────────────────────────────────────────────────────────────────────
+let worlds = [], instances = {}, activeCategory = 'All', searchQuery = '';
+const startingWorlds = new Set(), pollingAborts = new Map();
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function fetchWorlds()    { return (await (await fetch('/api/v1/worlds')).json()).worlds ?? []; }
+async function fetchInstances() {
+  try { const r = await fetch('/api/dashboard/instances'); return r.ok ? await r.json() : {}; } catch { return {}; }
+}
+async function startEdit(worldId) {
+  const r = await fetch('/api/dashboard/start-instance', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({world_id:worldId,edit_mode:true}) });
+  const d = await r.json().catch(()=>({}));
+  if (r.status === 409) return d.existingInstanceId ?? null;
+  if (!r.ok) throw new Error(d.error ?? d.message ?? `HTTP ${r.status}`);
+  return d.id;
+}
+async function startPlay(worldId) {
+  const r = await fetch('/api/v1/start-play-world', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({world_id:worldId}) });
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(d.error ?? d.message ?? `HTTP ${r.status}`);
+  return d.id;
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className='', 4000);
+}
+
+// ── Card helpers ─────────────────────────────────────────────────────────────
+function setOverlay(worldId, show, msg='') {
+  const el = document.getElementById(`ov-${wid(worldId)}`);
+  if (!el) return;
+  if (show) {
+    el.classList.add('visible');
+    el.innerHTML = `<div class="spinner"></div><div class="overlay-msg">${msg}</div><button class="overlay-cancel" onclick="cancelStart('${worldId}')">Cancel</button>`;
+  } else { el.classList.remove('visible'); el.innerHTML=''; }
+}
+function setBtns(worldId, disabled) {
+  const id = wid(worldId);
+  ['eb','pb'].forEach(p => { const e=document.getElementById(`${p}-${id}`); if(e) e.disabled=disabled; });
+}
+
+// ── Cancel / poll ────────────────────────────────────────────────────────────
+function cancelStart(worldId) {
+  pollingAborts.get(worldId)?.abort();
+  pollingAborts.delete(worldId);
+  startingWorlds.delete(worldId);
+  setOverlay(worldId, false);
+  setBtns(worldId, false);
+}
+
+function getRunning(worldId, editMode) {
+  return Object.values(instances).find(i => i.world===worldId && i.edit_mode===editMode && i.status==='Started');
+}
+
+function openEditor(instanceId) { window.location.href = `/?instance=${instanceId}`; }
+
+async function handleEdit(worldId) {
+  if (startingWorlds.has(worldId)) return;
+  const ex = getRunning(worldId, true); if (ex) { openEditor(ex.id); return; }
+  startingWorlds.add(worldId); setBtns(worldId,true); setOverlay(worldId,true,'Starting editor…');
+  try {
+    const id = await startEdit(worldId);
+    if (!id) throw new Error('No instance ID returned');
+    pollUntilReady(worldId, id, 'editor');
+  } catch(err) { cancelStart(worldId); showToast(`Failed: ${err.message}`,'error'); }
+}
+
+async function handlePlay(worldId) {
+  if (startingWorlds.has(worldId)) return;
+  startingWorlds.add(worldId); setBtns(worldId,true); setOverlay(worldId,true,'Starting game…');
+  try {
+    const id = await startPlay(worldId);
+    if (!id) throw new Error('No instance ID returned');
+    pollUntilReady(worldId, id, 'game');
+  } catch(err) { cancelStart(worldId); showToast(`Failed: ${err.message}`,'error'); }
+}
+
+function pollUntilReady(worldId, instanceId, mode) {
+  const ctrl = new AbortController(); pollingAborts.set(worldId, ctrl);
+  let attempts=0, inFlight=false;
+  const iv = setInterval(async () => {
+    if (ctrl.signal.aborted || inFlight) { if(ctrl.signal.aborted) clearInterval(iv); return; }
+    inFlight=true; attempts++;
+    if (attempts>90) { clearInterval(iv); cancelStart(worldId); showToast('Instance timed out.','error'); inFlight=false; return; }
+    try {
+      const fresh = await fetchInstances();
+      if (ctrl.signal.aborted) { clearInterval(iv); inFlight=false; return; }
+      const inst = fresh[instanceId] ?? Object.values(fresh).find(i=>i.id===instanceId);
+      setOverlay(worldId, true, inst?.status ?? `Booting… (${attempts*2}s)`);
+      if (inst?.status==='Started') {
+        clearInterval(iv); pollingAborts.delete(worldId); startingWorlds.delete(worldId);
+        instances=fresh; setOverlay(worldId,false); setBtns(worldId,false); updateStatus(worldId);
+        showToast(`${mode==='editor'?'Editor':'Game'} ready — opening…`,'success');
+        setTimeout(()=>openEditor(instanceId), 600);
+      }
+    } catch {}
+    inFlight=false;
+  }, 2000);
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function statusHTML(worldId) {
+  const run = Object.values(instances).find(i=>i.world===worldId && i.status==='Started');
+  const boot = Object.values(instances).find(i=>i.world===worldId && i.status!=='Started');
+  if (run)  return `<span class="status-dot running"></span> Running (${run.edit_mode?'edit':'play'} mode)`;
+  if (boot) return `<span class="status-dot starting"></span> ${boot.status}`;
+  return '';
+}
+function updateStatus(worldId) {
+  const el = document.getElementById(`st-${wid(worldId)}`);
+  if (el) el.innerHTML = statusHTML(worldId);
+}
+
+function renderCard(worldId) {
+  const m=getMeta(worldId), id=wid(worldId);
+  return `<div class="card" data-cat="${m.cat}" data-world="${worldId}">
+    <div class="card-top">
+      <div class="card-icon">${m.icon}</div>
+      <div class="card-info"><div class="card-name">${m.name}</div><div class="card-id">${worldId}</div></div>
+    </div>
+    <div class="card-meta"><span class="badge badge-${m.cat}">${m.cat}</span><span class="card-desc">${m.desc}</span></div>
+    <div class="card-status" id="st-${id}">${statusHTML(worldId)}</div>
+    <div class="card-actions">
+      <button class="btn btn-edit" id="eb-${id}" onclick="handleEdit('${worldId}')">✏️ Edit</button>
+      <button class="btn btn-play" id="pb-${id}" onclick="handlePlay('${worldId}')">▶ Play</button>
+    </div>
+    <div class="card-overlay" id="ov-${id}"></div>
+  </div>`;
+}
+
+function renderGrid() {
+  const main=document.getElementById('main'), q=searchQuery.toLowerCase();
+  const filtered=worlds.filter(w=>{
+    const m=getMeta(w.id);
+    if (activeCategory!=='All' && m.cat!==activeCategory) return false;
+    if (q && !m.name.toLowerCase().includes(q) && !w.id.includes(q) && !m.desc.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if (!filtered.length) { main.innerHTML=`<div class="empty"><p style="font-size:36px">🔍</p><p>No worlds match your search.</p></div>`; return; }
+
+  if (activeCategory==='All') {
+    let html='';
+    for (const cat of ['Games','Templates','Examples','Dev','Other']) {
+      const ws=filtered.filter(w=>getMeta(w.id).cat===cat); if(!ws.length) continue;
+      html+=`<div class="section-label">${cat}</div><div class="grid">${ws.map(w=>renderCard(w.id)).join('')}</div>`;
+    }
+    main.innerHTML=html;
+  } else {
+    main.innerHTML=`<div class="grid">${filtered.map(w=>renderCard(w.id)).join('')}</div>`;
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  const [wl,im]=await Promise.all([fetchWorlds().catch(()=>[]), fetchInstances()]);
+  worlds=wl; instances=im;
+  document.getElementById('world-count').textContent=worlds.length;
+  document.getElementById('instance-count').textContent=Object.values(im).filter(i=>i.status==='Started').length;
+  renderGrid();
+  setInterval(async ()=>{
+    instances=await fetchInstances();
+    document.getElementById('instance-count').textContent=Object.values(instances).filter(i=>i.status==='Started').length;
+    worlds.forEach(w=>{ if(!startingWorlds.has(w.id)) updateStatus(w.id); });
+  }, 5000);
+}
+
+document.getElementById('tabs').addEventListener('click',e=>{
+  const btn=e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active'); activeCategory=btn.dataset.cat; renderGrid();
+});
+document.getElementById('search').addEventListener('input',e=>{ searchQuery=e.target.value; renderGrid(); });
+
+init();
+</script>
+</body>
+</html>

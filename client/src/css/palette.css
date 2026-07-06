@@ -1,0 +1,47 @@
+:root {
+  color-scheme: dark;
+
+  --color-text: 255 255 255;
+  --color-text-darker: 144, 164, 174;
+  --color-bg-0: 27 34 49;
+  --color-bg-1: 37 42 54;
+  --color-bg-2: 55 65 81;
+  --color-bg-danger: 92 42 54;
+
+  --color-primary: 0 128 255;
+  --color-primary-lighter: 128 179 255;
+  --color-primary-darker: 0 102 204;
+
+  --color-accent: 255 0 102;
+  --color-accent-lighter: 255 128 170;
+  --color-accent-darker: 204 0 82;
+
+  --color-green: 0 255 0;
+  --color-green-lighter: 0 255 128;
+  --color-green-darker: 0 200 0;
+
+  --color-yellow: 255 204 0;
+  --color-yellow-lighter: 255 223 128;
+  --color-yellow-darker: 204 163 0;
+
+  --color-danger: 255 51 51;
+  --color-danger-lighter: 255 102 102;
+  --color-danger-darker: 204 0 0;
+
+  --color-grey: 55 65 81;
+  --color-grey-lighter: 75 85 99;
+  --color-grey-darker: 31 41 55;
+
+  --color-black: 38 38 38;
+  --color-black-lighter: 51 51 51;
+  --color-black-darker: 26 26 26;
+
+  --border-radius: 4px;
+}
+
+.theme-darker {
+  --color-bg-0: 17 17 17;
+  --color-bg-1: 24 24 24;
+  --color-bg-2: 35 35 35;
+  --color-primary: 206 91 255;
+}

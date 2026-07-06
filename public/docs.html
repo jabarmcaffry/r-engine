@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebur Engine — Documentation</title>
+<link rel="icon" href="/favicon-64.png">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #161b2a; --surface: #1f2640; --card: #242d45;
+    --border: #2f3a5a; --accent: #6c8ef5; --accent2: #4ecdc4;
+    --text: #e8ecf5; --muted: #7a859e; --code-bg: #131929;
+    --green: #4ecdc4; --yellow: #f5c842; --red: #f25757;
+    --radius: 8px; --sidebar-w: 260px;
+  }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+
+  /* ── Layout ── */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink: 0;
+    background: var(--surface); border-right: 1px solid var(--border);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 24px 0;
+  }
+  .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .sidebar-logo a { text-decoration: none; color: var(--text); }
+  .sidebar-logo h2 { font-size: 15px; font-weight: 700; color: var(--accent); }
+  .sidebar-logo p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sidebar a.home-link {
+    display: flex; align-items: center; gap: 8px; padding: 8px 20px;
+    color: var(--muted); font-size: 13px; text-decoration: none;
+    margin-bottom: 8px;
+  }
+  .sidebar a.home-link:hover { color: var(--text); }
+
+  .sidebar-section { padding: 6px 20px 2px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+  .sidebar nav a {
+    display: block; padding: 6px 20px 6px 28px; font-size: 13px;
+    color: var(--muted); text-decoration: none; border-radius: 0;
+    transition: color 0.12s; border-left: 2px solid transparent;
+  }
+  .sidebar nav a:hover { color: var(--text); }
+  .sidebar nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,142,245,0.08); }
+
+  /* ── Content ── */
+  .content { flex: 1; max-width: 860px; padding: 48px 56px; }
+  @media (max-width: 900px) { .content { padding: 32px 24px; } }
+
+  h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  h2 { font-size: 22px; font-weight: 600; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  h2:first-child { border-top: none; margin-top: 0; }
+  h3 { font-size: 16px; font-weight: 600; margin: 28px 0 8px; color: var(--accent); }
+  h4 { font-size: 14px; font-weight: 600; margin: 20px 0 6px; }
+  p { margin-bottom: 14px; font-size: 14px; color: var(--text); }
+  ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 14px; }
+  li { margin-bottom: 4px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .lead { font-size: 16px; color: var(--muted); margin-bottom: 32px; line-height: 1.7; }
+
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; border-radius: 4px; padding: 2px 8px; }
+  .badge-blue { background: rgba(108,142,245,0.18); color: var(--accent); }
+  .badge-teal { background: rgba(78,205,196,0.18); color: var(--accent2); }
+  .badge-yellow { background: rgba(245,200,66,0.18); color: var(--yellow); }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+    font-size: 13px; font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    overflow-x: auto; margin: 12px 0 20px; line-height: 1.6;
+    color: #c9d1e0;
+  }
+  code {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px;
+    font-size: 12.5px; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: #a8bfe8;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+
+  /* syntax-ish coloring */
+  .kw { color: #8b9ef5; }
+  .cm { color: #5a6a8a; font-style: italic; }
+  .st { color: #7ecb7e; }
+  .cn { color: #f5c842; }
+  .fn { color: #4ecdc4; }
+  .ty { color: #e8a97a; }
+  .nu { color: #f5c842; }
+
+  /* ── Callout boxes ── */
+  .callout {
+    border-radius: var(--radius); padding: 14px 18px; margin: 16px 0;
+    font-size: 13px; border-left: 3px solid;
+  }
+  .callout-tip   { background: rgba(78,205,196,0.1); border-color: var(--accent2); }
+  .callout-note  { background: rgba(108,142,245,0.1); border-color: var(--accent); }
+  .callout-warn  { background: rgba(245,200,66,0.1); border-color: var(--yellow); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; background: var(--card); color: var(--muted);
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── Header ── */
+  .doc-header {
+    background: linear-gradient(135deg, #1a2038 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border); padding: 28px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .doc-header a { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .doc-header a:hover { color: var(--text); }
+  .doc-header .sep { color: var(--border); }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .content { padding: 24px 16px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; }
+  }
+
+  .section { margin-bottom: 64px; }
+  .divider { height: 1px; background: var(--border); margin: 40px 0; }
+  .shortcut-row { display: flex; gap: 8px; align-items: center; margin: 4px 0; font-size: 13px; }
+  kbd { background: var(--card); border: 1px solid var(--border); border-radius: 4px;
+    padding: 2px 7px; font-size: 11px; font-family: monospace; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="/"><h2>🎮 Rebur Engine</h2><p>Developer Documentation</p></a>
+  </div>
+  <a class="home-link" href="/">← Back to Launcher</a>
+
+  <div class="sidebar-section">Getting Started</div>
+  <nav>
+    <a href="#intro">Introduction</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="#editor-ui">Editor Interface</a>
+  </nav>
+
+  <div class="sidebar-section">Scripting</div>
+  <nav>
+    <a href="#behaviors">Behaviors</a>
+    <a href="#lifecycle">Lifecycle Methods</a>
+    <a href="#properties">Inspectable Properties</a>
+    <a href="#input">Input Handling</a>
+    <a href="#transform">Transform & Movement</a>
+  </nav>
+
+  <div class="sidebar-section">Engine Features</div>
+  <nav>
+    <a href="#physics">Physics (Rapier2D)</a>
+    <a href="#entities">Entity System</a>
+    <a href="#components">Built-in Components</a>
+    <a href="#network">Multiplayer & Networking</a>
+    <a href="#ui">UI / HUD</a>
+  </nav>
+
+  <div class="sidebar-section">Reference</div>
+  <nav>
+    <a href="#shortcuts">Keyboard Shortcuts</a>
+    <a href="#api">API Quick Reference</a>
+  </nav>
+</aside>
+
+<!-- ── Content ── -->
+<main class="content">
+
+  <!-- INTRO -->
+  <div class="section" id="intro">
+    <h1>Rebur Engine Documentation</h1>
+    <p class="lead">Rebur is a multiplayer-first 2D game engine built on TypeScript. Games run simultaneously for all players, with shared state synchronized automatically over WebSockets.</p>
+
+    <div class="callout callout-tip">
+      <strong>💡 New here?</strong>
+      Open the <a href="/?instance=...">editor</a> via the launcher, pick a world like <strong>Tutorial</strong> or <strong>Template Project</strong>, click <strong>Edit</strong>, and follow along with the examples below.
+    </div>
+
+    <h3>Core Concepts</h3>
+    <ul>
+      <li><strong>Entities</strong> — everything in a game world (players, platforms, bullets, cameras). Entities form a hierarchy (parent → children).</li>
+      <li><strong>Behaviors</strong> — TypeScript scripts attached to entities. They hold logic and state.</li>
+      <li><strong>Components</strong> — built-in engine pieces like <code>Sprite2D</code>, <code>RigidBody2D</code>, <code>Camera2D</code>. Attached to entities alongside behaviors.</li>
+      <li><strong>Worlds</strong> — a project folder containing a <code>project.json</code> scene and a <code>src/</code> directory of behavior scripts.</li>
+    </ul>
+  </div>
+
+  <!-- QUICK START -->
+  <div class="section" id="quickstart">
+    <h2>Quick Start — Your First Behavior</h2>
+    <p>Open any world in the editor, right-click the scene graph → <strong>Add Entity</strong>. Then in the Inspector, click <strong>+ Add Behavior</strong> and choose <em>New Script</em>. Give it a name — the editor creates a file in <code>src/</code>.</p>
+
+    <p>Here is the simplest possible behavior — moves an entity to the right every frame:</p>
+
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">MoveRight</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="kw">this</span>.entity.transform.position.x += <span class="nu">2</span>;
+  }
+}</pre>
+
+    <p>Save the file (Ctrl+S), hit the <strong>▶ Play</strong> button, and watch it move.</p>
+
+    <h3>Adding Speed as an Inspector Property</h3>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">MoveRight</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="cm">// This property shows up in the Inspector panel on the right</span>
+  speed = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"speed"</span>, <span class="nu">2</span>);
+
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="kw">this</span>.entity.transform.position.x += <span class="kw">this</span>.speed.value;
+  }
+}</pre>
+
+    <div class="callout callout-note">
+      <strong>📝 Note</strong>
+      Import paths use <code>@dreamlab/engine</code> — this is the internal package name. All examples below use this import path.
+    </div>
+  </div>
+
+  <!-- EDITOR UI -->
+  <div class="section" id="editor-ui">
+    <h2>Editor Interface</h2>
+
+    <h3>Panels</h3>
+    <table>
+      <tr><th>Panel</th><th>Location</th><th>Purpose</th></tr>
+      <tr><td><strong>Scene Graph</strong></td><td>Left sidebar</td><td>Hierarchy of all entities in the world. Click to select, drag to reparent.</td></tr>
+      <tr><td><strong>Inspector</strong></td><td>Right sidebar</td><td>Properties of the selected entity — transform, behaviors, components.</td></tr>
+      <tr><td><strong>Game View</strong></td><td>Centre</td><td>Live rendered game. Runs in edit or play mode.</td></tr>
+      <tr><td><strong>Bottom Tabs</strong></td><td>Bottom</td><td>Logs, Prefabs, AI Assistant, TileMap editor.</td></tr>
+      <tr><td><strong>Top Bar</strong></td><td>Top</td><td>Save, Undo/Redo, Play/Pause/Stop controls.</td></tr>
+    </table>
+
+    <h3>Common Actions</h3>
+    <ul>
+      <li><strong>Select entity</strong> — click it in the Scene Graph or in the game view.</li>
+      <li><strong>Add entity</strong> — right-click in the Scene Graph → Add Entity.</li>
+      <li><strong>Add Behavior/Component</strong> — select an entity → Inspector → <em>+ Add Behavior</em> or <em>+ Add Component</em>.</li>
+      <li><strong>Edit script</strong> — click the script name in the Inspector. It opens in your connected code editor.</li>
+      <li><strong>Upload asset</strong> — drag-and-drop an image or audio file into the file tree (bottom tab → Assets).</li>
+      <li><strong>Play test</strong> — click ▶ to enter play mode. Click ■ to stop and return to edit state.</li>
+    </ul>
+  </div>
+
+  <!-- BEHAVIORS -->
+  <div class="section" id="behaviors">
+    <h2>Behaviors</h2>
+    <p>A Behavior is a TypeScript class that extends <code>Behavior</code> from <code>@dreamlab/engine</code>. Every script file should have a single <strong>default export</strong> of a Behavior class.</p>
+
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">MyBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="cm">// Inspectable property (number)</span>
+  speed = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"speed"</span>, <span class="nu">5</span>);
+
+  <span class="cm">// Inspectable string property</span>
+  label = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"label"</span>, <span class="st">"Hello"</span>);
+
+  <span class="fn">onSpawn</span>(): <span class="ty">void</span> {
+    console.<span class="fn">log</span>(<span class="st">"Entity spawned!"</span>, <span class="kw">this</span>.entity.name);
+  }
+
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="cm">// Runs every frame (~60fps)</span>
+  }
+
+  <span class="fn">onDestroy</span>(): <span class="ty">void</span> {
+    <span class="cm">// Cleanup when entity is removed</span>
+  }
+}</pre>
+
+    <h3>Accessing Other Behaviors</h3>
+<pre><span class="kw">const</span> rb = <span class="kw">this</span>.entity.<span class="fn">getBehavior</span>(<span class="ty">RigidBody2D</span>);
+<span class="kw">const</span> health = <span class="kw">this</span>.entity.<span class="fn">getBehavior</span>(<span class="ty">HealthBehavior</span>);
+<span class="kw">if</span> (health) health.takeDamage(<span class="nu">10</span>);</pre>
+
+    <h3>Accessing Child Entities</h3>
+<pre><span class="cm">// By name</span>
+<span class="kw">const</span> child = <span class="kw">this</span>.entity.children.<span class="fn">get</span>(<span class="st">"BulletSpawn"</span>);
+
+<span class="cm">// Iterate all children</span>
+<span class="kw">for</span> (<span class="kw">const</span> child <span class="kw">of</span> <span class="kw">this</span>.entity.children) {
+  console.<span class="fn">log</span>(child.name);
+}
+
+<span class="cm">// Parent</span>
+<span class="kw">const</span> parent = <span class="kw">this</span>.entity.parent;</pre>
+  </div>
+
+  <!-- LIFECYCLE -->
+  <div class="section" id="lifecycle">
+    <h2>Lifecycle Methods</h2>
+    <table>
+      <tr><th>Method</th><th>When it runs</th></tr>
+      <tr><td><code>onSpawn()</code></td><td>Once when the entity enters the world (on spawn or scene load).</td></tr>
+      <tr><td><code>onTick()</code></td><td>Every frame. Use for movement, input checks, AI, etc.</td></tr>
+      <tr><td><code>onDestroy()</code></td><td>When the entity is removed. Clean up subscriptions and timers here.</td></tr>
+      <tr><td><code>onCollide(other)</code></td><td>When this entity's collider touches another (requires <code>RigidBody2D</code>).</td></tr>
+    </table>
+
+    <h3>Timer / Delay</h3>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">DelayExample</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="kw">private</span> timer = <span class="nu">0</span>;
+  interval = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"interval"</span>, <span class="nu">2</span>); <span class="cm">// seconds</span>
+
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="kw">this</span>.timer += <span class="kw">this</span>.game.time.delta; <span class="cm">// delta in seconds</span>
+    <span class="kw">if</span> (<span class="kw">this</span>.timer >= <span class="kw">this</span>.interval.value) {
+      <span class="kw">this</span>.timer = <span class="nu">0</span>;
+      console.<span class="fn">log</span>(<span class="st">"Ping!"</span>);
+    }
+  }
+}</pre>
+  </div>
+
+  <!-- PROPERTIES -->
+  <div class="section" id="properties">
+    <h2>Inspectable Properties</h2>
+    <p>Use <code>this.define(name, defaultValue)</code> to create properties that appear in the Inspector and are saved in the scene file.</p>
+
+    <table>
+      <tr><th>Type</th><th>Example</th></tr>
+      <tr><td>Number</td><td><code>this.define("speed", 5)</code></td></tr>
+      <tr><td>String</td><td><code>this.define("message", "Hello")</code></td></tr>
+      <tr><td>Boolean</td><td><code>this.define("enabled", true)</code></td></tr>
+      <tr><td>Vector2</td><td><code>this.define("offset", { x: 0, y: 0 })</code></td></tr>
+    </table>
+
+    <p>Access the current value via <code>.value</code>:</p>
+<pre><span class="kw">const</span> spd = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"speed"</span>, <span class="nu">5</span>);
+<span class="cm">// later:</span>
+<span class="kw">this</span>.entity.transform.position.x += spd.value;</pre>
+  </div>
+
+  <!-- INPUT -->
+  <div class="section" id="input">
+    <h2>Input Handling</h2>
+    <p>Access input through <code>this.game.input</code>:</p>
+
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">PlayerInput</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  speed = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"speed"</span>, <span class="nu">4</span>);
+
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="kw">const</span> input = <span class="kw">this</span>.game.input;
+    <span class="kw">const</span> move = <span class="kw">new</span> <span class="ty">Vector2</span>(<span class="nu">0</span>, <span class="nu">0</span>);
+
+    <span class="kw">if</span> (input.<span class="fn">isKeyDown</span>(<span class="st">"ArrowLeft"</span>)  || input.<span class="fn">isKeyDown</span>(<span class="st">"a"</span>)) move.x -= <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">isKeyDown</span>(<span class="st">"ArrowRight"</span>) || input.<span class="fn">isKeyDown</span>(<span class="st">"d"</span>)) move.x += <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">isKeyDown</span>(<span class="st">"ArrowUp"</span>)   || input.<span class="fn">isKeyDown</span>(<span class="st">"w"</span>)) move.y -= <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">isKeyDown</span>(<span class="st">"ArrowDown"</span>) || input.<span class="fn">isKeyDown</span>(<span class="st">"s"</span>)) move.y += <span class="nu">1</span>;
+
+    <span class="kw">if</span> (move.<span class="fn">magnitude</span>() > <span class="nu">0</span>) move.<span class="fn">normalize</span>();
+    <span class="kw">this</span>.entity.transform.position.x += move.x * <span class="kw">this</span>.speed.value;
+    <span class="kw">this</span>.entity.transform.position.y += move.y * <span class="kw">this</span>.speed.value;
+
+    <span class="kw">if</span> (input.<span class="fn">isKeyPressed</span>(<span class="st">" "</span>)) {
+      <span class="cm">// Space was just pressed this frame (not held)</span>
+      console.<span class="fn">log</span>(<span class="st">"Jump!"</span>);
+    }
+  }
+}</pre>
+
+    <h3>Input Methods</h3>
+    <table>
+      <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      <tr><td><code>input.isKeyDown(key)</code></td><td>boolean</td><td>True every frame the key is held.</td></tr>
+      <tr><td><code>input.isKeyPressed(key)</code></td><td>boolean</td><td>True only on the first frame the key goes down.</td></tr>
+      <tr><td><code>input.isKeyReleased(key)</code></td><td>boolean</td><td>True only on the frame the key is released.</td></tr>
+      <tr><td><code>input.cursor</code></td><td>Vector2</td><td>Mouse/pointer position in world space.</td></tr>
+      <tr><td><code>input.isMouseDown(btn)</code></td><td>boolean</td><td>True while mouse button (0=left, 2=right) is held.</td></tr>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>📱 Mobile</strong>
+      On mobile, the virtual joystick and action buttons fire the same keyboard events, so the same input code works on touch devices without any changes.
+    </div>
+  </div>
+
+  <!-- TRANSFORM -->
+  <div class="section" id="transform">
+    <h2>Transform &amp; Movement</h2>
+
+<pre><span class="kw">const</span> t = <span class="kw">this</span>.entity.transform;
+
+<span class="cm">// Position (world space, pixels)</span>
+t.position.x = <span class="nu">100</span>;
+t.position.y = <span class="nu">200</span>;
+t.position = { x: <span class="nu">0</span>, y: <span class="nu">0</span> };
+
+<span class="cm">// Rotation (degrees)</span>
+t.rotation += <span class="nu">1</span>; <span class="cm">// rotate 1° per frame</span>
+
+<span class="cm">// Scale</span>
+t.scale.x = <span class="nu">2</span>; <span class="cm">// double width</span>
+t.scale.y = <span class="nu">2</span>; <span class="cm">// double height</span>
+
+<span class="cm">// Local vs World (for parented entities)</span>
+<span class="cm">// t.position is always world-space</span>
+<span class="cm">// t.localPosition is relative to parent</span></pre>
+
+    <h3>Smooth Movement with Delta Time</h3>
+<pre><span class="fn">onTick</span>(): <span class="ty">void</span> {
+  <span class="kw">const</span> dt = <span class="kw">this</span>.game.time.delta; <span class="cm">// seconds since last frame</span>
+  <span class="kw">const</span> spd = <span class="nu">200</span>; <span class="cm">// pixels per second</span>
+  <span class="kw">this</span>.entity.transform.position.x += spd * dt;
+}</pre>
+  </div>
+
+  <!-- PHYSICS -->
+  <div class="section" id="physics">
+    <h2>Physics (Rapier2D)</h2>
+    <p>Add a <code>RigidBody2D</code> component to an entity to enable physics. The engine uses Rapier2D for fast, deterministic simulation.</p>
+
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">RigidBody2D</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">PhysicsPlayer</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="kw">private</span> rb!: <span class="ty">RigidBody2D</span>;
+
+  <span class="fn">onSpawn</span>(): <span class="ty">void</span> {
+    <span class="kw">this</span>.rb = <span class="kw">this</span>.entity.<span class="fn">getBehavior</span>(<span class="ty">RigidBody2D</span>)!;
+  }
+
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="kw">const</span> input = <span class="kw">this</span>.game.input;
+
+    <span class="cm">// Apply horizontal force</span>
+    <span class="kw">if</span> (input.<span class="fn">isKeyDown</span>(<span class="st">"ArrowLeft"</span>) || input.<span class="fn">isKeyDown</span>(<span class="st">"a"</span>)) {
+      <span class="kw">this</span>.rb.<span class="fn">applyImpulse</span>({ x: -<span class="nu">5</span>, y: <span class="nu">0</span> });
+    }
+    <span class="kw">if</span> (input.<span class="fn">isKeyDown</span>(<span class="st">"ArrowRight"</span>) || input.<span class="fn">isKeyDown</span>(<span class="st">"d"</span>)) {
+      <span class="kw">this</span>.rb.<span class="fn">applyImpulse</span>({ x: <span class="nu">5</span>, y: <span class="nu">0</span> });
+    }
+
+    <span class="cm">// Jump (check if grounded first)</span>
+    <span class="kw">if</span> (input.<span class="fn">isKeyPressed</span>(<span class="st">" "</span>)) {
+      <span class="kw">this</span>.rb.<span class="fn">applyImpulse</span>({ x: <span class="nu">0</span>, y: -<span class="nu">300</span> });
+    }
+  }
+}</pre>
+
+    <h3>Physics Properties</h3>
+    <table>
+      <tr><th>Property / Method</th><th>Description</th></tr>
+      <tr><td><code>rb.velocity</code></td><td>Current velocity Vector2.</td></tr>
+      <tr><td><code>rb.applyImpulse(v)</code></td><td>Apply an instant impulse force.</td></tr>
+      <tr><td><code>rb.applyForce(v)</code></td><td>Apply a continuous force (use in onTick).</td></tr>
+      <tr><td><code>rb.isGrounded</code></td><td>True when touching a surface below.</td></tr>
+      <tr><td><code>rb.gravityScale</code></td><td>Multiplier for gravity (0 = no gravity).</td></tr>
+      <tr><td><code>rb.lockRotation</code></td><td>Prevents physics rotation.</td></tr>
+    </table>
+  </div>
+
+  <!-- ENTITIES -->
+  <div class="section" id="entities">
+    <h2>Entity System</h2>
+
+    <h3>Spawning Entities at Runtime</h3>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">Spawner</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.game.input.<span class="fn">isKeyPressed</span>(<span class="st">"e"</span>)) {
+      <span class="kw">const</span> bullet = <span class="kw">this</span>.game.world.<span class="fn">spawn</span>({
+        type: <span class="ty">Entity</span>,
+        name: <span class="st">"Bullet"</span>,
+        transform: {
+          position: { x: <span class="kw">this</span>.entity.transform.position.x, y: <span class="kw">this</span>.entity.transform.position.y },
+          scale: { x: <span class="nu">1</span>, y: <span class="nu">1</span> },
+        },
+        behaviors: [{ type: BulletBehavior }],
+      });
+    }
+  }
+}</pre>
+
+    <h3>Destroying Entities</h3>
+<pre><span class="cm">// Destroy self</span>
+<span class="kw">this</span>.entity.<span class="fn">destroy</span>();
+
+<span class="cm">// Destroy another entity</span>
+other.<span class="fn">destroy</span>();</pre>
+
+    <h3>Finding Entities</h3>
+<pre><span class="cm">// Find by name in world</span>
+<span class="kw">const</span> player = <span class="kw">this</span>.game.world.entities.<span class="fn">lookupByName</span>(<span class="st">"Player"</span>);
+
+<span class="cm">// All entities of a given behavior type</span>
+<span class="kw">const</span> enemies = <span class="kw">this</span>.game.world.entities.<span class="fn">lookupByBehavior</span>(<span class="ty">EnemyBehavior</span>);</pre>
+  </div>
+
+  <!-- COMPONENTS -->
+  <div class="section" id="components">
+    <h2>Built-in Components</h2>
+
+    <table>
+      <tr><th>Component</th><th>Description</th></tr>
+      <tr><td><code>Sprite2D</code></td><td>Renders a texture. Set <code>sprite.texture = "res://path/img.png"</code>.</td></tr>
+      <tr><td><code>RigidBody2D</code></td><td>Physics body. Enables gravity, collisions, impulses.</td></tr>
+      <tr><td><code>Camera2D</code></td><td>Sets the viewport. Move this entity to scroll the camera.</td></tr>
+      <tr><td><code>Text2D</code></td><td>Renders text in world space.</td></tr>
+      <tr><td><code>TilemapRenderer</code></td><td>Renders a tile-based map.</td></tr>
+      <tr><td><code>PointLight2D</code></td><td>Emits 2D light (requires lighting world setup).</td></tr>
+      <tr><td><code>AudioPlayer</code></td><td>Plays audio files. Supports positional audio.</td></tr>
+    </table>
+
+    <h3>Sprite Example</h3>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite2D</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">AnimateColor</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="kw">private</span> sprite!: <span class="ty">Sprite2D</span>;
+
+  <span class="fn">onSpawn</span>(): <span class="ty">void</span> {
+    <span class="kw">this</span>.sprite = <span class="kw">this</span>.entity.<span class="fn">getBehavior</span>(<span class="ty">Sprite2D</span>)!;
+    <span class="kw">this</span>.sprite.texture = <span class="st">"res://assets/player.png"</span>;
+  }
+
+  <span class="fn">onTick</span>(): <span class="ty">void</span> {
+    <span class="cm">// Tint based on time</span>
+    <span class="kw">const</span> t = <span class="kw">this</span>.game.time.now;
+    <span class="kw">this</span>.sprite.tint = <span class="fn">Math</span>.<span class="fn">sin</span>(t) > <span class="nu">0</span> ? <span class="nu">0xff0000</span> : <span class="nu">0xffffff</span>;
+  }
+}</pre>
+  </div>
+
+  <!-- NETWORKING -->
+  <div class="section" id="network">
+    <h2>Multiplayer &amp; Networking</h2>
+    <p>Rebur is multiplayer-first. Any entity spawned on the server automatically replicates to all clients. Behavior properties defined with <code>this.define()</code> and decorated with <code>@synchronized</code> sync automatically.</p>
+
+    <h3>Synchronized Properties</h3>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, synchronized } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">Health</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="cm">// This value is automatically kept in sync across all players</span>
+  @<span class="fn">synchronized</span>
+  hp = <span class="kw">this</span>.<span class="fn">define</span>(<span class="st">"hp"</span>, <span class="nu">100</span>);
+
+  <span class="fn">takeDamage</span>(amount: <span class="ty">number</span>): <span class="ty">void</span> {
+    <span class="kw">this</span>.hp.value -= amount; <span class="cm">// Change replicates to all clients</span>
+  }
+}</pre>
+
+    <h3>Client vs Server Logic</h3>
+<pre><span class="fn">onTick</span>(): <span class="ty">void</span> {
+  <span class="kw">if</span> (<span class="kw">this</span>.game.isServer) {
+    <span class="cm">// Only runs on the server (authoritative)</span>
+    <span class="kw">this</span>.<span class="fn">updateAI</span>();
+  }
+
+  <span class="kw">if</span> (<span class="kw">this</span>.game.isClient) {
+    <span class="cm">// Only runs on the client (visual/input)</span>
+    <span class="kw">this</span>.<span class="fn">handleInput</span>();
+  }
+}</pre>
+
+    <h3>Remote Procedure Calls (RPC)</h3>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, rpc } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+
+<span class="kw">export default class</span> <span class="ty">Shooter</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="cm">// Client calls this → server executes it</span>
+  @<span class="fn">rpc</span>({ from: <span class="st">"client"</span>, to: <span class="st">"server"</span> })
+  <span class="fn">requestFire</span>(direction: <span class="ty">number</span>): <span class="ty">void</span> {
+    <span class="cm">// Server-side: spawn bullet, validate, etc.</span>
+    <span class="kw">this</span>.<span class="fn">spawnBullet</span>(direction);
+  }
+}</pre>
+  </div>
+
+  <!-- UI / HUD -->
+  <div class="section" id="ui">
+    <h2>UI / HUD</h2>
+    <p>Rebur supports React-based UI via the <code>@dreamlab/ui</code> package. UI renders on top of the game canvas and receives input independently.</p>
+
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<span class="kw">import</span> { <span class="ty">createElement</span> } <span class="kw">from</span> <span class="st">"@dreamlab/ui"</span>;
+
+<span class="kw">export default class</span> <span class="ty">HUD</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
+  <span class="fn">onSpawn</span>(): <span class="ty">void</span> {
+    <span class="kw">this</span>.game.ui.<span class="fn">render</span>(() => (
+      &lt;<span class="ty">div</span> style={{ position: <span class="st">'absolute'</span>, top: <span class="nu">16</span>, left: <span class="nu">16</span>, color: <span class="st">'white'</span>, fontSize: <span class="nu">20</span> }}&gt;
+        HP: {<span class="kw">this</span>.hp}
+      &lt;/<span class="ty">div</span>&gt;
+    ));
+  }
+}</pre>
+
+    <div class="callout callout-note">
+      <strong>📝 Note</strong>
+      See the <strong>React UI</strong> example world in the launcher for a complete UI demonstration.
+    </div>
+  </div>
+
+  <!-- SHORTCUTS -->
+  <div class="section" id="shortcuts">
+    <h2>Keyboard Shortcuts</h2>
+    <table>
+      <tr><th>Shortcut</th><th>Action</th></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Save the current world</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>Copy selected entity</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>Paste entity</td></tr>
+      <tr><td><kbd>Delete</kbd></td><td>Delete selected entity</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Focus camera on selected entity</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Deselect / cancel</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>Pan camera (hold + drag)</td></tr>
+      <tr><td>Mouse wheel</td><td>Zoom in/out</td></tr>
+    </table>
+  </div>
+
+  <!-- API REFERENCE -->
+  <div class="section" id="api">
+    <h2>API Quick Reference</h2>
+
+    <h3><code>this.game</code></h3>
+    <table>
+      <tr><th>Property/Method</th><th>Type</th><th>Description</th></tr>
+      <tr><td><code>game.isServer</code></td><td>boolean</td><td>True when running on the server.</td></tr>
+      <tr><td><code>game.isClient</code></td><td>boolean</td><td>True when running on a client.</td></tr>
+      <tr><td><code>game.time.now</code></td><td>number</td><td>Elapsed seconds since game start.</td></tr>
+      <tr><td><code>game.time.delta</code></td><td>number</td><td>Seconds since last frame.</td></tr>
+      <tr><td><code>game.input</code></td><td>GameInput</td><td>Keyboard and mouse state.</td></tr>
+      <tr><td><code>game.world</code></td><td>World</td><td>The active world. Spawn, destroy, query entities.</td></tr>
+    </table>
+
+    <h3><code>this.entity</code></h3>
+    <table>
+      <tr><th>Property/Method</th><th>Type</th><th>Description</th></tr>
+      <tr><td><code>entity.name</code></td><td>string</td><td>Entity name as shown in the scene graph.</td></tr>
+      <tr><td><code>entity.transform</code></td><td>Transform</td><td>Position, rotation, scale.</td></tr>
+      <tr><td><code>entity.parent</code></td><td>Entity | null</td><td>Parent entity in the hierarchy.</td></tr>
+      <tr><td><code>entity.children</code></td><td>EntityChildren</td><td>Child entity collection.</td></tr>
+      <tr><td><code>entity.getBehavior(T)</code></td><td>T | undefined</td><td>Find an attached behavior by class.</td></tr>
+      <tr><td><code>entity.destroy()</code></td><td>void</td><td>Remove the entity from the world.</td></tr>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>💡 Tip</strong>
+      Open the <strong>Tutorial</strong> world in the launcher for an interactive walkthrough that covers these concepts step by step.
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+  // Highlight active section in sidebar
+  const links = document.querySelectorAll('.sidebar nav a');
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    }
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('.section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
