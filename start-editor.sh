@@ -44,6 +44,13 @@ REBUR_MULTIPLAYER_PUBLIC_URL=wss://${PUBLIC_HOST}
 EOF
 echo "==> Generated editor/.env.local (PUBLIC_URL=wss://${PUBLIC_HOST})"
 
+# Generate client/.env.local so the player client also knows the server URL.
+cat > client/.env.local << EOF
+IS_DEV=true
+REBUR_MULTIPLAYER_PUBLIC_URL=wss://${PUBLIC_HOST}
+EOF
+echo "==> Generated client/.env.local (PUBLIC_URL=wss://${PUBLIC_HOST})"
+
 echo "==> Starting editor build watcher..."
 (cd editor && deno run -A _build.ts --watch) &
 BUILD_PID=$!

@@ -213,10 +213,12 @@ async function startEdit(worldId) {
   return d.id;
 }
 async function startPlay(worldId) {
-  const r = await fetch('/api/v1/start-play-world', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({world_id:worldId}) });
+  // Start a non-edit instance — same API as edit but without edit_mode flag.
+  const r = await fetch('/api/dashboard/start-instance', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({world_id:worldId, edit_mode:false}) });
   const d = await r.json().catch(()=>({}));
+  if (r.status === 409) return { id: d.existingInstanceId ?? null, server: d.server ?? '' };
   if (!r.ok) throw new Error(d.error ?? d.message ?? `HTTP ${r.status}`);
-  return d.id;
+  return { id: d.id, server: d.server ?? '' };
 }
 
 // ── Toast ────────────────────────────────────────────────────────────────────
@@ -256,6 +258,12 @@ function getRunning(worldId, editMode) {
 }
 
 function openEditor(instanceId) { window.location.href = `/?instance=${instanceId}`; }
+function openPlay(instanceId, serverUrl) {
+  const u = new URL('/play/', window.location.origin);
+  u.searchParams.set('instance', instanceId);
+  if (serverUrl) u.searchParams.set('server', serverUrl);
+  window.location.href = u.toString();
+}
 
 async function handleEdit(worldId) {
   if (startingWorlds.has(worldId)) return;
@@ -272,13 +280,13 @@ async function handlePlay(worldId) {
   if (startingWorlds.has(worldId)) return;
   startingWorlds.add(worldId); setBtns(worldId,true); setOverlay(worldId,true,'Starting game…');
   try {
-    const id = await startPlay(worldId);
+    const { id, server } = await startPlay(worldId);
     if (!id) throw new Error('No instance ID returned');
-    pollUntilReady(worldId, id, 'game');
+    pollUntilReady(worldId, id, 'game', server);
   } catch(err) { cancelStart(worldId); showToast(`Failed: ${err.message}`,'error'); }
 }
 
-function pollUntilReady(worldId, instanceId, mode) {
+function pollUntilReady(worldId, instanceId, mode, serverUrl='') {
   const ctrl = new AbortController(); pollingAborts.set(worldId, ctrl);
   let attempts=0, inFlight=false;
   const iv = setInterval(async () => {
@@ -294,7 +302,12 @@ function pollUntilReady(worldId, instanceId, mode) {
         clearInterval(iv); pollingAborts.delete(worldId); startingWorlds.delete(worldId);
         instances=fresh; setOverlay(worldId,false); setBtns(worldId,false); updateStatus(worldId);
         showToast(`${mode==='editor'?'Editor':'Game'} ready — opening…`,'success');
-        setTimeout(()=>openEditor(instanceId), 600);
+        const srv = serverUrl || inst.server || '';
+        if (mode === 'editor') {
+          setTimeout(()=>openEditor(instanceId), 600);
+        } else {
+          setTimeout(()=>openPlay(instanceId, srv), 600);
+        }
       }
     } catch {}
     inFlight=false;

@@ -31,6 +31,14 @@ Monaco's AMD loader (`require(['vs/editor/editor.main'], callback)`) does NOT pa
 **Why:** Standard Monaco AMD behavior — the module is self-registering and populates `globalThis.monaco`.
 **How to apply:** Always use `(globalThis as any).monaco` inside the AMD callback, not the callback parameter.
 
+## Dashboard Play button bug (root cause)
+
+`public/dashboard.html` `pollUntilReady()` called `openEditor(instanceId)` for **both** edit and play modes. The fix: pass `mode` and `serverUrl` through, then branch — `openEditor` for editor mode, `openPlay(instanceId, serverUrl)` for game mode, which navigates to `/play/?instance=<id>&server=<wsUrl>`.
+
+Also: `startPlay` was calling a nonexistent `/api/v1/start-play-world` endpoint. Changed to use `/api/dashboard/start-instance` with `edit_mode: false` (same as edit but without edit flag). Now returns `{ id, server }`.
+
+**Why:** The original dashboard was written before play/editor separation existed — both buttons went to the editor.
+
 ## Play/Editor separation (Roblox-style)
 
 Play mode is fully separated from the editor:
