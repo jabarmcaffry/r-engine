@@ -1,8 +1,8 @@
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame } from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
-import { CSSProperties } from "@dreamlab/ui/css";
-import { urlToWebSocket } from "@dreamlab/util/url.ts";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
+import { ClientGame } from "@rebur/engine";
+import { element as elem } from "@rebur/ui";
+import { CSSProperties } from "@rebur/ui/css";
+import { urlToWebSocket } from "@rebur/util/url.ts";
 // @deno-types="npm:@types/object-inspect@1.13.0"
 import inspect from "npm:object-inspect@1.13.2";
 import { WebSocket } from "npm:partysocket@1.0.2";
@@ -119,7 +119,7 @@ export class LogViewer {
 
     this.container.append(this.#section);
 
-    if (!localStorage.getItem("dreamlab_disable_console_hook")) {
+    if (!localStorage.getItem("rebur_disable_console_hook")) {
       this.injectConsoleWrapper();
     }
   }

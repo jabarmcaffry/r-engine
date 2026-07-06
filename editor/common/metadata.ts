@@ -1,4 +1,4 @@
-import { Entity, EntityContext } from "@dreamlab/engine";
+import { Entity, EntityContext } from "@rebur/engine";
 
 export class EditorMetadataEntity extends Entity {
   static readonly icon: string = "…";

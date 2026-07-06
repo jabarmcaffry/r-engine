@@ -4,13 +4,13 @@ import {
   PlayerJoined,
   PlayerLeft,
   ServerRoot,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { serializeEntityDefinition } from "@dreamlab/proto/common/entity-sync.ts";
-import { PlayerConnectionDropped } from "@dreamlab/proto/common/signals.ts";
-import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { EntitySchema, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
-import type * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { serializeEntityDefinition } from "@rebur/proto/common/entity-sync.ts";
+import { PlayerConnectionDropped } from "@rebur/proto/common/signals.ts";
+import { PlayPacket, ServerPacket } from "@rebur/proto/play.ts";
+import { EntitySchema, getSceneFromProject, ProjectSchema } from "@rebur/scene";
+import type * as z from "@rebur/vendor/zod.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) => {

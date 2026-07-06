@@ -1,0 +1,111 @@
+/* ── Script Editor (Monaco) ──────────────────────────────────────────────── */
+
+.script-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #0d1117;
+  border-radius: 0 0 var(--border-radius, 6px) var(--border-radius, 6px);
+}
+
+/* Tab bar */
+.script-editor-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  background: #161b22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 34px;
+  flex-shrink: 0;
+  align-items: stretch;
+}
+
+.script-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  user-select: none;
+  transition: color 0.12s, background 0.12s;
+  min-width: 0;
+  max-width: 200px;
+  flex-shrink: 0;
+}
+
+.script-tab:hover {
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.script-tab.active {
+  color: #e6edf3;
+  background: #0d1117;
+  border-bottom: 2px solid #6366f1;
+}
+
+.script-tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.script-tab-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  opacity: 0;
+  flex-shrink: 0;
+  transition: opacity 0.1s, background 0.1s;
+}
+
+.script-tab:hover .script-tab-close,
+.script-tab.active .script-tab-close {
+  opacity: 0.55;
+}
+
+.script-tab-close:hover {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Monaco container */
+.script-editor-monaco {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Empty / placeholder state */
+.script-editor-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem;
+  line-height: 1.7;
+}

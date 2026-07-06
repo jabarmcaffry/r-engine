@@ -1,4 +1,4 @@
-import { Entity, EntityContext, enumAdapter, RenderContainer } from "@dreamlab/engine";
+import { Entity, EntityContext, enumAdapter, RenderContainer } from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { Facades } from "./manager.ts";
 

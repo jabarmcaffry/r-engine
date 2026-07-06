@@ -271,7 +271,7 @@
   <h2>Step 5: Write Your First Script</h2>
   <p>Right-click in the Scene Graph → <strong>New Entity</strong>. Select the entity, open the Behaviors Panel, click <strong>+ Add Behavior</strong> → <em>New Script</em>. Name it <code>MoveRight</code>:</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">MoveRight</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -288,7 +288,7 @@
   <h2>Step 6: Add Inspector Properties</h2>
   <p>Use <code>@syncedValue()</code> to expose properties in the Inspector:</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">MoveRight</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cm">// Appears as a number field in the Inspector</span>
@@ -381,7 +381,7 @@
   <p class="lead">Entities are the fundamental building blocks of a Rebur game. They form a parent/child hierarchy and can have Behaviors and Components attached to them.</p>
 
   <h2>Spawning Entities at Runtime</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">Spawner</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -448,7 +448,7 @@ t.globalTransform <span class="cm">// fully computed world transform</span></pre
   <p class="lead">Behaviors are TypeScript classes that bring logic to an Entity. If you know Unity, think <em>MonoBehaviours</em>; in Godot, they're <em>Scripts</em>.</p>
 
   <h2>Basic Structure</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">MyBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -483,7 +483,7 @@ t.globalTransform <span class="cm">// fully computed world transform</span></pre
 <span class="kw">if</span> (rb) rb.velocity.assign({ x: <span class="nu">5</span>, y: <span class="nu">0</span> });
 
 <span class="cm">// Cast an entity to access its component type</span>
-<span class="kw">import</span> { <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<span class="kw">import</span> { <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">const</span> sprite = <span class="kw">this</span>.entity._.SpriteChild.<span class="fn">cast</span>(<span class="ty">Sprite</span>);
 sprite.color = <span class="st">"#ff0000"</span>;</pre>
 
@@ -517,7 +517,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 }</pre>
 
   <h2>Timer Pattern</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PingTimer</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">private</span> elapsed = <span class="nu">0</span>;
@@ -547,7 +547,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <p class="lead"><code>@syncedValue()</code> turns a field into: a network-replicated variable, an observable you can <code>onChanged()</code>, and a row in the Inspector.</p>
 
   <h2>Basic Usage</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">MyBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() myNumber = <span class="nu">10</span>;
@@ -579,7 +579,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   </table>
 
   <h4>Enum Adapter Example</h4>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">enumAdapter</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">enumAdapter</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">const</span> shapeAdapter = <span class="fn">enumAdapter</span>([<span class="st">"circle"</span>, <span class="st">"square"</span>, <span class="st">"triangle"</span>]);
 <span class="kw">type</span> <span class="ty">Shape</span> = enumAdapter.Union&lt;<span class="kw">typeof</span> shapeAdapter&gt;;
@@ -621,7 +621,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <p class="lead">The Camera entity controls what each player sees. A white box in the editor shows the "guaranteed-visible" area — everything inside is on-screen regardless of monitor aspect ratio.</p>
 
   <h2>Following the Player</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Camera</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Camera</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CameraFollow</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() smoothing = <span class="nu">0.1</span>;
@@ -639,7 +639,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 }</pre>
 
   <h2>Switching Between Cameras</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Camera</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Camera</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CameraSwitch</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -671,7 +671,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <p class="lead">RPCs let behaviors on the server call methods on the client (and vice versa) across the network. They're how you send targeted messages — like "play this sound for this player" or "trigger this animation."</p>
 
   <h2>Defining an RPC</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">rpc</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">rpc</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PlayerBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cm">// Called on client by the server — plays a hit effect</span>
@@ -725,7 +725,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   </div>
 
   <h2>Scripting a Tilemap</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Tilemap</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Tilemap</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">ProceduralLevel</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -769,7 +769,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <p class="lead">Play sounds using the <code>Sound</code> component. Audio works in the browser — upload <code>.ogg</code>, <code>.mp3</code>, or <code>.wav</code> files to your project assets.</p>
 
   <h2>Playing a Sound</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sound</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sound</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">SoundPlayer</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -782,7 +782,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 }</pre>
 
   <h2>Using @syncedValue with AudioAdapter</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">AudioAdapter</span>, <span class="ty">Sound</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">AudioAdapter</span>, <span class="ty">Sound</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">AudioBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>(<span class="ty">AudioAdapter</span>) audioFile = <span class="st">"res://assets/music.ogg"</span>;
@@ -817,7 +817,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   </table>
 
   <h2>Basic KV Operations</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">SaveData</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">async</span> <span class="fn">onInitialize</span>(): <span class="ty">Promise</span>&lt;<span class="ty">void</span>&gt; {
@@ -917,7 +917,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <h2>Rigidbodies</h2>
   <p>A Rigidbody entity needs at least one Collider child to define its shape. Rigidbodies are simulated dynamically.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Rigidbody</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Rigidbody</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PhysicsPlayer</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">private</span> rb!: <span class="ty">Rigidbody</span>;
@@ -936,7 +936,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <h2>Character Controller</h2>
   <p>Character Controller is a special kinematic entity. It doesn't simulate gravity on its own — you control its movement, and the physics engine handles collision response.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PlayerController</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">private</span> cc!: <span class="ty">CharacterController</span>;
@@ -952,7 +952,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 }</pre>
 
   <h2>Collision Events</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CollisionHandler</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -965,7 +965,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 }</pre>
 
   <h2>Ray Casting</h2>
-<pre><span class="kw">import</span> RAPIER <span class="kw">from</span> <span class="st">"@dreamlab/vendor/rapier.ts"</span>;
+<pre><span class="kw">import</span> RAPIER <span class="kw">from</span> <span class="st">"@rebur/vendor/rapier.ts"</span>;
 
 <span class="kw">const</span> ray = <span class="kw">new</span> RAPIER.<span class="ty">Ray</span>({ x: <span class="nu">0</span>, y: <span class="nu">0</span> }, { x: <span class="nu">0</span>, y: <span class="nu">1</span> }); <span class="cm">// upward ray</span>
 <span class="kw">const</span> hit = <span class="kw">this</span>.game.physics.world.<span class="fn">castRay</span>(ray, <span class="nu">4.0</span>, <span class="kw">true</span>);
@@ -1031,7 +1031,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   </table>
 
   <h2>Basic UIBehavior</h2>
-<pre><span class="kw">import</span> { <span class="ty">UIBehavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">UIBehavior</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">ScoreDisplay</span> <span class="kw">extends</span> <span class="ty">UIBehavior</span> {
   score = <span class="nu">0</span>;
@@ -1110,7 +1110,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   </ol>
 
   <h2>Using the HealthBar API</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">import</span> HealthBar <span class="kw">from</span> <span class="st">"./HealthBar.ts"</span>; <span class="cm">// from the building blocks</span>
 
 <span class="kw">export default class</span> <span class="ty">EnemyBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
@@ -1151,7 +1151,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   </ol>
 
   <h2>Scripting Lights</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">PointLight</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">PointLight</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">FlickerLight</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">private</span> light!: <span class="ty">PointLight</span>;
@@ -1188,7 +1188,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   </ol>
 
   <h2>PlatformMovement Behavior</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PlatformMovement</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() speed = <span class="nu">5</span>;
@@ -1233,7 +1233,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
     <li>Set <code>speed</code> in the Inspector.</li>
   </ol>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">TopDownMovement</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() speed = <span class="nu">5</span>;
@@ -1278,7 +1278,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
 <span class="kw">const</span> myConnectionId = <span class="kw">this</span>.game.network.self;</pre>
 
   <h2>Saving &amp; Loading Player Data</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PlayerSave</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">async</span> <span class="fn">saveScore</span>(playerId: <span class="ty">string</span>, score: <span class="ty">number</span>): <span class="ty">Promise</span>&lt;<span class="ty">void</span>&gt; {
@@ -1344,7 +1344,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
 
   <h2>Features</h2>
   <ul>
-    <li><strong>TypeScript autocomplete</strong> — full type hints for <code>@dreamlab/engine</code> APIs.</li>
+    <li><strong>TypeScript autocomplete</strong> — full type hints for <code>@rebur/engine</code> APIs.</li>
     <li><strong>Error highlighting</strong> — red underlines for type errors, caught before you run.</li>
     <li><strong>Format on save</strong> — automatic code formatting when you hit <kbd>Ctrl+S</kbd>.</li>
     <li><strong>Multi-file</strong> — open multiple scripts as tabs.</li>
@@ -1354,8 +1354,8 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <h2>Import Paths</h2>
   <table>
     <tr><th>Import</th><th>What it provides</th></tr>
-    <tr><td><code>"@dreamlab/engine"</code></td><td>All engine APIs: Behavior, entities, components, events.</td></tr>
-    <tr><td><code>"@dreamlab/vendor/rapier.ts"</code></td><td>Raw Rapier2D for advanced physics.</td></tr>
+    <tr><td><code>"@rebur/engine"</code></td><td>All engine APIs: Behavior, entities, components, events.</td></tr>
+    <tr><td><code>"@rebur/vendor/rapier.ts"</code></td><td>Raw Rapier2D for advanced physics.</td></tr>
     <tr><td><code>"npm:&lt;package&gt;"</code></td><td>Any npm package.</td></tr>
     <tr><td><code>"./MyOtherBehavior.ts"</code></td><td>Relative imports within your project.</td></tr>
   </table>
@@ -1366,7 +1366,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <h1>Ingredient: Basic Structure</h1>
   <p class="lead">The complete anatomy of a Behavior class — what every script you write in Rebur should look like.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">MyBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cm">// 1. Synced values appear in the Inspector and replicate over the network</span>
@@ -1401,7 +1401,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <h1>Ingredient: Character Controller</h1>
   <p class="lead">A complete movement controller using <code>CharacterController</code> with WASD/arrow key input, normalization for diagonal movement, and delta-time scaling.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CharacterMovement</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() speed = <span class="nu">5</span>;
@@ -1434,7 +1434,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <h1>Ingredient: Detecting Collisions</h1>
   <p class="lead">Use the <code>EntityCollision</code> event to react when two physical entities touch.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CollectibleBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -1464,7 +1464,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <h1>Ingredient: Handling Input</h1>
   <p class="lead">Read keyboard, mouse, and touch input through <code>this.inputs</code>.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">InputExample</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
@@ -1551,7 +1551,7 @@ t.scale.x = -<span class="nu">1</span>;               <span class="cm">// flip h
   <h1>Ingredient: Handling Values</h1>
   <p class="lead">Use <code>@syncedValue()</code> to create properties that appear in the Inspector, sync over the network, and can be observed for changes.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">ColorAdapter</span>, <span class="ty">Vector2Adapter</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">ColorAdapter</span>, <span class="ty">Vector2Adapter</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">ValuesDemo</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() health = <span class="nu">100</span>;           <span class="cm">// number field</span>
@@ -1579,7 +1579,7 @@ t.scale.x = -<span class="nu">1</span>;               <span class="cm">// flip h
   <h1>Ingredient: Interacting with Behaviors</h1>
   <p class="lead">Access and call methods on behaviors attached to other entities using <code>getBehavior()</code>.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">EntityCollision</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">import</span> HealthBar <span class="kw">from</span> <span class="st">"./HealthBar.ts"</span>;
 <span class="kw">import</span> PlayerBehavior <span class="kw">from</span> <span class="st">"./PlayerBehavior.ts"</span>;
 
@@ -1640,7 +1640,7 @@ t.scale.x = -<span class="nu">1</span>;               <span class="cm">// flip h
 <span class="cm">// const color = this.entity._.Wall.color; // ❌ won't work</span>
 
 <span class="cm">// Correct: cast first, then access the synced value</span>
-<span class="kw">import</span> { <span class="ty">ColoredSquare</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<span class="kw">import</span> { <span class="ty">ColoredSquare</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">const</span> sq = <span class="kw">this</span>.entity._.ColoredSquare.<span class="fn">cast</span>(<span class="ty">ColoredSquare</span>);
 sq.color = <span class="st">"#ff0000"</span>;</pre>
 </div>
@@ -1651,7 +1651,7 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
   <p class="lead">Use custom network messages for one-time events, and synced values / KV storage for persistent shared state.</p>
 
   <h2>Custom Messages</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">ClickableEntity</span>, <span class="ty">MouseDown</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">ClickableEntity</span>, <span class="ty">MouseDown</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">ClickableButton</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
@@ -1683,8 +1683,8 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
   <h1>Ingredient: Ray Casting</h1>
   <p class="lead">Cast rays through the physics world to detect entities, check line of sight, or implement bullets.</p>
 
-<pre><span class="kw">import</span> RAPIER <span class="kw">from</span> <span class="st">"@dreamlab/vendor/rapier.ts"</span>;
-<span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> RAPIER <span class="kw">from</span> <span class="st">"@rebur/vendor/rapier.ts"</span>;
+<span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">RaycastExample</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
@@ -1719,7 +1719,7 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
   <h1>Ingredient: Spawning Entities</h1>
   <p class="lead">Spawn new entities into the world at runtime from behaviors, with any components and behaviors you need.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">import</span> BulletBehavior <span class="kw">from</span> <span class="st">"./BulletBehavior.ts"</span>;
 
 <span class="kw">export default class</span> <span class="ty">WeaponBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
@@ -1756,7 +1756,7 @@ enemy.transform.position.<span class="fn">assign</span>({ x: <span class="nu">10
   <h1>Ingredient: User Interfaces</h1>
   <p class="lead">Create HUDs, menus, and overlays using <code>UIBehavior</code> with JSX. Attach to a <code>UILayer</code> entity for full-screen UI, or <code>UIPanel</code> for world-anchored UI.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">UIBehavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">UIBehavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">HealthHUD</span> <span class="kw">extends</span> <span class="ty">UIBehavior</span> {
   <span class="cn">@syncedValue</span>() hp = <span class="nu">100</span>;
@@ -1803,7 +1803,7 @@ enemy.transform.position.<span class="fn">assign</span>({ x: <span class="nu">10
   <h1>Ingredient: Vector2 API</h1>
   <p class="lead">The <code>Vector2</code> class is used throughout the engine for positions, directions, velocities, and sizes.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Vector2</span>, <span class="ty">IVector2</span> } <span class="kw">from</span> <span class="st">"@dreamlab/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Vector2</span>, <span class="ty">IVector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="cm">// Create vectors</span>
 <span class="kw">const</span> a = <span class="kw">new</span> <span class="ty">Vector2</span>(<span class="nu">3</span>, <span class="nu">4</span>);

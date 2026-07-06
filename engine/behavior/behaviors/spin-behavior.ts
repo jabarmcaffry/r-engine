@@ -1,4 +1,4 @@
-import { Behavior } from "@dreamlab/engine";
+import { Behavior } from "@rebur/engine";
 
 export default class SpinBehavior extends Behavior {
   speed: number = 1.0;

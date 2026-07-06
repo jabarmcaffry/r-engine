@@ -1,7 +1,7 @@
 import type { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 
-import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
+import { decodeCBOR, encodeCBOR } from "@rebur/vendor/exp-fast-cbor.ts";
 import { Context, Status } from "@oak/oak";
 import * as colors from "@std/fmt/colors";
 import { TextLineStream } from "@std/streams";
@@ -38,7 +38,7 @@ export class IPCWorker {
     this.logs = logs;
 
     const env: Record<string, string> = {
-      DREAMLAB_MP_WORKER_DATA: JSON.stringify(workerData),
+      REBUR_MP_WORKER_DATA: JSON.stringify(workerData),
     };
 
     const DENO_DIR = Deno.env.get("DENO_DIR");

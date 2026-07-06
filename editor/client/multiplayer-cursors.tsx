@@ -1,7 +1,7 @@
-import { Camera, ClientGame, ConnectionId, PlayerLeft } from "@dreamlab/engine";
-import { EntityReferenceSchema, Vector2Schema } from "@dreamlab/proto/datamodel.ts";
-import { BaseElement } from "@dreamlab/ui";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { Camera, ClientGame, ConnectionId, PlayerLeft } from "@rebur/engine";
+import { EntityReferenceSchema, Vector2Schema } from "@rebur/proto/datamodel.ts";
+import { BaseElement } from "@rebur/ui";
+import * as z from "@rebur/vendor/zod.ts";
 
 export const MultiplayerCursorPacketSchema = z.discriminatedUnion("t", [
   z.object({ t: z.literal("edit-game"), world: Vector2Schema }),
@@ -36,7 +36,7 @@ export class MultiplayerCursors {
     uiRoot.append(this.container);
 
     game.network.onReceiveCustomMessage((from, channel, data) => {
-      if (channel !== "@dreamlab/multiplayer-cursors") return;
+      if (channel !== "@rebur/multiplayer-cursors") return;
       if (from === game.network.self) return;
 
       const result = MultiplayerCursorPacketSchema.safeParse(data);
@@ -57,7 +57,7 @@ export class MultiplayerCursors {
         ev.target instanceof Element ? ev.target : undefined,
       );
       if (!packet) return;
-      game.network.broadcastCustomMessage("@dreamlab/multiplayer-cursors", packet);
+      game.network.broadcastCustomMessage("@rebur/multiplayer-cursors", packet);
     });
 
     setInterval(() => this.repositionCursors(), 1000 / MultiplayerCursors.UPDATE_RATE_HZ);

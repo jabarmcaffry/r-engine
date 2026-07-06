@@ -83,20 +83,20 @@ async function bundleSingleFile(world: string) {
             let contents = "";
 
             const project = await Deno.readTextFile(path.join(worldDir, "project.json"));
-            contents += `globalThis.__dreamlab_project = ${project};\n`;
+            contents += `globalThis.__rebur_project = ${project};\n`;
 
             type Behaviors = Record<string, { uri: string; name: string; hash: string }>;
             const behaviors: Behaviors = JSON.parse(
-              await Deno.readTextFile(path.join(worldDir, "_dreamlab_behaviors.json")),
+              await Deno.readTextFile(path.join(worldDir, "_rebur_behaviors.json")),
             );
 
-            contents += `globalThis.__dreamlab_behavior_map = new Map();\n`;
+            contents += `globalThis.__rebur_behavior_map = new Map();\n`;
             for (const [srcPath, data] of Object.entries(behaviors)) {
               const jsPath = srcPath.replace(/\.tsx?$/, ".js");
               const importPath = path.join("./worlds", world, jsPath);
 
               contents += `import ${data.name} from "./${importPath}";\n`;
-              contents += `globalThis.__dreamlab_behavior_map.set("${data.uri}", ${data.name});\n`;
+              contents += `globalThis.__rebur_behavior_map.set("${data.uri}", ${data.name});\n`;
             }
 
             const assetsDir = path.join(worldDir, "assets");
@@ -107,7 +107,7 @@ async function bundleSingleFile(world: string) {
                 includeSymlinks: false,
               });
 
-              contents += "globalThis.__dreamlab_assets_map = new Map()\n";
+              contents += "globalThis.__rebur_assets_map = new Map()\n";
               for await (const assetEntry of assets) {
                 if (!assetEntry.isFile) continue;
 
@@ -120,14 +120,14 @@ async function bundleSingleFile(world: string) {
 
                 const resourcePath = "res://" + path.relative(worldDir, assetEntry.path);
                 const encoded = encoding.encodeBase64(compressed);
-                contents += `globalThis.__dreamlab_assets_map.set("${resourcePath}", "${encoded}");\n`;
+                contents += `globalThis.__rebur_assets_map.set("${resourcePath}", "${encoded}");\n`;
               }
             }
 
             const customCss = path.join(worldDir, "custom.css");
             if (await fs.exists(customCss)) {
               const content = await Deno.readTextFile(customCss);
-              contents += `globalThis.__dreamlab_custom_css = ${JSON.stringify(content)};\n`;
+              contents += `globalThis.__rebur_custom_css = ${JSON.stringify(content)};\n`;
             }
 
             contents += `\nawait import("./runtime/client-main.js");\n`;
@@ -173,7 +173,7 @@ async function bundleSingleFile(world: string) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dreamlab</title>
+    <title>Rebur</title>
     <style>${css}</style>
   </head>
   <body>
@@ -195,12 +195,12 @@ async function bundleSingleFile(world: string) {
 }
 
 if (import.meta.main) {
-  const world = Deno.args.at(0) ?? "dreamlab/test-world";
+  const world = Deno.args.at(0) ?? "rebur/test-world";
 
   // build client with clean dir
   console.log("building client");
   await new Deno.Command("deno", {
-    args: ["task", "build", "--clean", "--wasm-b64", "--define", "DREAMLAB_SINGLE_FILE=true"],
+    args: ["task", "build", "--clean", "--wasm-b64", "--define", "REBUR_SINGLE_FILE=true"],
   }).output();
 
   // clean world dir

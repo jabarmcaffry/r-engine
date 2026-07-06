@@ -1,6 +1,6 @@
-import { ConnectionId } from "@dreamlab/engine";
-import { ClientPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { Scene, SceneDescEntity } from "@dreamlab/scene";
+import { ConnectionId } from "@rebur/engine";
+import { ClientPacket, ServerPacket } from "@rebur/proto/play.ts";
+import { Scene, SceneDescEntity } from "@rebur/scene";
 import type { WorkerMetrics } from "../server-host/metrics.ts";
 import type { RichGameStatus } from "./rich-status.ts";
 

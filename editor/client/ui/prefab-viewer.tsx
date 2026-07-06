@@ -10,7 +10,7 @@ import {
   getFacadeRoot,
   PixiEntity,
   Vector2,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { EmptyFacade } from "../../common/facades/empty.ts";
 import { UndoRedoManager } from "../undo-redo.ts";
@@ -68,7 +68,7 @@ export class PrefabViewer {
   }
 
   public updateDropRoot(isSingleplayerMode = false) {
-    const key = `@dreamlab_${this.game.instanceId}_prefab-drop-root`;
+    const key = `@rebur_${this.game.instanceId}_prefab-drop-root`;
     const stored = localStorage.getItem(key) as "world" | "local" | "server" | null;
     if (stored) {
       this.dropRoot = stored;
@@ -103,7 +103,7 @@ export class PrefabViewer {
         onChange={e => {
           const v = (e.target as HTMLSelectElement).value as "world" | "local" | "server";
           this.dropRoot = v;
-          localStorage.setItem(`@dreamlab_${this.game.instanceId}_prefab-drop-root`, v);
+          localStorage.setItem(`@rebur_${this.game.instanceId}_prefab-drop-root`, v);
           dropSelect.value = v;
         }}
       >

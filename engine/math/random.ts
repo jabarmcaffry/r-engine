@@ -1,4 +1,4 @@
-import * as internal from "@dreamlab/engine/internal";
+import * as internal from "@rebur/engine/internal";
 import type { Prng, RandomOptions, SampleOptions } from "jsr:@std/random@0.1.0";
 import {
   randomBetween,

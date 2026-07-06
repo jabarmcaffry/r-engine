@@ -8,8 +8,8 @@ export const initServerEnv = async (root: string | URL, token = "token"): Promis
 
   const env =
     `
-DREAMLAB_MULTIPLAYER_AUTH_TOKEN="${token}"
-DREAMLAB_NEXT_GAME_JWT_SECRET="${token}"
+REBUR_MULTIPLAYER_AUTH_TOKEN="${token}"
+REBUR_NEXT_GAME_JWT_SECRET="${token}"
 `.trim() + "\n";
 
   await Deno.writeTextFile(serverEnvLocal, env);
@@ -23,7 +23,7 @@ export const initEditorEnv = async (root: string | URL): Promise<boolean> => {
   const env =
     `
 IS_DEV="true"
-DREAMLAB_MULTIPLAYER_PUBLIC_URL="http://localhost:8001"
+REBUR_MULTIPLAYER_PUBLIC_URL="http://localhost:8001"
 `.trim() + "\n";
 
   await Deno.writeTextFile(editorEnvLocal, env);

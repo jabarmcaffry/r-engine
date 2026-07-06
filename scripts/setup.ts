@@ -19,7 +19,7 @@ import color from "npm:picocolors@^1.1.1";
 import { denoJson, helloWorldScript, projectTemplate } from "./_utils/generate-project.ts";
 import { initEditorEnv, initServerEnv } from "./_utils/init-env.ts";
 
-const DREAMLAB_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
+const REBUR_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
 
 async function task(title: string, task: Task["task"]) {
   await tasks([{ title, task }]);
@@ -47,16 +47,16 @@ if (import.meta.main) {
       const content = await Deno.readTextFile(rcFile);
       using rc = await Deno.open(rcFile, { read: true, append: true });
 
-      if (!content.includes(`alias dreamlab='`)) {
+      if (!content.includes(`alias rebur='`)) {
         const writer = rc.writable.getWriter();
         await writer.ready;
 
         const encoder = new TextEncoder();
         if (!content.endsWith("\n")) await writer.write(encoder.encode("\n"));
-        await writer.write(encoder.encode(`export DREAMLAB_DIR="${DREAMLAB_ROOT}"\n`));
+        await writer.write(encoder.encode(`export REBUR_DIR="${REBUR_ROOT}"\n`));
         await writer.write(
           encoder.encode(
-            `alias dreamlab='${Deno.execPath()} run -A "$DREAMLAB_DIR/scripts/dreamlab.ts"'\n`,
+            `alias rebur='${Deno.execPath()} run -A "$REBUR_DIR/scripts/rebur.ts"'\n`,
           ),
         );
 
@@ -71,17 +71,17 @@ if (import.meta.main) {
     // console.error(_error);
   }
 
-  intro(color.bgCyan(" Dreamlab Setup "));
+  intro(color.bgCyan(" Rebur Setup "));
 
-  // await task("Initializing Dreamlab environment", async () => {
-  //   await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
-  //   return "Initialized Dreamlab environment. This is the game engine that powers WorldQL!";
+  // await task("Initializing Rebur environment", async () => {
+  //   await Promise.all([initEditorEnv(REBUR_ROOT), initServerEnv(REBUR_ROOT)]);
+  //   return "Initialized Rebur environment. This is the game engine that powers WorldQL!";
   // });
   // bug in Clack. Using task followed by select causes the first key input to be ignored.
 
-  await Promise.all([initEditorEnv(DREAMLAB_ROOT), initServerEnv(DREAMLAB_ROOT)]);
+  await Promise.all([initEditorEnv(REBUR_ROOT), initServerEnv(REBUR_ROOT)]);
 
-  log.success("Initialized Dreamlab environment. Installed 'dreamlab' command.");
+  log.success("Initialized Rebur environment. Installed 'rebur' command.");
 
   outro(`You're good to go! Please open a new terminal window.`);
 

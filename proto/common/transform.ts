@@ -1,4 +1,4 @@
-import { Entity, ITransform } from "@dreamlab/engine";
+import { Entity, ITransform } from "@rebur/engine";
 
 export const transformFor = (entity: Entity): ITransform => ({
   position: entity.globalTransform.position.bare(),

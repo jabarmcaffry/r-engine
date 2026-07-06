@@ -1,5 +1,5 @@
-import { Entity, PixiEntity } from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { Entity, PixiEntity } from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export class RawPixi extends PixiEntity {
   static {

@@ -4,13 +4,13 @@ import type {
   Entity,
   EntityConstructor,
   IVector2,
-} from "@dreamlab/engine";
-import { pointWorldToLocal, Vector2 } from "@dreamlab/engine";
+} from "@rebur/engine";
+import { pointWorldToLocal, Vector2 } from "@rebur/engine";
 import {
   entityStoreRegister,
   entityStoreRegisterRoot,
   entityStoreUnregister,
-} from "@dreamlab/engine/internal";
+} from "@rebur/engine/internal";
 
 export class EntityStore {
   #entitiesById = new Map<string, Entity>();

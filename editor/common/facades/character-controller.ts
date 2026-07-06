@@ -1,4 +1,4 @@
-import { CharacterController, Entity, EntityContext } from "@dreamlab/engine";
+import { CharacterController, Entity, EntityContext } from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { EditorFacadeCollider } from "./collider.ts";
 import { Facades } from "./manager.ts";

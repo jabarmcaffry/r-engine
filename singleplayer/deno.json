@@ -8,13 +8,13 @@
     "package": "deno run -A ./_package.ts"
   },
   "imports": {
-    "@dreamlab/engine": "../engine/mod.ts",
-    "@dreamlab/engine/internal": "../engine/internal.ts",
-    "@dreamlab/vendor/": "../engine/_deps/",
-    "@dreamlab/proto/": "../proto/",
-    "@dreamlab/scene": "../scene-graph/mod.ts",
-    "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/util/": "../util/",
+    "@rebur/engine": "../engine/mod.ts",
+    "@rebur/engine/internal": "../engine/internal.ts",
+    "@rebur/vendor/": "../engine/_deps/",
+    "@rebur/proto/": "../proto/",
+    "@rebur/scene": "../scene-graph/mod.ts",
+    "@rebur/ui": "../ui/mod.ts",
+    "@rebur/util/": "../util/",
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {

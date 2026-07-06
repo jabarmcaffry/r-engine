@@ -10,7 +10,7 @@ import type {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   Action,
   ActionBound,
@@ -27,8 +27,8 @@ import {
   MouseUp,
   Scroll,
   Vector2,
-} from "@dreamlab/engine";
-import { actionSetHeld, inputsRegisterHandlers } from "@dreamlab/engine/internal";
+} from "@rebur/engine";
+import { actionSetHeld, inputsRegisterHandlers } from "@rebur/engine/internal";
 
 // TODO: Scroll and cursor position support
 

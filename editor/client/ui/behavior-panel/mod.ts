@@ -1,6 +1,6 @@
-import { Behavior, ClientGame, Entity, EntityDestroyed, Root } from "@dreamlab/engine";
-import { SceneDescBehavior } from "@dreamlab/scene";
-import { element as elem } from "@dreamlab/ui";
+import { Behavior, ClientGame, Entity, EntityDestroyed, Root } from "@rebur/engine";
+import { SceneDescBehavior } from "@rebur/scene";
+import { element as elem } from "@rebur/ui";
 import { EditorMetadataEntity, EditorRootFacadeEntity } from "../../../common/mod.ts";
 import { icon, MinusCircle, PlusCircle } from "../../_icons.tsx";
 import { InspectorUI, InspectorUIWidget } from "../inspector.ts";

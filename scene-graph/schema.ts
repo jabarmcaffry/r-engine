@@ -1,4 +1,4 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 
 export const CURRENT_SCHEMA_VERSION: number = 1;
 

@@ -1,5 +1,5 @@
-import { urlToWebSocket } from "@dreamlab/util/url.ts";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { urlToWebSocket } from "@rebur/util/url.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { CONFIG } from "../../config.ts";
 import { GameInstance } from "../../instance.ts";
 

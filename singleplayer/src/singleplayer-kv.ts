@@ -1,6 +1,6 @@
 // deno-lint-ignore-file require-await
 
-import { KvClientBase } from "@dreamlab/engine";
+import { KvClientBase } from "@rebur/engine";
 import { JsonValue } from "../../engine/value/data.ts";
 
 function storageKey(scope: string, key: string): string {

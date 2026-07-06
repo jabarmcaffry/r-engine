@@ -1,6 +1,6 @@
-import { GameStatus, InternalGameTick, Value } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { GameStatus, InternalGameTick, Value } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { PlayPacket } from "@rebur/proto/play.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleValueChanges: ServerNetworkSetupRoutine = (net, game) => {

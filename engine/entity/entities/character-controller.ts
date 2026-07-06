@@ -1,7 +1,7 @@
-import type { EntityContext } from "@dreamlab/engine";
-import { Collider, Entity, EntityDestroyed, GamePostTick, Vector2 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { KinematicCharacterController, QueryFilterFlags } from "@dreamlab/vendor/rapier.ts";
+import type { EntityContext } from "@rebur/engine";
+import { Collider, Entity, EntityDestroyed, GamePostTick, Vector2 } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { KinematicCharacterController, QueryFilterFlags } from "@rebur/vendor/rapier.ts";
 
 export class CharacterController extends Collider {
   static {

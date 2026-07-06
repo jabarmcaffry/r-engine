@@ -4,10 +4,10 @@ import type {
   Entity,
   JsonObject,
   ValueRegistry,
-} from "@dreamlab/engine";
-import { GameStatus, ObjectAdapter, ValueTypeAdapter } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import type { ReadonlyDeep } from "@dreamlab/vendor/type-fest.ts";
+} from "@rebur/engine";
+import { GameStatus, ObjectAdapter, ValueTypeAdapter } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import type { ReadonlyDeep } from "@rebur/vendor/type-fest.ts";
 import { JsonValue } from "./data.ts";
 
 // prettier-ignore

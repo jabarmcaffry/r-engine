@@ -1,9 +1,9 @@
-import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
-import { decodeBase64, encodeBase64 } from "@dreamlab/vendor/std__encoding.ts";
+import { gzip, ungzip } from "@rebur/vendor/pako.ts";
+import { decodeBase64, encodeBase64 } from "@rebur/vendor/std__encoding.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 
-const DREAMLAB_TYPE_MARKER = "$dreamlab\0Type";
+const REBUR_TYPE_MARKER = "$rebur\0Type";
 
 export const JSON_CODEC: PlayCodec = {
   encodePacket(packet: PlayPacket): string {
@@ -25,7 +25,7 @@ export const JSON_CODEC: PlayCodec = {
         }
 
         return {
-          [DREAMLAB_TYPE_MARKER]: "Uint8Array",
+          [REBUR_TYPE_MARKER]: "Uint8Array",
           gzip: data.gzip,
           data: encodeBase64(data.data),
         };
@@ -37,11 +37,11 @@ export const JSON_CODEC: PlayCodec = {
   decodePacket(data: string | ArrayBufferLike | Blob | ArrayBufferView): PlayPacket {
     if (typeof data !== "string") throw new Error("SimpleJsonCodec expects string data!");
     const obj = JSON.parse(data, function (_key, value) {
-      if (value === null || typeof value !== "object" || !(DREAMLAB_TYPE_MARKER in value)) {
+      if (value === null || typeof value !== "object" || !(REBUR_TYPE_MARKER in value)) {
         return value;
       }
 
-      if (value[DREAMLAB_TYPE_MARKER] === "Uint8Array") {
+      if (value[REBUR_TYPE_MARKER] === "Uint8Array") {
         if (typeof value.gzip !== "number") throw new TypeError();
         if (typeof value.data !== "string") throw new TypeError();
 

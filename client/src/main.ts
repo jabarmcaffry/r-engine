@@ -1,4 +1,4 @@
-import "@dreamlab/vendor/polyfills.ts";
+import "@rebur/vendor/polyfills.ts";
 
 import "./css/client.css";
 

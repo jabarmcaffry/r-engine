@@ -1,4 +1,4 @@
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export type ChunkType = "atlas" | "color";
 export type ChunkId = `${ChunkType}:${number}:${number}`;

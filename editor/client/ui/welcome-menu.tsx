@@ -1,4 +1,4 @@
-import type { ClientGame } from "@dreamlab/engine";
+import type { ClientGame } from "@rebur/engine";
 import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class WelcomeMenu implements InspectorUIWidget {
@@ -15,9 +15,9 @@ export class WelcomeMenu implements InspectorUIWidget {
     return; // disable this component;
 
     const worldId = this.game.worldId;
-    if (worldId.toLowerCase().includes("dreamlab_tutorial")) return;
+    if (worldId.toLowerCase().includes("rebur_tutorial")) return;
 
-    const storageKey = `@dreamlab___2welcomeCardDismissed_${worldId}`;
+    const storageKey = `@rebur___2welcomeCardDismissed_${worldId}`;
     const isDismissed = localStorage.getItem(storageKey);
     if (isDismissed) return;
 

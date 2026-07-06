@@ -1,6 +1,6 @@
-import type { Game } from "@dreamlab/engine";
-import { Entity, EntityStore } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import type { Game } from "@rebur/engine";
+import { Entity, EntityStore } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 export abstract class Root extends Entity {
   static [internal.internalEntity] = true;

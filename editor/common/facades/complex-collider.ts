@@ -10,7 +10,7 @@ import {
   EntityDestroyed,
   EntityTransformUpdate,
   PixiEntity,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   InitSelectedEntityService,
   SelectedEntityService,

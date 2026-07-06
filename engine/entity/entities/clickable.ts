@@ -1,4 +1,4 @@
-import type { ClientGame, Value } from "@dreamlab/engine";
+import type { ClientGame, Value } from "@rebur/engine";
 import {
   Bounds,
   Click,
@@ -14,11 +14,11 @@ import {
   Vector2,
   enumAdapter,
   pointWorldToLocal,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
-const clickedSetter = Symbol.for("dreamlab.internal.clickable.clicked-setter");
-const hoverSetter = Symbol.for("dreamlab.internal.clickable.hover-setter");
+const clickedSetter = Symbol.for("rebur.internal.clickable.clicked-setter");
+const hoverSetter = Symbol.for("rebur.internal.clickable.hover-setter");
 
 export abstract class ClickableEntity extends Entity {
   #clicked: boolean = false;

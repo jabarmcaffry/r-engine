@@ -9,8 +9,8 @@ import {
   IBounds,
   PixiEntity,
   Value,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 type FontStyle = enumAdapter.Union<typeof FontStyleAdapter>;
 const FontStyleAdapter = enumAdapter(["normal", "italic", "oblique"]);

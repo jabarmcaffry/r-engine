@@ -1,7 +1,7 @@
-import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
-import { setupGame } from "@dreamlab/client/game-setup.ts";
-import { Ping } from "@dreamlab/client/networking/ping.ts";
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { connectToGame, pickCodec } from "@rebur/client/game-connection.ts";
+import { setupGame } from "@rebur/client/game-setup.ts";
+import { Ping } from "@rebur/client/networking/ping.ts";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import {
   CameraAspectChanged,
   ClientGame,
@@ -10,9 +10,9 @@ import {
   PhysicsDebug,
   PlayerJoined,
   PlayerLeft,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { element as elem } from "@dreamlab/ui";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { element as elem } from "@rebur/ui";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import {
   ArrowUpDown,
@@ -565,7 +565,7 @@ export class AppMenu {
     let created = 0;
 
     for (let i = 0; i < count; i++) {
-      const name = `dreamlab-popout-${Date.now()}-${i}`;
+      const name = `rebur-popout-${Date.now()}-${i}`;
       const features = this.#popupFeatures(1200, 800, i);
 
       const w = window.open(url, name, features);

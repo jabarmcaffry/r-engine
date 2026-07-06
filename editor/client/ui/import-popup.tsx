@@ -1,8 +1,8 @@
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import type { ClientGame } from "@dreamlab/engine";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
+import type { ClientGame } from "@rebur/engine";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { icon, X } from "../_icons.tsx";
-import { DreamlabEditorUIComponent } from "./_component.tsx";
+import { ReburEditorUIComponent } from "./_component.tsx";
 
 type View = "upload" | "import";
 
@@ -28,7 +28,7 @@ type Project = {
   favorite: boolean;
 };
 
-export class ImportPopup extends DreamlabEditorUIComponent {
+export class ImportPopup extends ReburEditorUIComponent {
   private view: View = "upload";
   private projectId = "";
   private importError = "";
@@ -122,7 +122,7 @@ export class ImportPopup extends DreamlabEditorUIComponent {
   };
 
   async #importableProjects() {
-    const url = new URL("/api/project/with-tags", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+    const url = new URL("/api/project/with-tags", globalThis.env.REBUR_NEXT_PUBLIC_URL);
     url.searchParams.set("tag", "importable-asset");
 
     const resp = await fetch(url);

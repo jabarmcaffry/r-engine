@@ -1,3 +1,5 @@
+/* ── Desktop layout ──────────────────────────────────────────────────────── */
+
 main {
   --drag-handle-size: 0.5em;
   --left-sidebar-width: 4fr;
@@ -27,28 +29,6 @@ main {
       3em,
       var(--bottom-bar-height)
     );
-}
-
-@media only screen and (max-width: 600px) {
-  main {
-    /* A single column, two rows */
-    grid-template-areas:
-      "top" /* first row  ─ top bar */
-      "viewport"; /* second row ─ game view */
-
-    /* one column */
-    grid-template-columns: 1fr;
-    /* top bar gets its natural height; the rest is 1fr  */
-    grid-template-rows: auto 1fr;
-
-    padding: 0;
-
-    /* Hide every immediate child *except* the pieces
-   we want to keep on screen. */
-    & > :not(#top-bar):not(#gameview) {
-      display: none !important;
-    }
-  }
 }
 
 main > div {
@@ -224,6 +204,8 @@ main > div {
   cursor: row-resize !important;
 }
 
+/* ── Popout mode ─────────────────────────────────────────────────────────── */
+
 html[data-popout="true"],
 html[data-popout="true"] body {
   height: 100%;
@@ -260,4 +242,72 @@ html[data-popout="true"] #viewport {
 html[data-popout="true"] #viewport > div#games {
   width: 100% !important;
   height: 100% !important;
+}
+
+/* ── Mobile layout (≤ 600px) ─────────────────────────────────────────────── */
+
+@media only screen and (max-width: 600px) {
+  main {
+    --mobile-nav-height: 3.5rem;
+
+    padding: 0;
+
+    /* Three rows: top bar | content area | mobile nav */
+    grid-template-areas:
+      "top"
+      "content"
+      "mobile-nav";
+    grid-template-columns: 1fr;
+    grid-template-rows: 3em 1fr var(--mobile-nav-height);
+  }
+
+  /* Drag handles: hidden on mobile */
+  main > #left-sidebar-drag,
+  main > #right-sidebar-drag,
+  main > #bottom-bar-drag {
+    display: none !important;
+  }
+
+  /* All panels occupy the same "content" grid area and are hidden by default */
+  main > #gameview,
+  main > #left-sidebar,
+  main > #right-sidebar,
+  main > #bottom-bar {
+    grid-area: content;
+    margin: 0;
+    overflow: auto;
+    display: none !important;
+  }
+
+  /* Game view: default visible panel */
+  main:not([data-mobile-panel]) > #gameview,
+  main[data-mobile-panel="game"] > #gameview {
+    display: flex !important;
+    overflow: hidden;
+  }
+
+  /* Project panel (left sidebar) */
+  main[data-mobile-panel="project"] > #left-sidebar {
+    display: flex !important;
+    height: 100%;
+  }
+
+  /* Inspector panel (right sidebar) */
+  main[data-mobile-panel="inspector"] > #right-sidebar {
+    display: flex !important;
+    height: 100%;
+  }
+
+  /* Panels (bottom bar / tabs) */
+  main[data-mobile-panel="panels"] > #bottom-bar {
+    display: block !important;
+    height: 100%;
+  }
+
+  /* Sidebars use full width on mobile */
+  main > #left-sidebar,
+  main > #right-sidebar {
+    width: 100%;
+    max-width: 100%;
+  }
 }

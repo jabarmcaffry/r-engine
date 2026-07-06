@@ -1,4 +1,4 @@
-import type { Behavior } from "@dreamlab/engine";
+import type { Behavior } from "@rebur/engine";
 
 export class BehaviorSpawned {
   constructor(public readonly behavior: Behavior) {}

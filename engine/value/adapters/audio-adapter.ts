@@ -1,4 +1,4 @@
-import { JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
+import { JsonValue, ValueTypeAdapter } from "@rebur/engine";
 
 /**
  * `Value<AudioAdapter>` is the same as `Value<string>`,

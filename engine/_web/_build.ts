@@ -5,7 +5,7 @@ import * as _throwaway from "./main.ts";
 const opts: esbuild.BuildOptions = {
   plugins: [
     {
-      name: "dreamlab-node-shim",
+      name: "rebur-node-shim",
       setup: build => {
         build.onResolve({ filter: /.*/, namespace: "node" }, args => {
           if (args.path === "buffer") {

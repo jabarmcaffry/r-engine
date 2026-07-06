@@ -3,12 +3,12 @@ import type {
   BehaviorConstructor,
   BehaviorValueOpts,
   ValueTypeTag,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { Except } from "@dreamlab/vendor/type-fest.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { Except } from "@rebur/vendor/type-fest.ts";
 
 // deno-lint-ignore no-unused-vars
-import type { EntityRef, Vector2Adapter } from "@dreamlab/engine"; // this is used in jsdoc
+import type { EntityRef, Vector2Adapter } from "@rebur/engine"; // this is used in jsdoc
 
 type ValuesToDefine = Map<string, BehaviorValueOpts<unknown>>;
 

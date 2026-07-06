@@ -1,6 +1,6 @@
-import { ClientConnection } from "@dreamlab/client/networking/net-connection.ts";
-import { ClientGame } from "@dreamlab/engine";
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { ClientConnection } from "@rebur/client/networking/net-connection.ts";
+import { ClientGame } from "@rebur/engine";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import { PrefabRootFacade } from "../../common/mod.ts";
 import { CameraPanBehavior } from "../panning-and-selection.ts";
 import { BehaviorTypeInfoService } from "../util/behavior-type-info.ts";

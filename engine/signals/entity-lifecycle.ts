@@ -1,5 +1,5 @@
-import type { ConnectionId, EntityDefinition } from "@dreamlab/engine";
-import { BaseGame, Entity, exclusiveSignalType } from "@dreamlab/engine";
+import type { ConnectionId, EntityDefinition } from "@rebur/engine";
+import { BaseGame, Entity, exclusiveSignalType } from "@rebur/engine";
 
 // this could be called "EntitySpawned" if we obliterated all the other ones.
 // that would be a breaking change though

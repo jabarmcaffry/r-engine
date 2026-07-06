@@ -3,29 +3,29 @@ import type {
   BehaviorLoader,
   ClientGame,
   GameOptions,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { ungzip } from "@dreamlab/vendor/pako.ts";
-import { Assets } from "@dreamlab/vendor/pixi.ts";
-import { decodeBase64 } from "@dreamlab/vendor/std__encoding.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { ungzip } from "@rebur/vendor/pako.ts";
+import { Assets } from "@rebur/vendor/pixi.ts";
+import { decodeBase64 } from "@rebur/vendor/std__encoding.ts";
 
 let single = false;
 try {
   // @ts-expect-error: injected by esbuild
-  single = (DREAMLAB_SINGLE_FILE as boolean | undefined) ?? false;
+  single = (REBUR_SINGLE_FILE as boolean | undefined) ?? false;
 } catch {
   // ignore;
 }
 export { single as IS_SINGLE_FILE };
 
 // @ts-expect-error: injected by esbuild
-const project = globalThis.__dreamlab_project as unknown;
+const project = globalThis.__rebur_project as unknown;
 // @ts-expect-error: injected by esbuild
-const behaviors = globalThis.__dreamlab_behavior_map as Map<string, BehaviorConstructor>;
+const behaviors = globalThis.__rebur_behavior_map as Map<string, BehaviorConstructor>;
 // @ts-expect-error: injected by esbuild
-const assets = globalThis.__dreamlab_assets_map as Map<string, string>;
+const assets = globalThis.__rebur_assets_map as Map<string, string>;
 // @ts-expect-error: injected by esbuild
-const css = globalThis.__dreamlab_custom_css as string | undefined;
+const css = globalThis.__rebur_custom_css as string | undefined;
 
 const resolveCache = new Map<string, string>();
 
@@ -90,7 +90,7 @@ export const createFetch = (): FetchFn | undefined => {
       return resp;
     }
 
-    if (uri === "res://_dreamlab_behaviors.json") {
+    if (uri === "res://_rebur_behaviors.json") {
       const resp = new Response(JSON.stringify(behaviors), {
         headers: { "content-type": "application/json" },
       });

@@ -1,5 +1,5 @@
-import { ServerGame, ServerHttpRouteNotFound } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { ServerGame, ServerHttpRouteNotFound } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 import { IPCMessageBus } from "./ipc.ts";
 

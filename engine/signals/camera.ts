@@ -1,4 +1,4 @@
-import { Camera } from "@dreamlab/engine";
+import { Camera } from "@rebur/engine";
 
 export class ActiveCameraChanged {
   public constructor(

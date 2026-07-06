@@ -6,8 +6,8 @@ import {
   IBounds,
   PixiEntity,
   TextureAdapter,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export class VectorSprite extends PixiEntity {
   static {

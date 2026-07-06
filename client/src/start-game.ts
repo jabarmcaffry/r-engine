@@ -1,4 +1,4 @@
-import { CameraAspectChanged, RichText, type ClientGame } from "@dreamlab/engine";
+import { CameraAspectChanged, RichText, type ClientGame } from "@rebur/engine";
 import { setAspectRatio, updateAspectRatio } from "./aspect-ratio.ts";
 import { preloadFonts } from "./fonts.ts";
 import { connectToGame, pickCodec } from "./game-connection.ts";

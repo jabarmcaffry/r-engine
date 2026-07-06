@@ -5,7 +5,7 @@ import {
   Collider,
   Sprite,
   Vector2,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 
 // @ts-expect-error: global access
 const game = globalThis.game as ClientGame;

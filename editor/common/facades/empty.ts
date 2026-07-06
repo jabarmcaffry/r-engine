@@ -9,8 +9,8 @@ import {
   IBounds,
   PixiEntity,
   Value,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import { EditorFacadeComplexCollider } from "./complex-collider.ts";
 import { Facades } from "./manager.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";

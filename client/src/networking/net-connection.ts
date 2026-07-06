@@ -7,13 +7,13 @@ import {
   CustomMessageListener,
   PlayerJoined,
   PlayerLeft,
-} from "@dreamlab/engine";
-import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
+} from "@rebur/engine";
+import { PlayCodec } from "@rebur/proto/codecs/mod.ts";
 import {
   PlayerConnectionDropped,
   PlayerConnectionEstablished,
-} from "@dreamlab/proto/common/signals.ts";
-import { ClientPacket, PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
+} from "@rebur/proto/common/signals.ts";
+import { ClientPacket, PlayPacket, ServerPacket } from "@rebur/proto/play.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
 import { handlePing } from "./ping.ts";

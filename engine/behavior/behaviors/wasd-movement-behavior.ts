@@ -1,4 +1,4 @@
-import { Behavior, Vector2 } from "@dreamlab/engine";
+import { Behavior, Vector2 } from "@rebur/engine";
 
 export default class WASDMovementBehavior extends Behavior {
   speed = 1.0;

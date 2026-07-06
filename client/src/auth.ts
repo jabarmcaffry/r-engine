@@ -1,5 +1,5 @@
-import { createId } from "@dreamlab/vendor/nanoid.ts";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { jwtDecode } from "npm:jwt-decode";
 import { connectionDetails } from "./util/server-url.ts";
 
@@ -12,7 +12,7 @@ export type AuthToken = {
 };
 
 const authToken = async (): Promise<AuthToken> => {
-  const url = new URL("/api/game/auth/token", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+  const url = new URL("/api/game/auth/token", globalThis.env.REBUR_NEXT_PUBLIC_URL);
   url.searchParams.set("id", connectionDetails.instanceId);
 
   const resp = await fetch(url, { credentials: "include" });
@@ -23,7 +23,7 @@ const authToken = async (): Promise<AuthToken> => {
 };
 
 const authGuest = async (nickname: string): Promise<AuthToken> => {
-  const url = new URL("/api/game/auth/guest", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+  const url = new URL("/api/game/auth/guest", globalThis.env.REBUR_NEXT_PUBLIC_URL);
   url.searchParams.set("id", connectionDetails.instanceId);
   url.searchParams.set("nickname", nickname);
 
@@ -74,7 +74,7 @@ const decodeToken = (token: string): AuthToken => {
 };
 
 const devAuth = (nickname: string): AuthToken => {
-  const PLAYER_ID = "dreamlab/player-id";
+  const PLAYER_ID = "rebur/player-id";
   const playerId = window.localStorage.getItem(PLAYER_ID) ?? createId("ply");
   window.localStorage.setItem(PLAYER_ID, playerId);
 
@@ -87,7 +87,7 @@ export const generateMigrateUrl = (guestPlayerId: string): string => {
   migrateParams.set("after", window.location.href);
   const migrateUrl = `/api/migrate-kv?${migrateParams}`;
 
-  const signInUrl = new URL("/signIn", globalThis.env.DREAMLAB_NEXT_PUBLIC_URL);
+  const signInUrl = new URL("/signIn", globalThis.env.REBUR_NEXT_PUBLIC_URL);
   signInUrl.searchParams.set("callbackUrl", migrateUrl);
 
   return signInUrl.toString();

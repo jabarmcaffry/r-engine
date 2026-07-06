@@ -1,4 +1,4 @@
-import { Entity } from "@dreamlab/engine";
+import { Entity } from "@rebur/engine";
 import { isRoot } from "../ui/keyboard-shortcuts.ts";
 
 /**

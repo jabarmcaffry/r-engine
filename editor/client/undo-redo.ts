@@ -1,5 +1,5 @@
-import type { ITransform } from "@dreamlab/engine";
-import { BaseTilemap, ClientGame, EntityDefinition } from "@dreamlab/engine";
+import type { ITransform } from "@rebur/engine";
+import { BaseTilemap, ClientGame, EntityDefinition } from "@rebur/engine";
 import { EditorMetadataEntity } from "../common/mod.ts";
 
 class NotImplementedError extends Error {}

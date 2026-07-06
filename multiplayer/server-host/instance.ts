@@ -1,4 +1,4 @@
-import { Scene } from "@dreamlab/scene";
+import { Scene } from "@rebur/scene";
 
 import { LogStore } from "../common-host/log-store.ts";
 import { IPCMessageListener } from "../common-host/worker.ts";

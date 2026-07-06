@@ -1,8 +1,8 @@
-import { element as elem } from "@dreamlab/ui";
+import { element as elem } from "@rebur/ui";
 import { ChevronDown, icon } from "../_icons.tsx";
 
 export class DataDetails extends HTMLElement {
-  #header: HTMLElement = elem("header", {}, ["dreamlab-data-details"]);
+  #header: HTMLElement = elem("header", {}, ["rebur-data-details"]);
   #details: HTMLDetailsElement = elem("details", { open: true }, [
     elem("summary", {}, [
       elem("div", { className: "arrow" }, [icon(ChevronDown)]),
@@ -36,4 +36,4 @@ export class DataDetails extends HTMLElement {
     this.#details.open = open;
   }
 }
-customElements.define("dreamlab-data-details", DataDetails);
+customElements.define("rebur-data-details", DataDetails);

@@ -1,4 +1,4 @@
-import { JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
+import { JsonValue, ValueTypeAdapter } from "@rebur/engine";
 
 /**
  * `Value<TextureAdapter>` is the same as `Value<string>`,

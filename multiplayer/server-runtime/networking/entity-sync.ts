@@ -17,15 +17,15 @@ import {
   TilemapBatchUpdate,
   TilemapClear,
   TilemapUpdate,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { TilemapChunk } from "@dreamlab/engine/internal";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { TilemapChunk } from "@rebur/engine/internal";
 import {
   convertBehaviorDefinition,
   convertEntityDefinition,
   serializeBehaviorDefinition,
   serializeEntityDefinition,
-} from "@dreamlab/proto/common/entity-sync.ts";
+} from "@rebur/proto/common/entity-sync.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 // TODO: deduplicate (almost the same as Entity.#generateBehaviorDefinition)

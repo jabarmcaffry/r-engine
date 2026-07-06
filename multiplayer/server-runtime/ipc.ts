@@ -1,5 +1,5 @@
-import { urlWithParams } from "@dreamlab/util/url.ts";
-import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
+import { urlWithParams } from "@rebur/util/url.ts";
+import { decodeCBOR, encodeCBOR } from "@rebur/vendor/exp-fast-cbor.ts";
 import { HostIPCMessage, WorkerIPCMessage } from "../server-common/ipc.ts";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 

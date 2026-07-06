@@ -4,8 +4,8 @@ import {
   EntityConstructor,
   GameRender,
   RichText,
-} from "@dreamlab/engine";
-import { Graphics } from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import { Graphics } from "@rebur/vendor/pixi.ts";
 
 // @ts-expect-error: global access
 const game = globalThis.game as ClientGame;

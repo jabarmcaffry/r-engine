@@ -1,4 +1,4 @@
-import { Entity, JsonValue } from "@dreamlab/engine";
+import { Entity, JsonValue } from "@rebur/engine";
 import type { SyncDecoratorOpts } from "./decorator.ts";
 import { inferSyncedObjectType } from "./inference.ts";
 import type { AnyAccessor, AnySyncedObject, SyncedObjectInfo } from "./object.ts";

@@ -1,5 +1,5 @@
-import type { ConnectionId, JsonValue } from "@dreamlab/engine";
-import { syncedObjectContainerObjectsField as objects } from "@dreamlab/engine/internal";
+import type { ConnectionId, JsonValue } from "@rebur/engine";
+import { syncedObjectContainerObjectsField as objects } from "@rebur/engine/internal";
 import { SyncedObjectOperation } from "./operation.ts";
 import { SyncedObjectContainer, SyncedObjectRegistry } from "./registry.ts";
 

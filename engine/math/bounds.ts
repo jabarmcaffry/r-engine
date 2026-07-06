@@ -1,5 +1,5 @@
-import type { IVector2 } from "@dreamlab/engine";
-import { Vector2 } from "@dreamlab/engine";
+import type { IVector2 } from "@rebur/engine";
+import { Vector2 } from "@rebur/engine";
 
 export interface IBounds {
   readonly width: number;

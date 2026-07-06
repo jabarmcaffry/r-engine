@@ -1,13 +1,13 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 
 import * as fs from "@std/fs";
 import { contentType } from "@std/media-types";
 import * as path from "@std/path";
 
-import { Entity } from "@dreamlab/engine";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
-import { ProjectSchema, SceneDescEntity } from "@dreamlab/scene";
+import { Entity } from "@rebur/engine";
+import { PlayPacket } from "@rebur/proto/play.ts";
+import { ProjectSchema, SceneDescEntity } from "@rebur/scene";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
 import { buildWorld } from "../../../common-host/world-build.ts";
@@ -405,7 +405,7 @@ export const serveScriptEditingAPI = (router: Router) => {
         const { instance } = params;
 
         const targetProjectDir = instance.info.worldDirectory;
-        const sourceProjectDir = await Deno.makeTempDir({ prefix: "dreamlab-import" });
+        const sourceProjectDir = await Deno.makeTempDir({ prefix: "rebur-import" });
 
         const cloneProcess = new Deno.Command("git", {
           args: [

@@ -1,4 +1,4 @@
-import type { JsonValue } from "@dreamlab/engine";
+import type { JsonValue } from "@rebur/engine";
 
 export abstract class KvBase {
   protected abstract scope(playerId?: string): string;

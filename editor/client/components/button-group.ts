@@ -1,6 +1,6 @@
 export class ButtonGroup extends HTMLElement {
   static {
-    customElements.define("dreamlab-button-group", this);
+    customElements.define("rebur-button-group", this);
   }
 
   constructor(direction: `${"row" | "column"}${"" | "-reverse"}`) {

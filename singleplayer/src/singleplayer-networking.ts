@@ -6,7 +6,7 @@ import {
   ConnectionInfo,
   CustomMessageData,
   CustomMessageListener,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 
 // TODO: what do we do about player-scoped kv
 const SINGLEPLAYER_PLAYER_ID = "ply_singleplayer";

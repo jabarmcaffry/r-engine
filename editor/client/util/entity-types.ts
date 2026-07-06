@@ -1,6 +1,6 @@
-import { Entity, EntityConstructor } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { element as elem } from "@dreamlab/ui";
+import { Entity, EntityConstructor } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { element as elem } from "@rebur/ui";
 import { ContextMenuItem } from "../ui/context-menu.ts";
 
 // deduplicates the entity registry

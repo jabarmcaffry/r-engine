@@ -1,4 +1,4 @@
-import { element } from "@dreamlab/ui";
+import { element } from "@rebur/ui";
 
 export class DataTable extends HTMLElement {
   entries = new Map<string, HTMLTableRowElement>();
@@ -47,4 +47,4 @@ export class DataTable extends HTMLElement {
 
   // TODO: reorderEntries
 }
-customElements.define("dreamlab-data-table", DataTable);
+customElements.define("rebur-data-table", DataTable);

@@ -11,14 +11,14 @@
     "run-editor": "cd editor && deno task build && deno run -A --no-lock jsr:@std/http/file-server --port=5173 web"
   },
   "imports": {
-    "@dreamlab/engine": "./engine/mod.ts",
-    "@dreamlab/engine/internal": "./engine/internal.ts",
-    "@dreamlab/vendor/": "./engine/_deps/",
-    "@dreamlab/proto/": "./proto/",
-    "@dreamlab/scene": "./scene-graph/mod.ts",
-    "@dreamlab/util/": "./util/",
-    "@dreamlab/ui": "./ui/mod.ts",
-    "@dreamlab/ui/jsx-runtime": "./ui/jsx.ts"
+    "@rebur/engine": "./engine/mod.ts",
+    "@rebur/engine/internal": "./engine/internal.ts",
+    "@rebur/vendor/": "./engine/_deps/",
+    "@rebur/proto/": "./proto/",
+    "@rebur/scene": "./scene-graph/mod.ts",
+    "@rebur/util/": "./util/",
+    "@rebur/ui": "./ui/mod.ts",
+    "@rebur/ui/jsx-runtime": "./ui/jsx.ts"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],

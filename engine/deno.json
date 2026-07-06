@@ -6,11 +6,11 @@
     "web:serve": "deno run -A jsr:@std/http@0.224.0/file-server --port 3000 ./_web/www"
   },
   "imports": {
-    "@dreamlab/engine": "./mod.ts",
-    "@dreamlab/engine/internal": "./internal.ts",
-    "@dreamlab/vendor/": "./_deps/",
-    "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/util/": "../util/"
+    "@rebur/engine": "./mod.ts",
+    "@rebur/engine/internal": "./internal.ts",
+    "@rebur/vendor/": "./_deps/",
+    "@rebur/ui": "../ui/mod.ts",
+    "@rebur/util/": "../util/"
   },
   "lint": {
     "rules": {

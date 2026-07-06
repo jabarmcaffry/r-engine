@@ -15,10 +15,10 @@ import {
   ValueTypeTag,
   Vector2,
   Vector2Adapter,
-} from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import { element as elem } from "@rebur/ui";
+import * as PIXI from "@rebur/vendor/pixi.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import "npm:vanilla-colorful/hex-alpha-color-picker.js";
 import { icon, Pipette, X } from "../_icons.tsx";
 import { IconButton } from "../components/icon-button.ts";

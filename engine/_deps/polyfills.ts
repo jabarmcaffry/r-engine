@@ -1,2 +1,2 @@
-import "@dreamlab/util/polyfills/iterator-helpers.ts";
-import "@dreamlab/util/polyfills/with-resolvers.ts";
+import "@rebur/util/polyfills/iterator-helpers.ts";
+import "@rebur/util/polyfills/with-resolvers.ts";

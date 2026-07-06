@@ -1,8 +1,8 @@
-import { Codec, getCodec, isCodec, PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
-import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
+import { Codec, getCodec, isCodec, PlayCodec } from "@rebur/proto/codecs/mod.ts";
+import { ClientPacketSchema } from "@rebur/proto/play.ts";
 import { Context, Router, Status } from "@oak/oak";
 
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import { JsonAPIError } from "../../../common-host/web-util/api.ts";
 import { importSecretKey, validateAuthToken } from "../../../server-common/game-auth.ts";
 import { CONFIG } from "../../config.ts";

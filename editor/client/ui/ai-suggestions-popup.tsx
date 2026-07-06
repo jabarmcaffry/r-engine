@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
-import { DreamlabEditorUIComponent } from "./_component.tsx";
-import { ClientGame } from "@dreamlab/engine";
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { ReburEditorUIComponent } from "./_component.tsx";
+import { ClientGame } from "@rebur/engine";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import {
   addBehavior,
   lookupEntityInEditMode,
@@ -45,7 +45,7 @@ type Action = {
 // addBehavior(newE, "src/camera-follow.ts", {smoothFactor: 69});
 // `;
 
-export class AISuggestionsPopup extends DreamlabEditorUIComponent {
+export class AISuggestionsPopup extends ReburEditorUIComponent {
   state = {
     visible: true,
     actions: [] as Action[],

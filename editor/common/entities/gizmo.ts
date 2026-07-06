@@ -1,4 +1,4 @@
-import type { EntityContext, Transform } from "@dreamlab/engine";
+import type { EntityContext, Transform } from "@rebur/engine";
 import {
   Camera,
   Clickable,
@@ -10,8 +10,8 @@ import {
   pointWorldToLocal,
   Root,
   Vector2,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import { EmptyFacade } from "../facades/empty.ts";
 import { EditorFacadeTilemap } from "../facades/tilemap.ts";
 import { EditorMetadataEntity } from "../metadata.ts";

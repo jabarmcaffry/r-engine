@@ -1,9 +1,9 @@
-import { Codec, getCodec, isCodec } from "@dreamlab/proto/codecs/mod.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { Codec, getCodec, isCodec } from "@rebur/proto/codecs/mod.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
-import { z } from "@dreamlab/vendor/zod.ts";
+import { z } from "@rebur/vendor/zod.ts";
 import * as uuid from "jsr:@std/uuid@1.0.9";
 import { serveWorlds } from "../common-host/routes/worlds.ts";
 import {
@@ -152,7 +152,7 @@ if (CONFIG.STANDALONE) {
   });
 } else {
   router.get("/", ctx => {
-    ctx.response.body = { ...instance.richStatus, status: "dreamlab play-host running..." };
+    ctx.response.body = { ...instance.richStatus, status: "rebur play-host running..." };
     ctx.response.type = "application/json";
   });
 }

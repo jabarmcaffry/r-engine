@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 
-import { JsonObject, Primitive } from "@dreamlab/engine";
+import { JsonObject, Primitive } from "@rebur/engine";
 import { SyncedObject } from "./object.ts";
 import { SyncedArray, SyncedDeepObject, SyncedUint8Array } from "./objects/mod.ts";
 import { SyncedObjectConstructor } from "./registry.ts";

@@ -11,7 +11,7 @@ async function getOrCreateUUID(): Promise<string> {
     throw new Error("Could not determine home directory");
   }
 
-  const configDir = path.join(homeDir, ".worldql-dreamlab-engine");
+  const configDir = path.join(homeDir, ".worldql-rebur-engine");
   const uuidFile = path.join(configDir, ".uuid");
 
   try {

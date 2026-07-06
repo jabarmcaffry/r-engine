@@ -12,11 +12,11 @@ import {
   RenderContainer,
   SignalSubscription,
   Vector2,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import type { SceneDescBehavior } from "@dreamlab/scene";
-import { BaseElement, element as elem } from "@dreamlab/ui";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import type { SceneDescBehavior } from "@rebur/scene";
+import { BaseElement, element as elem } from "@rebur/ui";
+import * as z from "@rebur/vendor/zod.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
 import { icon, X } from "../_icons.tsx";

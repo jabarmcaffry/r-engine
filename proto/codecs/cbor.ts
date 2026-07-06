@@ -1,4 +1,4 @@
-import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
+import { decodeCBOR, encodeCBOR } from "@rebur/vendor/exp-fast-cbor.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 

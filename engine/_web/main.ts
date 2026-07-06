@@ -1,4 +1,4 @@
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import { Camera, ClientGame, ClientKV, GameStatus, Text, Vector2 } from "../mod.ts";
 
 // #region Setup

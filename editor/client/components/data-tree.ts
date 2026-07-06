@@ -1,4 +1,4 @@
-import { element as elem } from "@dreamlab/ui";
+import { element as elem } from "@rebur/ui";
 import { ChevronDown, icon } from "../_icons.tsx";
 
 declare global {
@@ -15,7 +15,7 @@ export class DataTreeSelectionChange extends Event {
 
 export class DataTree extends HTMLElement {
   static {
-    customElements.define("dreamlab-data-tree", this);
+    customElements.define("rebur-data-tree", this);
   }
 
   #allowSelect: boolean;

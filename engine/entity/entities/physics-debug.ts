@@ -4,8 +4,8 @@ import {
   EntityContext,
   EntityDestroyed,
   GamePostRender,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export class PhysicsDebug extends Entity {
   static {

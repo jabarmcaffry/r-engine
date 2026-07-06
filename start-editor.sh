@@ -40,7 +40,7 @@ fi
 PUBLIC_HOST="${REPLIT_DEV_DOMAIN:-localhost:5000}"
 cat > editor/.env.local << EOF
 IS_DEV=true
-DREAMLAB_MULTIPLAYER_PUBLIC_URL=wss://${PUBLIC_HOST}
+REBUR_MULTIPLAYER_PUBLIC_URL=wss://${PUBLIC_HOST}
 EOF
 echo "==> Generated editor/.env.local (PUBLIC_URL=wss://${PUBLIC_HOST})"
 

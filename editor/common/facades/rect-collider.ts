@@ -5,7 +5,7 @@ import {
   IBounds,
   PixiEntity,
   RectCollider,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";

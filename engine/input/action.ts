@@ -8,15 +8,15 @@ import type {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   ActionBound,
   ActionChanged,
   ActionPressed,
   ActionReleased,
   DefaultSignalHandlerImpls,
-} from "@dreamlab/engine";
-import { actionSetHeld } from "@dreamlab/engine/internal";
+} from "@rebur/engine";
+import { actionSetHeld } from "@rebur/engine/internal";
 
 export class Action implements ISignalHandler {
   #game: Game;

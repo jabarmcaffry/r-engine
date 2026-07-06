@@ -1,11 +1,13 @@
-import "@dreamlab/vendor/polyfills.ts";
+import "@rebur/vendor/polyfills.ts";
 
 import "./css/main.css";
+import "./css/script-editor.css";
+import "./css/mobile-nav.css";
 
-import "@dreamlab/client/_env.ts";
+import "@rebur/client/_env.ts";
 import "../../build-system/live-reload.js";
 
-import { preloadFonts } from "@dreamlab/client/fonts.ts";
+import { preloadFonts } from "@rebur/client/fonts.ts";
 
 const fonts = preloadFonts({
   families: ["Inter", "Iosevka", "Eas VHS"],
@@ -17,10 +19,10 @@ import "./draggable-layout.ts";
 
 import "../common/mod.ts";
 
-import { auth } from "@dreamlab/client/auth.ts";
-import { connectToGame, pickCodec } from "@dreamlab/client/game-connection.ts";
-import { setupGame } from "@dreamlab/client/game-setup.ts";
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { auth } from "@rebur/client/auth.ts";
+import { connectToGame, pickCodec } from "@rebur/client/game-connection.ts";
+import { setupGame } from "@rebur/client/game-setup.ts";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import {
   Camera,
   ClientGame,
@@ -28,11 +30,11 @@ import {
   GameStatus,
   GameStatusChange,
   RichText,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { element } from "@dreamlab/ui";
-import { urlToWebSocket } from "@dreamlab/util/url.ts";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { element } from "@rebur/ui";
+import { urlToWebSocket } from "@rebur/util/url.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { icon, Loader } from "./_icons.tsx";
 import { stats } from "./_stats.ts";
 import { updateAspectRatio } from "./aspect-ratio.ts";
@@ -41,6 +43,7 @@ import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.tsx";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
+import { setupMobileNav } from "./mobile-nav.ts";
 
 const nickname = "Player" + Math.floor(Math.random() * 999) + 1;
 const info = await auth(nickname);
@@ -302,38 +305,6 @@ Object.defineProperties(globalThis, {
 const editModeFlag = isPopout ? false : handshake.edit_mode;
 await setupGame(game, conn, editModeFlag);
 
-// This averages the camera around the entities that exist. User complained that this put their camera in a weird spot
-// Likely due to an object really far from the origin. So I'm disabling it.
-
-// if (editModeFlag) {
-//   const allEntities: Entity[] = [];
-//   let xAcc = 0;
-//   let yAcc = 0;
-//   const collectEntitiesRecursively = (entity: Entity) => {
-//     if (!entity.protected) allEntities.push(entity);
-//     for (const child of entity.children.values()) {
-//       if (child.name === "__EditorMetadata") continue;
-//       xAcc += child.globalTransform.position.x;
-//       yAcc += child.globalTransform.position.y;
-//       collectEntitiesRecursively(child);
-//     }
-//   };
-
-//   for (const entity of game.world._.EditEntities.children.values()) {
-//     if (entity.id === "world/EditEntities/prefabs") {
-//       continue;
-//     }
-//     collectEntitiesRecursively(entity);
-//   }
-//   if (allEntities.length > 0) {
-//     const avgX = xAcc / allEntities.length;
-//     const avgY = yAcc / allEntities.length;
-//     const camera = game.local._.Camera.cast(Camera);
-//     camera.pos.x = avgX;
-//     camera.pos.y = avgY;
-//   }
-// }
-
 fonts.then(() => {
   game.entities.lookupByType(RichText).forEach(text => text.rerender());
 });
@@ -369,14 +340,29 @@ if (editModeFlag) {
   });
 }
 
+// Bottom tabs + script editor
+let bottomTabs: BottomTabs | undefined;
+
 if (editModeFlag) {
   const appMenu = new AppMenu(uiRoot, games);
   appMenu.setup(inspector);
 
-  const bottomTabs = new BottomTabs(games, isPro);
+  bottomTabs = new BottomTabs(games, isPro);
   bottomTabs.setup(inspector);
   bottomTabs.show(uiRoot);
 }
+
+// Mobile navigation (hidden on desktop via CSS)
+setupMobileNav(uiRoot);
+
+// Handle postMessage from file-tree and behavior-editor double-click → open script
+window.addEventListener("message", (e: MessageEvent) => {
+  if (!e.data || typeof e.data !== "object") return;
+  const { action, tab, fileName } = e.data as { action?: string; tab?: string; fileName?: string };
+  if (action === "goToTab" && tab === "scripts" && fileName && bottomTabs) {
+    bottomTabs.openScript(fileName);
+  }
+});
 
 const _ = new UndoRedoManager(game);
 

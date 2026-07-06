@@ -1,4 +1,4 @@
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import {
   childrenSorted,
   ClientGame,
@@ -6,7 +6,7 @@ import {
   EntityConstructor,
   EntityDefinition,
   type ITransform,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import { NIL_UUID } from "jsr:@std/uuid@1/constants";
 import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
 import { EditorFacadeComplexCollider } from "../../common/facades/complex-collider.ts";
@@ -103,7 +103,7 @@ export async function copyEntitiesToClipboard(
     return def;
   });
   const jsonData = JSON.stringify(definitions);
-  const prefix = "dreamlab clipboard";
+  const prefix = "rebur clipboard";
   const output = `${prefix}\n${jsonData}`;
   try {
     await navigator.clipboard.writeText(output);
@@ -170,7 +170,7 @@ export async function pasteEntitiesFromClipboard(
   selectedService: SelectedEntityService,
   pasteAtCursor = false,
 ): Promise<void> {
-  const CLIPBOARD_PREFIX = "dreamlab clipboard";
+  const CLIPBOARD_PREFIX = "rebur clipboard";
   let text = "";
 
   try {
@@ -203,7 +203,7 @@ export async function pasteEntitiesFromClipboard(
     if (trimmed.startsWith("data:image/")) {
       await addImageFromClipboard(trimmed);
     } else {
-      console.log("Clipboard data is not from Dreamlab. Aborting paste.");
+      console.log("Clipboard data is not from Rebur. Aborting paste.");
     }
     return;
   }

@@ -4,23 +4,23 @@
     "watch": "deno run -A ./_build.ts --watch"
   },
   "imports": {
-    "@dreamlab/client/": "../client/src/",
-    "@dreamlab/engine": "../engine/mod.ts",
-    "@dreamlab/engine/internal": "../engine/internal.ts",
-    "@dreamlab/vendor/": "../engine/_deps/",
-    "@dreamlab/proto/": "../proto/",
-    "@dreamlab/scene": "../scene-graph/mod.ts",
-    "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/ui/css": "../ui/css.ts",
-    "@dreamlab/ui/jsx-runtime": "../ui/jsx.ts",
-    "@dreamlab/util/": "../util/",
+    "@rebur/client/": "../client/src/",
+    "@rebur/engine": "../engine/mod.ts",
+    "@rebur/engine/internal": "../engine/internal.ts",
+    "@rebur/vendor/": "../engine/_deps/",
+    "@rebur/proto/": "../proto/",
+    "@rebur/scene": "../scene-graph/mod.ts",
+    "@rebur/ui": "../ui/mod.ts",
+    "@rebur/ui/css": "../ui/css.ts",
+    "@rebur/ui/jsx-runtime": "../ui/jsx.ts",
+    "@rebur/util/": "../util/",
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
     "noImplicitOverride": false,
     "jsx": "react-jsx",
-    "jsxImportSource": "@dreamlab/ui"
+    "jsxImportSource": "@rebur/ui"
   },
   "exclude": ["./web/dist/*"],
   "lint": {

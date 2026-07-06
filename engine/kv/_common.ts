@@ -1,4 +1,4 @@
-import type { ClientGame, JsonValue, ServerGame } from "@dreamlab/engine";
+import type { ClientGame, JsonValue, ServerGame } from "@rebur/engine";
 
 export function scope(game: ClientGame | ServerGame, playerId?: string): string {
   const world = game.worldId.replaceAll("/", ":");

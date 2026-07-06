@@ -3,18 +3,18 @@ import "npm:source-map-support@0.5.21/register.js"; // evanw clutch
 // DO NOT REMOVE
 // early import the ui code so we can access it in a dynamic import context without permission checks
 // deno is cool but stupid sometimes lmaooo
-import "@dreamlab/ui";
-import "@dreamlab/ui/jsx-runtime";
+import "@rebur/ui";
+import "@rebur/ui/jsx-runtime";
 
-import { GameStatus, KvServer, ServerGame, Time } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { GameStatus, KvServer, ServerGame, Time } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 import { WorkerInitData } from "../server-common/worker-data.ts";
 import { IPCMessageBus } from "./ipc.ts";
 import { ServerNetworkManager } from "./networking/net-manager.ts";
 import { rewriteStackTraces } from "./stack.ts";
 
-import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@dreamlab/scene";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { ProjectSchema, getSceneFromProject, loadSceneDefinition } from "@rebur/scene";
+import * as z from "@rebur/vendor/zod.ts";
 import { handleEditMode } from "./edit-mode.ts";
 import { handleHttpAPI } from "./http-api.ts";
 import { KvServerStub } from "./kv-server-stub.ts";
@@ -29,8 +29,8 @@ addEventListener("error", event => {
   if (event.error) console.error("caught potential fatal error:", event.error);
 });
 
-const workerData = JSON.parse(Deno.env.get("DREAMLAB_MP_WORKER_DATA")!) as WorkerInitData;
-Deno.env.delete("DREAMLAB_MP_WORKER_DATA");
+const workerData = JSON.parse(Deno.env.get("REBUR_MP_WORKER_DATA")!) as WorkerInitData;
+Deno.env.delete("REBUR_MP_WORKER_DATA");
 
 rewriteStackTraces(workerData);
 
@@ -88,7 +88,7 @@ const BehaviorSchema = z.record(
 );
 
 const behaviorPreloadInfo = await game
-  .fetch("res://_dreamlab_behaviors.json")
+  .fetch("res://_rebur_behaviors.json")
   .then(r => r.json())
   .then(BehaviorSchema.parse);
 game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);

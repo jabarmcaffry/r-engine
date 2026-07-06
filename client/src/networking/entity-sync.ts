@@ -19,8 +19,8 @@ import {
   TilemapBatchUpdate,
   TilemapClear,
   TilemapUpdate,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 import {
@@ -29,8 +29,8 @@ import {
   getAllEntityRefs,
   serializeBehaviorDefinition,
   serializeEntityDefinition,
-} from "@dreamlab/proto/common/entity-sync.ts";
-import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
+} from "@rebur/proto/common/entity-sync.ts";
+import { ReceivedInitialNetworkSnapshot } from "@rebur/proto/common/signals.ts";
 
 // TODO: deduplicate (almost the same as Entity.#generateBehaviorDefinition)
 function generateBehaviorDefinition(

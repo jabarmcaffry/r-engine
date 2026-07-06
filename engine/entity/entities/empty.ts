@@ -1,4 +1,4 @@
-import { Entity } from "@dreamlab/engine";
+import { Entity } from "@rebur/engine";
 
 /**
  * An entity with nothing but a transform.

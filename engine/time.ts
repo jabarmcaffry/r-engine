@@ -1,5 +1,5 @@
-import type { Game } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import type { Game } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 export class Time {
   // only used for engine debugging

@@ -1,41 +1,54 @@
 ---
-name: Rebur Replit Setup
-description: Key quirks and decisions for running the Rebur multiplayer engine on Replit (proxy, env, codecs, close codes)
+name: Rebur Engine Replit Setup
+description: Non-obvious lessons about running Rebur Engine on Replit — port mapping, env, branding, and feature notes.
 ---
 
-## Proxy architecture
-- Single port exposed by Replit (port 5000 → webview). All traffic goes through `proxy.ts` (Deno HTTP+WS reverse proxy).
-- Proxy forwards `/api/*`, `/internal/*`, `/worlds/*` to port 8000 (multiplayer server). Static editor files served from `editor/web`.
-- `/worlds/*` forwarding is critical: client fetches world scripts and assets from the public URL; without this the game hangs at "Connecting..." after receiving Handshake.
+## Editor connection flow (non-obvious)
 
-## MULTIPLAYER_PUBLIC_URL must be the Replit dev domain
-- The Handshake packet embeds `world_script_base_url` = `${MULTIPLAYER_PUBLIC_URL}/worlds/...`
-- Browser fetches resources from this URL. If set to `http://localhost:8000`, browser can't reach it → game stuck at "Connecting..." indefinitely (no error visible in console).
-- Fix: `DREAMLAB_MULTIPLAYER_PUBLIC_URL=https://${REPLIT_DEV_DOMAIN}` in `multiplayer/.env.local`.
-- `start-multiplayer.sh` generates this dynamically at startup.
+Direct URL `/?instance=<worldId>` shows "Failed to connect". The correct flow is:
+1. POST `/api/dashboard/start-instance` with `{"world_id":"..."}` → returns UUID instance ID
+2. Wait for `status: "Started"` via GET `/api/dashboard/instances`
+3. Open `/?instance=<uuid>` — the UUID, not the world path
 
-## editor/.env.local wss:// requirement
-- `editor/.env.local` must use `wss://` prefix for `DREAMLAB_MULTIPLAYER_PUBLIC_URL`.
-- Client code: `serverUrl.protocol = serverUrl.protocol === "wss:" ? "https:" : "http:"` — stores https:// for base URL, then converts back to wss:// for WebSocket.
-- If `https://` is passed: stored as `http://` → `ws://` connection → Replit proxy rejects plain WebSocket (needs wss://).
-- `start-editor.sh` generates this dynamically: `wss://${REPLIT_DEV_DOMAIN}`.
+**Why:** WebSocket endpoint is `/api/v1/connect/<instanceId>` (UUID), not the world path. The dashboard UI handles this automatically when user clicks Edit/Play.
 
-## Deno close code fix
-- `multiplayer/server-host/session.ts` line ~233: changed `socket.close(1001)` → `socket.close(1000)`.
-- Deno disallows SENDING close code 1001 (valid to receive, but not send).
+## Required module
 
-## npm symlink fix (start-editor.sh)
-- Replit package firewall stores npm packages at `.../package-firewall.replit.local/npm/<pkg>`.
-- esbuild deno-loader expects `.../package-firewall.replit.local/<pkg>` (no `/npm/` level).
-- `start-editor.sh` creates symlinks at the expected path on every startup.
+`deno-2` must remain in `.replit` modules — both startup scripts invoke `deno` directly. Removing it breaks all workflows on fresh environments.
 
-## GitHub push
-- Raw `git push origin trunk:main --force` fails: "Invalid username or token" — GitHub HTTPS requires token auth.
-- The `gitPush` callback also returns PUSH_REJECTED — the `jabarmcaffry/rebur-engine` repo is not properly connected via Replit's git integration.
-- User needs to connect the repo in Replit's git settings for the push to work.
+**How to apply:** When editing `.replit`, always verify `modules` array includes `"deno-2"`.
 
-## Screenshot tool limitation
-- Screenshot tool accesses port 5000 directly (`http://127.0.0.1:5000`). The editor JS tries to connect via `wss://REPLIT_DEV_DOMAIN/api/v1/connect/...` which goes through Replit's public proxy. The headless screenshot browser may not always reach the public dev domain, so "Connecting..." in screenshots is not always a real bug.
+## Package namespace rename (dreamlab → rebur)
 
-## Why **Why:** entries matter
-- Always decode the Handshake packet to verify `world_script_base_url` when debugging connection issues (byte 0 = compression flag, rest = CBOR).
+All `@dreamlab/` imports were renamed to `@rebur/` across the codebase. The esbuild plugins in `build-system/_esbuild.ts` use regex patterns like `/^@rebur\/engine$/` — these are backslash-escaped regex literals that sed CANNOT match with `s/@dreamlab\//@rebur\//g` because the file content has `@dreamlab\/` (with literal backslash). Must use Python string replacement or targeted sed with `s|@dreamlab\\\/|@rebur\\\/|g`.
+
+**Why:** sed pattern `s/@dreamlab\//@rebur\//g` only matches `@dreamlab/` (no backslash). Regex literals in TypeScript files use `@dreamlab\/` (with backslash), so sed misses them.
+
+## Monaco Editor loading (AMD gotcha)
+
+Monaco's AMD loader (`require(['vs/editor/editor.main'], callback)`) does NOT pass `monaco` as the callback argument. It exposes `monaco` on `globalThis` instead. The callback arg is typically `undefined`.
+
+**Why:** Standard Monaco AMD behavior — the module is self-registering and populates `globalThis.monaco`.
+**How to apply:** Always use `(globalThis as any).monaco` inside the AMD callback, not the callback parameter.
+
+## Mobile layout approach
+
+Mobile panel switching uses `data-mobile-panel` attribute on `main` element. CSS uses `grid-area: content` for all panels so they overlap, then `display: none !important` for inactive ones. The mobile nav bar (`#mobile-nav`) sets `grid-area: mobile-nav` and is hidden on desktop via `@media (min-width: 601px) { display: none }`.
+
+## Worlds directory
+
+Worlds are in `multiplayer/worlds/rebur/<name>/`. World IDs are `rebur/<name>`. The proxy reads this directory to serve the world list.
+
+## External service URLs (keep as-is)
+
+These `.dreamlab.gg` URLs are real external services the engine connects to — do not rename them:
+- `keyvalue.dreamlab.gg` — KV store
+- `s3-assets.dreamlab.gg` — asset CDN
+- `distribution.dreamlab.gg` — code distribution
+- `app.dreamlab.gg` — AI chatbot fallback
+- `ai-chatbot.dreamlab.gg` — AI chatbot
+- `docs.dreamlab.gg` — documentation
+
+## Script Editor integration
+
+Files are fetched/saved via `GET/PUT /api/v1/edit/{instanceId}/files/{path}`. The `instanceId` comes from `game.instanceId` (ClientGame), and `serverUrl` from `connectionDetails` (imported from `@rebur/client/util/server-url.ts`). The message event `{ action: "goToTab", tab: "scripts", fileName }` is dispatched by `window.parent.postMessage` in both `file-tree.tsx` (double-click file) and `behavior-editor.ts` (double-click script field) — since editor and parent are the same frame, `window.addEventListener("message")` in `main.ts` catches it.

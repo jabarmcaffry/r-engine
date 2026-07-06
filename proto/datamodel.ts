@@ -1,4 +1,4 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 
 export const EntityReferenceSchema = z.string().describe("Entity Reference");
 export const EntityTypeSchema = z.string().describe("Entity Type");

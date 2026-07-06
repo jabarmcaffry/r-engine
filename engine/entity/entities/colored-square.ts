@@ -5,8 +5,8 @@ import {
   EntityTransformUpdate,
   IBounds,
   PixiEntity,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export class ColoredSquare extends PixiEntity<PIXI.Graphics> {
   static {
@@ -156,7 +156,7 @@ export class ColoredSquare extends PixiEntity<PIXI.Graphics> {
 
     if (this.borderRadius !== 0) {
       // render at 100x the size so the border radius is controllable
-      // otherwise a borderRadius of 1 would make a 1x1 (in Dreamlab units) entity a jagged circle.
+      // otherwise a borderRadius of 1 would make a 1x1 (in Rebur units) entity a jagged circle.
       const resolution = ColoredSquare.#HI_RES;
       const scale = 1 / resolution;
 

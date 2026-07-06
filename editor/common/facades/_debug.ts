@@ -9,8 +9,8 @@ import {
   SignalSubscription,
   Value,
   Vector2,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export type Label = { readonly container: PIXI.Container; readonly text: PIXI.Text };
 

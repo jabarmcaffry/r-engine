@@ -1,4 +1,4 @@
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import {
   Entity,
   EntityContext,

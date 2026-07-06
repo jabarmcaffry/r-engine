@@ -1,8 +1,8 @@
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame } from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
+import { ClientGame } from "@rebur/engine";
+import { element as elem } from "@rebur/ui";
+import * as PIXI from "@rebur/vendor/pixi.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { ChevronDown, icon } from "../_icons.tsx";
 import { createInputFieldWithDefault } from "./easy-input.ts";
 

@@ -1,4 +1,4 @@
-import { GameRender, SolidColor, Text } from "@dreamlab/engine";
+import { GameRender, SolidColor, Text } from "@rebur/engine";
 
 export const color = game.local.spawn({
   type: SolidColor,

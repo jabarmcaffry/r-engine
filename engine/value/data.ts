@@ -1,5 +1,5 @@
-import type { Entity, Game, Value } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import type { Entity, Game, Value } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 export type Primitive = string | number | boolean | undefined | null;
 

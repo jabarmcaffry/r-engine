@@ -7,11 +7,11 @@ import {
   InternalGameTick,
   ITransform,
   Transform,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { transformFor, transformsEq } from "@dreamlab/proto/common/transform.ts";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
-import { Simplify } from "@dreamlab/vendor/type-fest.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { transformFor, transformsEq } from "@rebur/proto/common/transform.ts";
+import { PlayPacket } from "@rebur/proto/play.ts";
+import { Simplify } from "@rebur/vendor/type-fest.ts";
 import { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {

@@ -14,12 +14,12 @@ import {
   TilemapClear,
   TilemapUpdate,
   Vector2,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
-import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
-import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { decodeCBOR, encodeCBOR } from "@rebur/vendor/exp-fast-cbor.ts";
+import { gzip, ungzip } from "@rebur/vendor/pako.ts";
+import * as PIXI from "@rebur/vendor/pixi.ts";
+import { decodeBase64Url, encodeBase64Url } from "@rebur/vendor/std__encoding.ts";
 import { JsonValue } from "../../value/data.ts";
 import type { ChunkId, ChunkType, TilemapBounds } from "./tilemap-chunk.ts";
 import {

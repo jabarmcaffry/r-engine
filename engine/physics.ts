@@ -1,11 +1,11 @@
-import { Entity, EntityCollision, Game, Vector2 } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { Entity, EntityCollision, Game, Vector2 } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 import type {
   Collider,
   KinematicCharacterController,
   RigidBody,
-} from "@dreamlab/vendor/rapier.ts";
-import RAPIER from "@dreamlab/vendor/rapier.ts";
+} from "@rebur/vendor/rapier.ts";
+import RAPIER from "@rebur/vendor/rapier.ts";
 
 interface ColliderWithUserData extends Collider {
   userData?: unknown;

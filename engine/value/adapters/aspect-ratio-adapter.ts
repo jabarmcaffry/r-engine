@@ -1,4 +1,4 @@
-import { JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
+import { JsonValue, ValueTypeAdapter } from "@rebur/engine";
 
 export class AspectRatioAdapter extends ValueTypeAdapter<readonly [number, number]> {
   isValue(value: unknown): value is readonly [number, number] {

@@ -1,5 +1,5 @@
-import type { AdapterTypeTag, Game, JsonValue } from "@dreamlab/engine";
-import { ValueTypeAdapter } from "@dreamlab/engine";
+import type { AdapterTypeTag, Game, JsonValue } from "@rebur/engine";
+import { ValueTypeAdapter } from "@rebur/engine";
 
 export declare namespace enumAdapter {
   // deno-lint-ignore no-explicit-any

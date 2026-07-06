@@ -12,8 +12,8 @@ import {
   Root,
   Value,
   Vector2,
-} from "@dreamlab/engine";
-import { element as elem, element } from "@dreamlab/ui";
+} from "@rebur/engine";
+import { element as elem, element } from "@rebur/ui";
 import { EmptyFacade } from "../../common/facades/empty.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import {

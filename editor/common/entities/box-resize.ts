@@ -1,4 +1,4 @@
-import type { EntityContext, EntityDefinition, Transform } from "@dreamlab/engine";
+import type { EntityContext, EntityDefinition, Transform } from "@rebur/engine";
 import {
   Camera,
   Clickable,
@@ -13,8 +13,8 @@ import {
   pointWorldToLocal,
   Root,
   Vector2,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import { EditorMetadataEntity } from "../metadata.ts";
 import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
 import { Gizmo, GizmoUpdateEnd } from "./gizmo.ts";

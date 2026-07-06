@@ -1,8 +1,8 @@
-import { element as elem, ElementAttributes } from "@dreamlab/ui";
+import { element as elem, ElementAttributes } from "@rebur/ui";
 
 export class Button extends HTMLElement {
   static {
-    customElements.define("dreamlab-button", this);
+    customElements.define("rebur-button", this);
   }
 
   constructor(

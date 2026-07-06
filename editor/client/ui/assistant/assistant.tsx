@@ -1,6 +1,6 @@
-import { connectionDetails } from "@dreamlab/client/util/server-url.ts";
-import { ClientGame } from "@dreamlab/engine";
-import { urlToHTTP } from "@dreamlab/util/url.ts";
+import { connectionDetails } from "@rebur/client/util/server-url.ts";
+import { ClientGame } from "@rebur/engine";
+import { urlToHTTP } from "@rebur/util/url.ts";
 import { InspectorUI } from "../inspector.ts";
 
 export class Assistant {

@@ -6,7 +6,7 @@ import {
   EntityDestroyed,
   enumAdapter,
   PixiEntity,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   InitSelectedEntityService,
   SelectedEntityService,

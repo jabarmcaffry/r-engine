@@ -1,5 +1,5 @@
-import { ProjectSchema } from "@dreamlab/scene";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { ProjectSchema } from "@rebur/scene";
+import * as z from "@rebur/vendor/zod.ts";
 import { Router } from "@oak/oak";
 
 const projectJsonSchema = z.toJSONSchema(ProjectSchema, {

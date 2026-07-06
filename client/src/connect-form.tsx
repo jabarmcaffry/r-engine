@@ -1,5 +1,5 @@
-import { urlWithParams } from "@dreamlab/util/url.ts";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { urlWithParams } from "@rebur/util/url.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import type { AuthToken } from "./auth.ts";
 import { icon, X } from "../../editor/client/_icons.tsx";
 
@@ -9,21 +9,21 @@ type ConnectDetails = {
   readonly instanceId: string;
 };
 
-export type DreamlabConnectForm = {
-  readonly element: DreamlabConnectFormElement;
+export type ReburConnectForm = {
+  readonly element: ReburConnectFormElement;
   readonly onConnect: Promise<ConnectDetails>;
 };
 
-export class DreamlabConnectFormElement extends HTMLElement {
+export class ReburConnectFormElement extends HTMLElement {
   static {
-    customElements.define("dreamlab-connect-form", this);
+    customElements.define("rebur-connect-form", this);
   }
 
   static create(
     worldId: string,
     instances: APIInstancesResponse,
     current?: { auth: AuthToken; instance: string },
-  ): DreamlabConnectForm {
+  ): ReburConnectForm {
     const nicknameInput = (
       <input
         type="text"
@@ -36,7 +36,7 @@ export class DreamlabConnectFormElement extends HTMLElement {
       />
     ) as HTMLInputElement;
 
-    const savedNickname = window.localStorage.getItem("dreamlab/nickname");
+    const savedNickname = window.localStorage.getItem("rebur/nickname");
     if (savedNickname) {
       nicknameInput.value = savedNickname;
     }
@@ -86,7 +86,7 @@ export class DreamlabConnectFormElement extends HTMLElement {
     }
 
     dialog.append(form);
-    const connectForm = new DreamlabConnectFormElement(dialog);
+    const connectForm = new ReburConnectFormElement(dialog);
 
     form.addEventListener("submit", e => {
       const { submitter } = e;
@@ -98,7 +98,7 @@ export class DreamlabConnectFormElement extends HTMLElement {
       const valid = current === undefined ? form.checkValidity() : true;
       if (valid) {
         const nickname = current?.auth.nickname ?? nicknameInput.value;
-        window.localStorage.setItem("dreamlab/nickname", nickname);
+        window.localStorage.setItem("rebur/nickname", nickname);
 
         const instanceSection = submitter?.closest("[data-instance]") as
           | HTMLElement
@@ -184,7 +184,7 @@ type APIInstancesResponse = z.infer<typeof APIInstancesSchema>;
 const APIInstancesSchema = z.record(z.string(), InstanceInfoSchema);
 
 export const fetchInstances = async (worldId: string): Promise<APIInstancesResponse> => {
-  const base = globalThis.env.DREAMLAB_NEXT_PUBLIC_URL;
+  const base = globalThis.env.REBUR_NEXT_PUBLIC_URL;
   const url = urlWithParams(new URL("/api/instances", base), {
     project: worldId,
   });
@@ -203,7 +203,7 @@ export const fetchInstances = async (worldId: string): Promise<APIInstancesRespo
 };
 
 export const spawnNewInstance = async (worldId: string): Promise<InstanceInfo> => {
-  const base = globalThis.env.DREAMLAB_MULTIPLAYER_PUBLIC_URL;
+  const base = globalThis.env.REBUR_MULTIPLAYER_PUBLIC_URL;
   return await fetch(new URL("/api/v1/start-play-world", base), {
     method: "POST",
     body: JSON.stringify({ world_id: worldId }),

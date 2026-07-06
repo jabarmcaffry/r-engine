@@ -7,7 +7,7 @@ import {
   enumAdapter,
   PixiEntity,
   Vector2,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   InitSelectedEntityService,
   SelectedEntityService,

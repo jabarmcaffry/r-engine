@@ -7,7 +7,7 @@ import * as dnt from "./dnt/mod.ts";
 const OUT_DIR = "./out";
 await fs.emptyDir(OUT_DIR);
 
-const CODE_EDITOR_DIR = "../../dreamlab-code-editor/public/dreamlab-engine-intellisense";
+const CODE_EDITOR_DIR = "../../rebur-code-editor/public/rebur-engine-intellisense";
 await fs.emptyDir(CODE_EDITOR_DIR);
 
 const commonOptions = {
@@ -85,10 +85,10 @@ const generatePackage = async (options: {
   entryPoint: string;
   exports?: Record<string, string>;
 }) => {
-  const outDir = path.join(OUT_DIR, `dreamlab-${options.name}`);
+  const outDir = path.join(OUT_DIR, `rebur-${options.name}`);
   await generate({
-    packageName: `@dreamlab/${options.name}`,
-    tarballName: `dreamlab-${options.name}`,
+    packageName: `@rebur/${options.name}`,
+    tarballName: `rebur-${options.name}`,
     entryPoint: options.entryPoint,
     exports: options.exports,
     outDir,
@@ -98,7 +98,7 @@ const generatePackage = async (options: {
 const generateVendor = async (options: { name: string }) => {
   const outDir = path.join(OUT_DIR, `vendor-${options.name}`);
   await generate({
-    packageName: `@dreamlab/vendor/${options.name}.ts`,
+    packageName: `@rebur/vendor/${options.name}.ts`,
     tarballName: `vendor-${options.name}`,
     entryPoint: `../engine/_deps/${options.name}.ts`,
     outDir,

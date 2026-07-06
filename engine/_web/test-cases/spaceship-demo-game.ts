@@ -1,5 +1,5 @@
-import * as internal from "@dreamlab/engine/internal";
-import { __deprecated__element as element } from "@dreamlab/ui";
+import * as internal from "@rebur/engine/internal";
+import { __deprecated__element as element } from "@rebur/ui";
 import { BackgroundBehavior } from "../../behavior/behaviors/background-behavior.ts";
 import { Behavior, BehaviorContext, BehaviorDefinition } from "../../behavior/mod.ts";
 import {
@@ -1713,7 +1713,7 @@ button:hover {
       children: [
         element("h1", { children: ["Galactic Conquest"] }),
         element("p", {
-          children: ["Embark on an epic space adventure, powered by Dreamlab v2!"],
+          children: ["Embark on an epic space adventure, powered by Rebur v2!"],
         }),
 
         button,

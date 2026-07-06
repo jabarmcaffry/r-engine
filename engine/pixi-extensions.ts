@@ -1,4 +1,4 @@
-import "@dreamlab/vendor/howler.ts";
+import "@rebur/vendor/howler.ts";
 import {
   checkDataUrl,
   checkExtension,
@@ -6,7 +6,7 @@ import {
   ExtensionType,
   LoaderParserPriority,
   type LoaderParser,
-} from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/vendor/pixi.ts";
 
 const validAudioExtensions = [".mp3", ".wav", ".ogg"];
 const validAudioMIMEs = ["audio/mpeg", "audio/wav", "audio/ogg"];

@@ -9,7 +9,7 @@ import {
   IBounds,
   PixiEntity,
   Value,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugCircle, DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";

@@ -1,5 +1,5 @@
 // copied from https://github.com/WorldQL/dreamlab-kv-store/blob/trunk/crypto.ts
-import { decodeBase64Url, encodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
+import { decodeBase64Url, encodeBase64Url } from "@rebur/vendor/std__encoding.ts";
 import { getPublicKeyAsync, signAsync, verifyAsync } from "jsr:@noble/ed25519@3.0.0";
 
 export type Action = (typeof actions)[number];

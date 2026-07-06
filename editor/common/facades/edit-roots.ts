@@ -1,5 +1,5 @@
-import { Empty, Entity } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { Empty, Entity } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 export abstract class EditorRootFacadeEntity extends Empty {
   override get protected() {

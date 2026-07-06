@@ -21,5 +21,5 @@ export async function bundleSingleplayerWorld(
 }
 
 if (import.meta.main) {
-  bundleSingleplayerWorld(Deno.args.at(0) ?? "dreamlab/test-world");
+  bundleSingleplayerWorld(Deno.args.at(0) ?? "rebur/test-world");
 }

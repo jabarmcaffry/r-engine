@@ -6,8 +6,8 @@ import {
   EntityTransformUpdate,
   IBounds,
   PixiEntity,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 /**
  * @deprecated Use `ColoredSquare` entity instead

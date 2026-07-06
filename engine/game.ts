@@ -1,4 +1,4 @@
-import { initRapier } from "@dreamlab/vendor/rapier.ts";
+import { initRapier } from "@rebur/vendor/rapier.ts";
 
 import type {
   BehaviorConstructor,
@@ -14,7 +14,7 @@ import type {
   SignalListenerOptions,
   SignalMatching,
   SignalSubscription,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   BehaviorLoader,
   ClickableEntity,
@@ -40,10 +40,10 @@ import {
   Value,
   ValueRegistry,
   WorldRoot,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { urlWithParams } from "@dreamlab/util/url.ts";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { urlWithParams } from "@rebur/util/url.ts";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import { SyncedObjectRegistry } from "./synced-objects/registry.ts";
 
 export interface GameOptions {
@@ -421,7 +421,7 @@ export class ClientGame extends BaseGame {
   #cachebust: string | undefined;
   protected override resolveResourceURL(uri: string): URL {
     return urlWithParams(super.resolveResourceURL(uri), {
-      __dreamlab_cache_bust: this.#cachebust,
+      __rebur_cache_bust: this.#cachebust,
     });
   }
 

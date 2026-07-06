@@ -1,4 +1,4 @@
-import { z, ZodError, ZodSchema } from "@dreamlab/vendor/zod.ts";
+import { z, ZodError, ZodSchema } from "@rebur/vendor/zod.ts";
 import {
   Application,
   State as OakState,

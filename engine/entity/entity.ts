@@ -1,6 +1,6 @@
-import deepEqual from "@dreamlab/vendor/fast-deep-equal.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
-import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+import deepEqual from "@rebur/vendor/fast-deep-equal.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
+import type { ConditionalExcept } from "@rebur/vendor/type-fest.ts";
 
 import type {
   AdapterTypeTag,
@@ -26,7 +26,7 @@ import type {
   Time,
   TransformOptions,
   ValueTypeTag,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   AnyEntityOwnEnableChanged,
   DefaultSignalHandlerImpls,
@@ -59,9 +59,9 @@ import {
   lerpAngle,
   transformLocalToWorld,
   transformWorldToLocal,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 
-import * as internal from "@dreamlab/engine/internal";
+import * as internal from "@rebur/engine/internal";
 import { setupSyncedObjects } from "../synced-objects/decorator.ts";
 import { SyncedObjectConstructor } from "../synced-objects/registry.ts";
 

@@ -1,4 +1,4 @@
-import { Behavior, Entity, EntityCollision, Value } from "@dreamlab/engine";
+import { Behavior, Entity, EntityCollision, Value } from "@rebur/engine";
 
 interface HasHealth {
   health: Value<number>;

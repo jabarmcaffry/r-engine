@@ -1,7 +1,7 @@
-import { Behavior, BehaviorConstructor, Entity, Game } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { urlWithParams } from "@dreamlab/util/url.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { Behavior, BehaviorConstructor, Entity, Game } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { urlWithParams } from "@rebur/util/url.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 
 export class BehaviorLoader {
   #game: Game;

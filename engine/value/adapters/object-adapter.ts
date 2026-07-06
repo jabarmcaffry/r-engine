@@ -1,8 +1,8 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { JsonObject, JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
+import { JsonObject, JsonValue, ValueTypeAdapter } from "@rebur/engine";
 
-const marker = Symbol("dreamlab.object-adapter.marker");
-const orig = Symbol("dreamlab.object-adapter.orig");
+const marker = Symbol("rebur.object-adapter.marker");
+const orig = Symbol("rebur.object-adapter.orig");
 
 function createMutationDetector<T extends object>(
   obj: T,

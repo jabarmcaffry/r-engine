@@ -1,4 +1,4 @@
-import { PlayPacket } from "@dreamlab/proto/play.ts";
+import { PlayPacket } from "@rebur/proto/play.ts";
 import * as path from "@std/path";
 import { fileIsProbablyBehaviorScript } from "../../build-system/build-world.ts";
 import { buildWorld } from "../common-host/world-build.ts";

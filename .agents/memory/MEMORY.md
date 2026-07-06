@@ -1,1 +1,1 @@
-- [Dreamlab Replit Setup](dreamlab-replit-setup.md) — proxy + env quirks for running Dreamlab multiplayer engine on Replit
+- [Rebur Engine Replit Setup](rebur-replit-setup.md) — port mapping, env quirks, deno-2 module requirement, and feature implementation notes

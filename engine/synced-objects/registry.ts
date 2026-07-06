@@ -1,8 +1,8 @@
-import type { Game } from "@dreamlab/engine";
+import type { Game } from "@rebur/engine";
 import {
   syncedObjectContainerObjectsField as objects,
   syncedObjectContainerReadyField as ready,
-} from "@dreamlab/engine/internal";
+} from "@rebur/engine/internal";
 import type { Accessor, AnySyncedObject } from "./object.ts";
 import type { SyncedObjectOperation } from "./operation.ts";
 

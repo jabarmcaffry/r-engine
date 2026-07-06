@@ -1,5 +1,5 @@
-import { element as elem } from "@dreamlab/ui";
-import * as z from "@dreamlab/vendor/zod.ts";
+import { element as elem } from "@rebur/ui";
+import * as z from "@rebur/vendor/zod.ts";
 
 // TODO: there's a lot of code duplication here, but the differing types make it hard to reconcile
 

@@ -81,13 +81,13 @@ export const init = async () => {
     { GameStatus, GameStatusChange },
     { urlToHTTP, urlToWebSocket },
     { auth, generateMigrateUrl },
-    { DreamlabConnectFormElement, fetchInstances, spawnNewInstance },
+    { ReburConnectFormElement, fetchInstances, spawnNewInstance },
     { startGame },
     { connectionDetails, setConnectionDetails },
     { icon, Server },
   ] = await Promise.all([
-    import("@dreamlab/engine"),
-    import("@dreamlab/util/url.ts"),
+    import("@rebur/engine"),
+    import("@rebur/util/url.ts"),
     import("./auth.ts"),
     import("./connect-form.tsx"),
     import("./start-game.ts"),
@@ -101,13 +101,13 @@ export const init = async () => {
   const textstatus = topbar.querySelector<HTMLSpanElement>("span#text-status")!;
   const signin = topbar.querySelector<HTMLDivElement>("div#sign-in")!;
 
-  if (globalThis.env.DREAMLAB_CLIENT_DISABLE_TOP_BAR) {
+  if (globalThis.env.REBUR_CLIENT_DISABLE_TOP_BAR) {
     topbar.style.display = "none";
     topbar.parentElement!.style.setProperty("--top-bar", "0px");
   }
 
   let nickname =
-    window.localStorage.getItem("dreamlab/nickname") ??
+    window.localStorage.getItem("rebur/nickname") ??
     "Player" + Math.floor(Math.random() * 999) + 1;
 
   if (connectionDetails.instanceId === "") {
@@ -119,7 +119,7 @@ export const init = async () => {
     }
 
     const instances = await fetchInstances(projectId);
-    const connectForm = DreamlabConnectFormElement.create(projectId, instances);
+    const connectForm = ReburConnectFormElement.create(projectId, instances);
     const instanceCount = Object.values(instances).length;
     if (instanceCount === 0) {
       const instance = await spawnNewInstance(projectId);
@@ -177,8 +177,8 @@ export const init = async () => {
       emojistatus.textContent = "🟢";
       textstatus.textContent = "Connected";
 
-      const standalone = !!globalThis.env.DREAMLAB_MULTIPLAYER_STANDALONE;
-      const disablePicker = !!globalThis.env.DREAMLAB_CLIENT_DISABLE_SERVER_PICKER;
+      const standalone = !!globalThis.env.REBUR_MULTIPLAYER_STANDALONE;
+      const disablePicker = !!globalThis.env.REBUR_CLIENT_DISABLE_SERVER_PICKER;
 
       const serverButton =
         disablePicker || standalone ? undefined : (
@@ -196,7 +196,7 @@ export const init = async () => {
 
       serverButton?.addEventListener("click", async () => {
         const instances = await fetchInstances(game.worldId);
-        const form = DreamlabConnectFormElement.create(game.worldId, instances, {
+        const form = ReburConnectFormElement.create(game.worldId, instances, {
           auth: info,
           instance: game.instanceId,
         });

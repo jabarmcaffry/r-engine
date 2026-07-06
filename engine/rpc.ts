@@ -1,5 +1,5 @@
-import { Behavior, ConnectionId, JsonValue } from "@dreamlab/engine";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { Behavior, ConnectionId, JsonValue } from "@rebur/engine";
+import { createId } from "@rebur/vendor/nanoid.ts";
 
 export declare namespace rpc {
   export type Context = {

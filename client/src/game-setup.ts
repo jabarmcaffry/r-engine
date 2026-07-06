@@ -5,11 +5,11 @@ import {
   GameShutdown,
   GameStatus,
   PreloadInfo,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { ReceivedInitialNetworkSnapshot } from "@dreamlab/proto/common/signals.ts";
-import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@dreamlab/scene";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { ReceivedInitialNetworkSnapshot } from "@rebur/proto/common/signals.ts";
+import { convertEntityDefinition, getSceneFromProject, ProjectSchema } from "@rebur/scene";
+import * as z from "@rebur/vendor/zod.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 
 export const setupGame = async (
@@ -33,7 +33,7 @@ export const setupGame = async (
   );
 
   const behaviorPreloadInfo = await game
-    .fetch("res://_dreamlab_behaviors.json")
+    .fetch("res://_rebur_behaviors.json")
     .then(r => r.json())
     .then(BehaviorSchema.parse);
   game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);
@@ -62,7 +62,7 @@ export const setupGame = async (
     const resp = await game.fetch("res://custom.css");
     if (resp.ok) {
       const style = document.createElement("style");
-      style.id = "dreamlab-custom-css";
+      style.id = "rebur-custom-css";
       style.dataset.mode = editMode ? "edit" : "play";
       style.append(document.createTextNode(await resp.text()));
       document.head.append(style);

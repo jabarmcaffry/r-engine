@@ -1,7 +1,7 @@
-import { ClientGame, KvClient } from "@dreamlab/engine";
-import { Codec, getCodec, isCodec, PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
-import { PlayPacket, ServerPacket } from "@dreamlab/proto/play.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { ClientGame, KvClient } from "@rebur/engine";
+import { Codec, getCodec, isCodec, PlayCodec } from "@rebur/proto/codecs/mod.ts";
+import { PlayPacket, ServerPacket } from "@rebur/proto/play.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import { ClientConnection } from "./networking/net-connection.ts";
 
 export const pickCodec = (

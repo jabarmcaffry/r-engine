@@ -6,10 +6,10 @@ import {
   ClientGame,
   Entity,
   JsonValue,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@dreamlab/scene";
-import { element as elem } from "@dreamlab/ui";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { SceneDescBehavior, BehaviorSchema as SceneDescBehaviorSchema } from "@rebur/scene";
+import { element as elem } from "@rebur/ui";
 import { EditorMetadataEntity } from "../../../common/mod.ts";
 import { DataTable } from "../../components/mod.ts";
 import { createInputField } from "../../util/easy-input.ts";

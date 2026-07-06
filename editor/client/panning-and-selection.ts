@@ -11,8 +11,8 @@ import {
   MouseUp,
   Scroll,
   Vector2,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
 import { EditorFacadeTilemap } from "../common/facades/tilemap.ts";

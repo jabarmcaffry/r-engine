@@ -1,5 +1,5 @@
-import type { ConnectionId, JsonValue, Primitive } from "@dreamlab/engine";
-import * as z from "@dreamlab/vendor/zod.ts";
+import type { ConnectionId, JsonValue, Primitive } from "@rebur/engine";
+import * as z from "@rebur/vendor/zod.ts";
 import { Accessor, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { SyncedObjectContainer, SyncedObjectRegistry } from "../registry.ts";

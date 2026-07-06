@@ -1,4 +1,4 @@
-import type { ClientGame } from "@dreamlab/engine";
+import type { ClientGame } from "@rebur/engine";
 import { Button } from "../components/button.ts";
 import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 

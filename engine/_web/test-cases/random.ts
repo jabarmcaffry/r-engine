@@ -1,4 +1,4 @@
-import { Rng, StandardNormal, Vector2 } from "@dreamlab/engine";
+import { Rng, StandardNormal, Vector2 } from "@rebur/engine";
 import Highcharts from "npm:highcharts";
 
 document.querySelector("canvas")?.parentElement?.remove();

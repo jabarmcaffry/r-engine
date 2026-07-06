@@ -1,4 +1,4 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import * as path from "@std/path";
 import { fileIsProbablyBehaviorScript } from "../../../../build-system/build-world.ts";

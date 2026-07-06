@@ -1,5 +1,5 @@
-import { Entity } from "@dreamlab/engine";
-import { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+import { Entity } from "@rebur/engine";
+import { ConditionalExcept } from "@rebur/vendor/type-fest.ts";
 
 // TODO: this should be exported from entity.ts lol
 type EntityValueProp<E extends Entity> = Exclude<

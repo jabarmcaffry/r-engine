@@ -1,4 +1,4 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { decode, verify } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 
 export const AuthTokenSchema = z.object({

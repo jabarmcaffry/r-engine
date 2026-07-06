@@ -4,9 +4,9 @@ import {
   InternalGameTick,
   SyncedObjectOperation,
   SyncedObjectOperationSchema,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { PlayPacket } from "@dreamlab/proto/play.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { PlayPacket } from "@rebur/proto/play.ts";
 import type { ServerNetworkSetupRoutine } from "./net-manager.ts";
 
 export const handleObjectSync: ServerNetworkSetupRoutine = (net, game) => {

@@ -1,4 +1,4 @@
-import { Entity, EntityConstructor, EntityDefinition } from "@dreamlab/engine";
+import { Entity, EntityConstructor, EntityDefinition } from "@rebur/engine";
 
 export class Facades {
   static #facades = new Map<EntityConstructor, EntityConstructor>();

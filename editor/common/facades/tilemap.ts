@@ -11,9 +11,9 @@ import {
   pointWorldToLocal,
   Tilemap,
   Vector2,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 import { UndoRedoManager, UndoRedoOperation } from "../../client/undo-redo.ts";
 import { Facades } from "./manager.ts";

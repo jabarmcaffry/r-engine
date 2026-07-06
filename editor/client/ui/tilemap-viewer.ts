@@ -5,9 +5,9 @@ import {
   TilemapBatchUpdate,
   TilemapUpdate,
   Vector2,
-} from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import { element as elem } from "@rebur/ui";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 import "npm:vanilla-colorful@^0.7.2/hex-color-picker.js";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { icon, Pencil, Pipette, SquarePen, X } from "../_icons.tsx";

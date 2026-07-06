@@ -1,5 +1,5 @@
-import type { ConnectionId, Game, JsonValue, Value } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import type { ConnectionId, Game, JsonValue, Value } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 type ValueChangedListener = (
   value: Value,

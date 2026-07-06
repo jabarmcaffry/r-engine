@@ -1,7 +1,7 @@
-import { ConnectionId } from "@dreamlab/engine";
-import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
-import { ServerPacket } from "@dreamlab/proto/play.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { ConnectionId } from "@rebur/engine";
+import { PlayCodec } from "@rebur/proto/codecs/mod.ts";
+import { ServerPacket } from "@rebur/proto/play.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import { IPCWorker } from "../common-host/worker.ts";
 import { CONFIG } from "./config.ts";
 import { dumpSceneDefinition, GameInstance, GameInstanceState } from "./instance.ts";

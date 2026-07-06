@@ -1,4 +1,4 @@
-import { VectorSprite } from "@dreamlab/engine";
+import { VectorSprite } from "@rebur/engine";
 
 export const sprite = game.world.spawn({
   type: VectorSprite,

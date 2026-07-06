@@ -1,4 +1,4 @@
-import { Vector2, type ClientGame } from "@dreamlab/engine";
+import { Vector2, type ClientGame } from "@rebur/engine";
 import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 interface GlobalGames {

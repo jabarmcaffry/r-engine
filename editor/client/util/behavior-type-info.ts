@@ -5,9 +5,9 @@ import {
   Empty,
   Entity,
   ValueTypeTag,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { createId } from "@rebur/vendor/nanoid.ts";
 
 const RUN_BEHAVIOR_INITIALIZATION = false;
 

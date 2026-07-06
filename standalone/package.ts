@@ -4,10 +4,10 @@ import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@1";
 import {
   denoPlugins,
-  dreamlabEngineExternalPlugin,
-  dreamlabExternalPlugin,
-  dreamlabUIExternalPlugin,
-  dreamlabVendorExternalPlugin,
+  reburEngineExternalPlugin,
+  reburExternalPlugin,
+  reburUIExternalPlugin,
+  reburVendorExternalPlugin,
 } from "../build-system/_esbuild.ts";
 import {
   BASE_BUILD_OPTIONS,
@@ -64,11 +64,11 @@ await bundle("server", {
   splitting: false,
   sourcemap: undefined,
   plugins: [
-    dreamlabVendorExternalPlugin(true),
-    dreamlabEngineExternalPlugin(),
-    dreamlabUIExternalPlugin(),
-    dreamlabExternalPlugin(
-      "dreamlab-jsr-external-plugin",
+    reburVendorExternalPlugin(true),
+    reburEngineExternalPlugin(),
+    reburUIExternalPlugin(),
+    reburExternalPlugin(
+      "rebur-jsr-external-plugin",
       /^npm:/,
       /^jsr:/,
       /^https:\/\/jsr.io\//,
@@ -96,7 +96,7 @@ await bundleClient(
   undefined,
   [{ in: "../client/src/main-slim.ts", out: "client-main" }],
   undefined,
-  { DREAMLAB_MULTIPLAYER_STANDALONE: "1", DREAMLAB_CLIENT_DISABLE_TOP_BAR: "1" },
+  { REBUR_MULTIPLAYER_STANDALONE: "1", REBUR_CLIENT_DISABLE_TOP_BAR: "1" },
 );
 await bundleUI("../ui/", "./out/client/dist");
 
@@ -105,10 +105,10 @@ await Deno.writeTextFile(
   JSON.stringify(
     {
       imports: {
-        "@dreamlab/engine": "./engine/engine.js",
-        "@dreamlab/vendor/": "./engine/vendor/",
-        "@dreamlab/ui": "./client/dist/ui.js",
-        "@dreamlab/ui/jsx-runtime": "./client/dist/ui-jsx.js",
+        "@rebur/engine": "./engine/engine.js",
+        "@rebur/vendor/": "./engine/vendor/",
+        "@rebur/ui": "./client/dist/ui.js",
+        "@rebur/ui/jsx-runtime": "./client/dist/ui-jsx.js",
       },
     },
     undefined,
@@ -117,29 +117,29 @@ await Deno.writeTextFile(
 );
 
 const envOutput = [
-  "DREAMLAB_MULTIPLAYER_WORLD_ID=" + world,
-  "DREAMLAB_MULTIPLAYER_INSTANCE_ID=standalone",
-  "DREAMLAB_MULTIPLAYER_STANDALONE=1",
-  "DREAMLAB_MULTIPLAYER_RUNTIME_SCRIPT=./.server-runtime.js",
-  "DREAMLAB_MULTIPLAYER_CLIENT_DIRECTORY=./client/web/",
+  "REBUR_MULTIPLAYER_WORLD_ID=" + world,
+  "REBUR_MULTIPLAYER_INSTANCE_ID=standalone",
+  "REBUR_MULTIPLAYER_STANDALONE=1",
+  "REBUR_MULTIPLAYER_RUNTIME_SCRIPT=./.server-runtime.js",
+  "REBUR_MULTIPLAYER_CLIENT_DIRECTORY=./client/web/",
 ];
 
-const kvPublicUrl = Deno.env.get("DREAMLAB_KV_PUBLIC_URL");
-const kvSigningKey = Deno.env.get("DREAMLAB_KV_SIGNING_KEY");
+const kvPublicUrl = Deno.env.get("REBUR_KV_PUBLIC_URL");
+const kvSigningKey = Deno.env.get("REBUR_KV_SIGNING_KEY");
 
 if (kvPublicUrl && kvSigningKey) {
-  envOutput.push("DREAMLAB_KV_PUBLIC_URL=" + kvPublicUrl);
-  envOutput.push("DREAMLAB_KV_SIGNING_KEY=" + kvSigningKey);
+  envOutput.push("REBUR_KV_PUBLIC_URL=" + kvPublicUrl);
+  envOutput.push("REBUR_KV_SIGNING_KEY=" + kvSigningKey);
 }
 
-const multiplayerScriptsBaseUrl = Deno.env.get("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL");
+const multiplayerScriptsBaseUrl = Deno.env.get("REBUR_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL");
 if (multiplayerScriptsBaseUrl) {
-  envOutput.push("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL=" + multiplayerScriptsBaseUrl);
+  envOutput.push("REBUR_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL=" + multiplayerScriptsBaseUrl);
 }
 
-const multiplayerAuthToken = Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN");
+const multiplayerAuthToken = Deno.env.get("REBUR_MULTIPLAYER_AUTH_TOKEN");
 if (multiplayerAuthToken) {
-  envOutput.push("DREAMLAB_MULTIPLAYER_AUTH_TOKEN=" + multiplayerAuthToken);
+  envOutput.push("REBUR_MULTIPLAYER_AUTH_TOKEN=" + multiplayerAuthToken);
 }
 
 await Deno.writeTextFile("./out/.env", envOutput.join("\n"));

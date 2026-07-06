@@ -1,6 +1,6 @@
-import type { ClientGame, Entity } from "@dreamlab/engine";
-import { EntityReparented } from "@dreamlab/engine";
-import { uiDestroy, uiInit } from "@dreamlab/engine/internal";
+import type { ClientGame, Entity } from "@rebur/engine";
+import { EntityReparented } from "@rebur/engine";
+import { uiDestroy, uiInit } from "@rebur/engine/internal";
 
 export class UIManager {
   #game: ClientGame;

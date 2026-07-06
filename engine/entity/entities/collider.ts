@@ -10,9 +10,9 @@ import {
   IBounds,
   Rigidbody,
   Vector2,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import RAPIER, { RigidBody } from "@dreamlab/vendor/rapier.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import RAPIER, { RigidBody } from "@rebur/vendor/rapier.ts";
 
 /**
  * @deprecated Use {@link Collider} with shape set to `Rectangle` instead.

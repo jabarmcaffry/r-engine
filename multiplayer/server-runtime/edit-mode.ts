@@ -1,4 +1,4 @@
-import { Empty, Entity, EntityDefinition, ServerGame } from "@dreamlab/engine";
+import { Empty, Entity, EntityDefinition, ServerGame } from "@rebur/engine";
 import {
   convertEntityDefinition,
   getSceneFromProject,
@@ -9,8 +9,8 @@ import {
   SceneDescEntity,
   SceneSchema,
   serializeEntityDefinition,
-} from "@dreamlab/scene";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/scene";
+import * as z from "@rebur/vendor/zod.ts";
 import {
   EditorMetadataEntity,
   editorRenameBehavior,

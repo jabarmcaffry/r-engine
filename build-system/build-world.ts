@@ -3,10 +3,10 @@ import * as fs from "jsr:@std/fs@1";
 import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
-  dreamlabEngineExternalPlugin,
-  dreamlabNodeShimPlugin,
-  dreamlabUIExternalPlugin,
-  dreamlabVendorExternalPlugin,
+  reburEngineExternalPlugin,
+  reburNodeShimPlugin,
+  reburUIExternalPlugin,
+  reburVendorExternalPlugin,
   esbuild,
 } from "./_esbuild.ts";
 import { BASE_BUILD_OPTIONS, bundle, BundleOptions } from "./build-components.ts";
@@ -77,10 +77,10 @@ export const prepareBundleWorld = async (
           });
         },
       },
-      dreamlabEngineExternalPlugin(),
-      dreamlabVendorExternalPlugin(),
-      dreamlabUIExternalPlugin(),
-      dreamlabNodeShimPlugin(),
+      reburEngineExternalPlugin(),
+      reburVendorExternalPlugin(),
+      reburUIExternalPlugin(),
+      reburNodeShimPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(worldOpts.denoJsonPath),
@@ -170,7 +170,7 @@ export const prepareBundleWorld = async (
             }
 
             await Deno.writeTextFile(
-              path.join(worldOpts.dir, out, "_dreamlab_behaviors.json"),
+              path.join(worldOpts.dir, out, "_rebur_behaviors.json"),
               JSON.stringify(behaviorFiles),
             );
           });
@@ -179,7 +179,7 @@ export const prepareBundleWorld = async (
     ],
     entryPoints,
     jsx: "automatic",
-    jsxImportSource: "@dreamlab/ui",
+    jsxImportSource: "@rebur/ui",
     outbase: worldOpts.dir,
     outdir: path.join(worldOpts.dir, out),
     logOverride: { "empty-glob": "silent" },
@@ -193,7 +193,7 @@ export const prepareBundleWorld = async (
 
 /**
  * Bundles a world into its '_dist' folder.
- * Requires `@dreamlab/engine` and `@dreamlab/vendor` to be present in the import map at runtime.
+ * Requires `@rebur/engine` and `@rebur/vendor` to be present in the import map at runtime.
  */
 export const bundleWorld = async (
   worldName: string,
@@ -236,7 +236,7 @@ export const stubFailures = (
         const formatted = await esbuild.formatMessages(messages, { kind: "error" });
 
         const contents = `
-import { Behavior } from "@dreamlab/engine";
+import { Behavior } from "@rebur/engine";
 
 export default class StubBehavior extends Behavior {
   private static errors = ${JSON.stringify(formatted)};

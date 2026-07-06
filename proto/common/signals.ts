@@ -1,4 +1,4 @@
-import { ConnectionInfo } from "@dreamlab/engine";
+import { ConnectionInfo } from "@rebur/engine";
 
 export class PlayerConnectionEstablished {
   constructor(public connection: ConnectionInfo) {}

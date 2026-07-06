@@ -1,4 +1,4 @@
-import { KvServerBase, KvServerBaseOptions } from "@dreamlab/engine";
+import { KvServerBase, KvServerBaseOptions } from "@rebur/engine";
 import { JsonValue } from "../../engine/value/data.ts";
 
 // TODO: maybe we should do an in-memory store

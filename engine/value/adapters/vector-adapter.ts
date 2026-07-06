@@ -1,7 +1,7 @@
-import { JsonValue, ValueTypeAdapter, Vector2 } from "@dreamlab/engine";
-import { vectorOnChanged } from "@dreamlab/engine/internal";
+import { JsonValue, ValueTypeAdapter, Vector2 } from "@rebur/engine";
+import { vectorOnChanged } from "@rebur/engine/internal";
 
-const marked = Symbol.for("dreamlab.vector-adapter.marked");
+const marked = Symbol.for("rebur.vector-adapter.marked");
 
 /**
  * This supports a `Value<Vector2>`

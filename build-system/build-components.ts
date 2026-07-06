@@ -1,13 +1,13 @@
 import * as path from "jsr:@std/path@^1";
 import {
   denoPlugins,
-  dreamlabCssPlugin,
-  dreamlabEngineExternalPlugin,
-  dreamlabEnvironmentPlugin,
-  dreamlabNodeShimPlugin,
-  dreamlabTextImportPlugin,
-  dreamlabUIExternalPlugin,
-  dreamlabVendorExternalPlugin,
+  reburCssPlugin,
+  reburEngineExternalPlugin,
+  reburEnvironmentPlugin,
+  reburNodeShimPlugin,
+  reburTextImportPlugin,
+  reburUIExternalPlugin,
+  reburVendorExternalPlugin,
   esbuild,
   rapierWasmPlugin,
   RapierWasmPluginOpts,
@@ -57,7 +57,7 @@ export const BASE_BUILD_OPTIONS: Partial<esbuild.BuildOptions> = {
   platform: "browser",
   target: "es2022",
   minify: true,
-  footer: { js: "// built with <3 using dreamlab ^-^" },
+  footer: { js: "// built with <3 using rebur ^-^" },
   sourcemap: "linked",
   keepNames: true,
   splitting: true,
@@ -109,7 +109,7 @@ export const bundleEngineDependencies = async (
 
 /**
  * Bundles the engine into an 'engine.js' ES Module in the outdir.
- * This will include external references to "@dreamlab/vendor", so map imports accordingly.
+ * This will include external references to "@rebur/vendor", so map imports accordingly.
  */
 export const bundleEngine = async (
   engineDir: string,
@@ -122,8 +122,8 @@ export const bundleEngine = async (
     ...BASE_BUILD_OPTIONS,
     ...EXTRA_ENTRYPOINT_BUILD_OPTIONS,
     plugins: [
-      dreamlabNodeShimPlugin(),
-      dreamlabVendorExternalPlugin(forDeno),
+      reburNodeShimPlugin(),
+      reburVendorExternalPlugin(forDeno),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
@@ -148,8 +148,8 @@ export const bundleUI = async (
   const buildOpts: esbuild.BuildOptions = {
     ...BASE_BUILD_OPTIONS,
     plugins: [
-      dreamlabVendorExternalPlugin(),
-      dreamlabUIExternalPlugin(),
+      reburVendorExternalPlugin(),
+      reburUIExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
@@ -189,23 +189,23 @@ export const bundleClient = async (
     ...EXTRA_ENTRYPOINT_BUILD_OPTIONS,
     define: define ?? {},
     plugins: [
-      dreamlabCssPlugin(),
-      dreamlabNodeShimPlugin(),
-      dreamlabTextImportPlugin(".svg"),
-      dreamlabEnvironmentPlugin(
+      reburCssPlugin(),
+      reburNodeShimPlugin(),
+      reburTextImportPlugin(".svg"),
+      reburEnvironmentPlugin(
         envStack.map(it => path.join(clientDir, it)),
         env,
       ),
-      dreamlabVendorExternalPlugin(),
-      dreamlabEngineExternalPlugin(),
-      dreamlabUIExternalPlugin(),
+      reburVendorExternalPlugin(),
+      reburEngineExternalPlugin(),
+      reburUIExternalPlugin(),
       ...denoPlugins({
         loader: "native",
         configPath: await Deno.realPath(denoJsonPath),
       }),
     ],
     jsx: "automatic",
-    jsxImportSource: "@dreamlab/ui",
+    jsxImportSource: "@rebur/ui",
     entryPoints: inputs,
     outdir,
   };

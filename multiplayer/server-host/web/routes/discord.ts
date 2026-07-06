@@ -1,4 +1,4 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
@@ -78,7 +78,7 @@ export const serveDiscordRoutes = async (router: Router) => {
         }),
         response: z.object({
           discord_token: z.string().min(1),
-          dreamlab_token: z.string().min(1),
+          rebur_token: z.string().min(1),
           info: z.record(z.string(), z.unknown()),
         }),
       },
@@ -152,11 +152,11 @@ export const serveDiscordRoutes = async (router: Router) => {
           throw new JsonAPIError(Status.InternalServerError, "failed to start instance");
         await instance.waitForSessionBoot();
 
-        const dreamlab_token = await create({ alg: "HS256" }, claims, gameAuthSecret);
+        const rebur_token = await create({ alg: "HS256" }, claims, gameAuthSecret);
 
         return {
           discord_token: token.access_token,
-          dreamlab_token,
+          rebur_token,
           info: instanceInfo(instance),
         };
       },

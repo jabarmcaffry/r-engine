@@ -1,6 +1,6 @@
 # proto
 
-Packet definitions and codecs for Dreamlab network protocols. Networking is built on WebSockets.
+Packet definitions and codecs for Rebur network protocols. Networking is built on WebSockets.
 
 Protocols:
 - `play`

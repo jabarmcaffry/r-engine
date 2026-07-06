@@ -6,7 +6,7 @@ import * as dotenv from "jsr:@std/dotenv@0.225.2";
 import * as encoding from "jsr:@std/encoding@^1";
 import * as path from "jsr:@std/path@^1";
 
-export const dreamlabExternalPlugin = (name: string, ...filters: RegExp[]): esbuild.Plugin => ({
+export const reburExternalPlugin = (name: string, ...filters: RegExp[]): esbuild.Plugin => ({
   name,
   setup: (build: esbuild.PluginBuild) => {
     for (const filter of filters) {
@@ -17,28 +17,28 @@ export const dreamlabExternalPlugin = (name: string, ...filters: RegExp[]): esbu
   },
 });
 
-export const dreamlabEngineExternalPlugin = () =>
-  dreamlabExternalPlugin("dreamlab-engine-external", /^@dreamlab\/engine$/);
+export const reburEngineExternalPlugin = () =>
+  reburExternalPlugin("rebur-engine-external", /^@rebur\/engine$/);
 
-export const dreamlabUIExternalPlugin = () =>
-  dreamlabExternalPlugin(
-    "dreamlab-ui-external",
-    /^@dreamlab\/ui$/,
-    /^@dreamlab\/ui\/jsx-runtime$/,
+export const reburUIExternalPlugin = () =>
+  reburExternalPlugin(
+    "rebur-ui-external",
+    /^@rebur\/ui$/,
+    /^@rebur\/ui\/jsx-runtime$/,
   );
 
-export const dreamlabVendorExternalPlugin = (forDeno?: boolean): esbuild.Plugin => ({
-  name: "dreamlab-vendor-external",
+export const reburVendorExternalPlugin = (forDeno?: boolean): esbuild.Plugin => ({
+  name: "rebur-vendor-external",
   setup: (build: esbuild.PluginBuild) => {
-    build.onResolve({ filter: /^@dreamlab\/vendor/ }, args => {
+    build.onResolve({ filter: /^@rebur\/vendor/ }, args => {
       return { path: forDeno ? args.path : args.path.replace(/\.ts$/, ".js"), external: true };
     });
   },
 });
 
 // TODO: what do we actually want here?
-export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
-  name: "dreamlab-data-loader",
+export const reburDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
+  name: "rebur-data-loader",
   setup(build) {
     build.onResolve({ filter: /.(css|html)$/i }, args => {
       const pathRel = path.relative(worldDir, path.join(args.resolveDir, args.path));
@@ -46,7 +46,7 @@ export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
         throw new Error("Attempted to import resource from outside world directory");
       return {
         path: pathRel,
-        namespace: "dreamlab-data-loader",
+        namespace: "rebur-data-loader",
         pluginData: "text",
       };
     });
@@ -56,14 +56,14 @@ export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
         throw new Error("Attempted to import resource from outside world directory");
       return {
         path: pathRel,
-        namespace: "dreamlab-data-loader",
+        namespace: "rebur-data-loader",
         pluginData: "dataurl",
       };
     });
     build.onLoad(
       {
         filter: /.*/,
-        namespace: "dreamlab-data-loader",
+        namespace: "rebur-data-loader",
       },
       async args => ({
         contents: await Deno.readTextFile(path.join(worldDir, args.path)),
@@ -73,8 +73,8 @@ export const dreamlabDataLoaderPlugin = (worldDir: string): esbuild.Plugin => ({
   },
 });
 
-export const dreamlabCssPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-css",
+export const reburCssPlugin = (): esbuild.Plugin => ({
+  name: "rebur-css",
   setup: build => {
     const options = build.initialOptions;
     options.loader = { ...options.loader, ".woff": "file", ".woff2": "file" };
@@ -110,8 +110,8 @@ export const dreamlabCssPlugin = (): esbuild.Plugin => ({
   },
 });
 
-export const dreamlabTextImportPlugin = (...exts: `.${string}`[]): esbuild.Plugin => ({
-  name: "dreamlab-text-import",
+export const reburTextImportPlugin = (...exts: `.${string}`[]): esbuild.Plugin => ({
+  name: "rebur-text-import",
   setup: build => {
     const options = build.initialOptions;
     options.loader = { ...options.loader };
@@ -192,11 +192,11 @@ const wasm = new Uint8Array(buf);
   },
 });
 
-export const dreamlabEnvironmentPlugin = (
+export const reburEnvironmentPlugin = (
   files: string[] = [".env", ".env.production", ".env.local"],
   overrides: Record<string, string> = {},
 ): esbuild.Plugin => ({
-  name: "dreamlab-environment",
+  name: "rebur-environment",
   setup: build => {
     build.onResolve({ filter: /^env$/ }, args => {
       return {
@@ -227,8 +227,8 @@ export const dreamlabEnvironmentPlugin = (
   },
 });
 
-export const dreamlabNodeShimPlugin = (): esbuild.Plugin => ({
-  name: "dreamlab-node-shim",
+export const reburNodeShimPlugin = (): esbuild.Plugin => ({
+  name: "rebur-node-shim",
   setup: build => {
     build.onResolve({ filter: /.*/, namespace: "node" }, args => {
       if (args.path === "buffer") {

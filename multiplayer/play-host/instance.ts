@@ -1,6 +1,6 @@
-import { PlayCodec } from "@dreamlab/proto/codecs/mod.ts";
-import { ClientPacketSchema } from "@dreamlab/proto/play.ts";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { PlayCodec } from "@rebur/proto/codecs/mod.ts";
+import { ClientPacketSchema } from "@rebur/proto/play.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import * as fs from "@std/fs";
 import * as path from "@std/path";
 

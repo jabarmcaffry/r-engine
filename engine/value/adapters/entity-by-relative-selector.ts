@@ -1,5 +1,5 @@
-import { Entity, JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { Entity, JsonValue, ValueTypeAdapter } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 
 function pathSegmentsFromEntity(entity: Entity): string[] {
   const path: string[] = [];

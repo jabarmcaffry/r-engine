@@ -1,5 +1,5 @@
-import { createId } from "@dreamlab/vendor/nanoid.ts";
-import type { ConditionalExcept } from "@dreamlab/vendor/type-fest.ts";
+import { createId } from "@rebur/vendor/nanoid.ts";
+import type { ConditionalExcept } from "@rebur/vendor/type-fest.ts";
 
 import type {
   AdapterTypeTag,
@@ -19,7 +19,7 @@ import type {
   SyncedObjectInfo,
   Time,
   ValueTypeTag,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   BehaviorDescendantDestroyed,
   BehaviorDescendantSpawned,
@@ -35,13 +35,13 @@ import {
   inferValueTypeTag,
   Value,
   ValueTypeAdapter,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 import { setupSyncedObjects } from "../synced-objects/decorator.ts";
 import { setupSyncedValues } from "../value/decorator.ts";
 
 // deno-lint-ignore no-unused-vars
-import type { Clickable } from "@dreamlab/engine"; // this is used in jsdoc
+import type { Clickable } from "@rebur/engine"; // this is used in jsdoc
 import { InferSyncedObjectType } from "../synced-objects/inference.ts";
 
 export interface BehaviorContext {

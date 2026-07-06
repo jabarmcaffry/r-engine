@@ -2,17 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Rebur Engine</title>
     <link href="/favicon-64.png" rel="icon" sizes="64x64" type="image/png" />
 
     <script type="importmap">
       {
         "imports": {
-          "@dreamlab/vendor/": "./dist/vendor/",
-          "@dreamlab/engine": "./dist/engine.js",
-          "@dreamlab/ui": "./dist/ui.js",
-          "@dreamlab/ui/jsx-runtime": "./dist/ui-jsx.js"
+          "@rebur/vendor/": "./dist/vendor/",
+          "@rebur/engine": "./dist/engine.js",
+          "@rebur/ui": "./dist/ui.js",
+          "@rebur/ui/jsx-runtime": "./dist/ui-jsx.js"
         }
       }
     </script>
@@ -29,6 +29,9 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Monaco Editor CDN loader (AMD) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/min/vs/loader.min.js"></script>
 
     <link rel="stylesheet" href="./dist/client-main.css" />
   </head>

@@ -1,4 +1,4 @@
-import { Behavior, Empty, enumAdapter } from "@dreamlab/engine";
+import { Behavior, Empty, enumAdapter } from "@rebur/engine";
 
 const HelloWorldAdapter = enumAdapter(["hello", "world"]);
 

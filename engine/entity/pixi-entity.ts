@@ -8,9 +8,9 @@ import {
   EntityReparented,
   GameRender,
   SignalSubscription,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export abstract class PixiEntity<
   T extends PIXI.ContainerChild = PIXI.Container,

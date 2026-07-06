@@ -1,4 +1,4 @@
-import { AudioSource, Behavior, Sprite } from "@dreamlab/engine";
+import { AudioSource, Behavior, Sprite } from "@rebur/engine";
 import WASDMovementBehavior from "../../behavior/behaviors/wasd-movement-behavior.ts";
 
 class PlaySoundBehavior extends Behavior {

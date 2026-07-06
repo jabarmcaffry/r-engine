@@ -5,7 +5,7 @@ import {
   EntityDestroyed,
   EntityEnableChanged,
   GameRender,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 
 export class UIPanel extends Entity {
   static {

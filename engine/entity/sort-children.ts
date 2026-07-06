@@ -1,4 +1,4 @@
-import type { Entity } from "@dreamlab/engine";
+import type { Entity } from "@rebur/engine";
 
 const isStringParseableToInt = (s: string | undefined): s is string => {
   if (s === undefined) {

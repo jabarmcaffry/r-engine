@@ -1,5 +1,5 @@
-import { element as elem } from "@dreamlab/ui";
-import type * as z from "@dreamlab/vendor/zod.ts";
+import { element as elem } from "@rebur/ui";
+import type * as z from "@rebur/vendor/zod.ts";
 
 export const getClientId = () => {
   const idMatches = /^(?<id>\d+)\.discordsays\.com$/.exec(window.location.host);
@@ -44,7 +44,7 @@ const init = async () => {
 
   // load scripts **after** showing loading
   const main = import("./start-game.ts");
-  const z = await import("@dreamlab/vendor/zod.ts");
+  const z = await import("@rebur/vendor/zod.ts");
   const { DiscordSDK } = await import("npm:@discord/embedded-app-sdk");
   const { InstanceInfoSchema } = await import("./connect-form.tsx");
 
@@ -71,7 +71,7 @@ const init = async () => {
 
   const AuthResponseSchema = z.object({
     discord_token: z.string().min(1),
-    dreamlab_token: z.string().min(1),
+    rebur_token: z.string().min(1),
     info: InstanceInfoSchema,
   });
 
@@ -90,7 +90,7 @@ const init = async () => {
     return;
   }
 
-  const { discord_token, dreamlab_token, info } = AuthResponseSchema.parse(await resp.json());
+  const { discord_token, rebur_token, info } = AuthResponseSchema.parse(await resp.json());
   const auth = await sdk.commands.authenticate({ access_token: discord_token });
   if (auth === null) {
     throw new Error("authenticate command failed");
@@ -98,7 +98,7 @@ const init = async () => {
 
   const connectUrl = new URL(`wss://${sdk.clientId}.discordsays.com`);
   connectUrl.pathname = `/.proxy/mp/api/v1/connect/${info.id as string}`;
-  connectUrl.searchParams.set("token", dreamlab_token);
+  connectUrl.searchParams.set("token", rebur_token);
 
   const { startGame } = await main;
   loading.remove();

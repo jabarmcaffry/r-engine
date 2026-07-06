@@ -1,9 +1,9 @@
-import { element as elem, ElementAttributes, ElementProps } from "@dreamlab/ui";
+import { element as elem, ElementAttributes, ElementProps } from "@rebur/ui";
 import { icon } from "../_icons.tsx";
 
 export class IconButton extends HTMLElement {
   static {
-    customElements.define("dreamlab-icon-button", this);
+    customElements.define("rebur-icon-button", this);
   }
 
   constructor(svg: string, attrs: Partial<ElementAttributes<"button">> = {}, label?: string) {

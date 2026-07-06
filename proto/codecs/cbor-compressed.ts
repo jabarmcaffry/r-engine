@@ -1,5 +1,5 @@
-import { decodeCBOR, encodeCBOR } from "@dreamlab/vendor/exp-fast-cbor.ts";
-import { gzip, ungzip } from "@dreamlab/vendor/pako.ts";
+import { decodeCBOR, encodeCBOR } from "@rebur/vendor/exp-fast-cbor.ts";
+import { gzip, ungzip } from "@rebur/vendor/pako.ts";
 import { PlayPacket } from "../play.ts";
 import { PlayCodec } from "./mod.ts";
 

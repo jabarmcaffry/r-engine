@@ -1,5 +1,5 @@
-import { EPSILON, lerp, smoothLerp } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
+import { EPSILON, lerp, smoothLerp } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
 import { Prng, RandomDistribution, Rng, StandardNormal, StandardUniform } from "../random.ts";
 import type { Vector } from "./_vector.ts";
 

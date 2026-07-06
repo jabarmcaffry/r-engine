@@ -1,5 +1,5 @@
-import * as internal from "@dreamlab/engine/internal";
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as internal from "@rebur/engine/internal";
+import * as z from "@rebur/vendor/zod.ts";
 
 type HttpAPIRoute = {
   readonly identifier: string;

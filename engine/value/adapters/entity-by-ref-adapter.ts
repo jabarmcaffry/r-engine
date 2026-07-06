@@ -1,4 +1,4 @@
-import { Entity, JsonValue, ValueTypeAdapter } from "@dreamlab/engine";
+import { Entity, JsonValue, ValueTypeAdapter } from "@rebur/engine";
 
 /**
  * This supports a `Value<Entity | undefined>`

@@ -1,5 +1,5 @@
-import { ClientGame } from "@dreamlab/engine";
-import { element as elem } from "@dreamlab/ui";
+import { ClientGame } from "@rebur/engine";
+import { element as elem } from "@rebur/ui";
 import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export type ContextMenuItem =

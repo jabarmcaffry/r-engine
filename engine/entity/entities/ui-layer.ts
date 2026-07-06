@@ -1,4 +1,4 @@
-import { Entity, EntityContext, EntityDestroyed, EntityEnableChanged } from "@dreamlab/engine";
+import { Entity, EntityContext, EntityDestroyed, EntityEnableChanged } from "@rebur/engine";
 
 export class UILayer extends Entity {
   static {

@@ -1,4 +1,4 @@
-import { BaseTilemap, TileInfo } from "@dreamlab/engine";
+import { BaseTilemap, TileInfo } from "@rebur/engine";
 
 export class TilemapClear {
   constructor(public tilemap: BaseTilemap) {}

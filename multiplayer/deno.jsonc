@@ -6,17 +6,17 @@
     "start": "deno task prepare-pre-exec && deno task edit-host:start",
     "clone": "deno task prepare-pre-exec && deno task edit-host:start --clone",
   },
-  // NOTE: any imports not in the "@dreamlab/" namespace are not present
+  // NOTE: any imports not in the "@rebur/" namespace are not present
   // in server-common or server-runtime environments.
   "imports": {
-    "@dreamlab/engine": "../engine/mod.ts",
-    "@dreamlab/engine/internal": "../engine/internal.ts",
-    "@dreamlab/vendor/": "../engine/_deps/",
-    "@dreamlab/proto/": "../proto/",
-    "@dreamlab/scene": "../scene-graph/mod.ts",
-    "@dreamlab/ui": "../ui/mod.ts",
-    "@dreamlab/ui/jsx-runtime": "../ui/jsx.ts",
-    "@dreamlab/util/": "../util/",
+    "@rebur/engine": "../engine/mod.ts",
+    "@rebur/engine/internal": "../engine/internal.ts",
+    "@rebur/vendor/": "../engine/_deps/",
+    "@rebur/proto/": "../proto/",
+    "@rebur/scene": "../scene-graph/mod.ts",
+    "@rebur/ui": "../ui/mod.ts",
+    "@rebur/ui/jsx-runtime": "../ui/jsx.ts",
+    "@rebur/util/": "../util/",
     "@oak/oak": "jsr:@oak/oak@^17.1.5",
     "@std/cli": "jsr:@std/cli@^1.0.11",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.3",

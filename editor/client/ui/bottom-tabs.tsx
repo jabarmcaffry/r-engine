@@ -1,25 +1,30 @@
-import { element as elem } from "@dreamlab/ui";
+import { element as elem } from "@rebur/ui";
 import { InspectorUI, InspectorUIWidget, NewRecommendedActions } from "./inspector.ts";
 import { LogViewer } from "./log-viewer.ts";
 import { PrefabViewer } from "./prefab-viewer.tsx";
-import { Terminal, Box, icon, Bot, Wand, LoaderCircle, Map } from "../_icons.tsx";
-import { ClientGame } from "@dreamlab/engine";
+import { Terminal, Box, icon, Bot, Wand, LoaderCircle, Map, CodeXml } from "../_icons.tsx";
+import { ClientGame } from "@rebur/engine";
 import { Assistant } from "./assistant/assistant.tsx";
 import { AISuggestionsPopup } from "./ai-suggestions-popup.tsx";
 import { TileMapViewer } from "./tilemap-viewer.ts";
 import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
+import { ScriptEditor } from "./script-editor.ts";
 
 export class BottomTabs implements InspectorUIWidget {
   #logViewer: LogViewer;
   #assistant: Assistant;
   #prefabViewer: PrefabViewer;
   #tilemapViewer: TileMapViewer;
+  #scriptEditor: ScriptEditor;
 
   #container: HTMLElement;
   #logContent: HTMLElement;
   #prefabContent: HTMLElement;
   #assistantContent: HTMLElement;
   #tilemapContent: HTMLElement;
+  #scriptContent: HTMLElement;
+
+  #switchTab!: (tabId: string) => void;
 
   constructor(games: { edit: ClientGame; play?: ClientGame }, isPro: boolean) {
     this.#container = elem("div", { className: "bottom-tabs" });
@@ -28,11 +33,19 @@ export class BottomTabs implements InspectorUIWidget {
     this.#prefabContent = elem("div", { id: "prefab-viewer-content" });
     this.#assistantContent = elem("div", { id: "assistant-viewer-content" });
     this.#tilemapContent = elem("div", { id: "tilemap-viewer-content" });
+    this.#scriptContent = elem("div", { id: "script-editor-content" });
 
     this.#logViewer = new LogViewer(this.#logContent, games);
     this.#prefabViewer = new PrefabViewer(games.edit, this.#prefabContent);
     this.#assistant = new Assistant(games.edit, this.#assistantContent, isPro);
     this.#tilemapViewer = new TileMapViewer(games.edit, this.#tilemapContent);
+    this.#scriptEditor = new ScriptEditor(games.edit);
+  }
+
+  /** Open a script file by path and switch to the Scripts tab. */
+  openScript(path: string): void {
+    this.#switchTab("scripts");
+    this.#scriptEditor.openFile(path);
   }
 
   setup(ui: InspectorUI): void {
@@ -52,6 +65,8 @@ export class BottomTabs implements InspectorUIWidget {
       this.#prefabContent.style.display = tabId === "prefabs" ? "flex" : "none";
       this.#assistantContent.style.display = tabId === "assistant" ? "flex" : "none";
       this.#tilemapContent.style.display = tabId === "tilemap" ? "flex" : "none";
+      this.#scriptContent.style.display = tabId === "scripts" ? "flex" : "none";
+
       if (tabId === "tilemap") {
         this.#tilemapViewer.visible = true;
         this.#tilemapViewer.resize();
@@ -59,6 +74,9 @@ export class BottomTabs implements InspectorUIWidget {
         this.#tilemapViewer.visible = false;
       }
     };
+
+    // Store for use by openScript()
+    this.#switchTab = switchTab;
 
     // @ts-ignore using globals correctly to save time and energy
     globalThis.bottomBarSwitchTab = switchTab;
@@ -83,6 +101,10 @@ export class BottomTabs implements InspectorUIWidget {
     tilemapTab.setAttribute("data-tab-id", "tilemap");
     tilemapTab.append(icon(Map), elem("span", {}, ["TileMap"]));
     tilemapTab.addEventListener("click", () => switchTab("tilemap"));
+
+    const scriptsTab = elem("div", { className: "bottom-tab" });
+    scriptsTab.setAttribute("data-tab-id", "scripts");
+    scriptsTab.append(icon(CodeXml), elem("span", {}, ["Scripts"]));
 
     setTimeout(() => {
       switchTab("prefabs");
@@ -137,6 +159,7 @@ export class BottomTabs implements InspectorUIWidget {
       assistantTab,
       prefabsTab,
       logsTab,
+      scriptsTab,
       tilemapTab,
       recommendedActionsTab,
       loadingActionsTab,
@@ -154,17 +177,25 @@ export class BottomTabs implements InspectorUIWidget {
       }
     });
 
+    // Mount ScriptEditor into its content div
+    this.#scriptEditor.container && this.#scriptContent.appendChild(this.#scriptEditor.container);
+
     const content = elem("div", { className: "bottom-tabs-content" }, [
       this.#logContent,
       this.#prefabContent,
       this.#assistantContent,
       this.#tilemapContent,
+      this.#scriptContent,
     ]);
 
     this.#prefabContent.style.display = "none";
     this.#assistantContent.style.display = "flex";
     this.#logContent.style.display = "none";
     this.#tilemapContent.style.display = "none";
+    this.#scriptContent.style.display = "none";
+
+    // Script content uses flex column (editor takes full height)
+    this.#scriptContent.style.flexDirection = "column";
 
     this.#container.append(tabBar, content);
 

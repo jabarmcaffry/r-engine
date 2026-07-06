@@ -1,8 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
-import { Behavior, Entity, type EntityDefinition } from "@dreamlab/engine";
-import type { SceneDescBehavior } from "@dreamlab/scene";
+import { Behavior, Entity, type EntityDefinition } from "@rebur/engine";
+import type { SceneDescBehavior } from "@rebur/scene";
 import { EditorMetadataEntity, Facades } from "../../../common/mod.ts";
-import type { ClientGame } from "@dreamlab/engine";
+import type { ClientGame } from "@rebur/engine";
 
 /**
  * Designed to be a more convenient way to spawn an entity and process AI-generated commands.

@@ -4,9 +4,9 @@ import {
   InternalGameTick,
   SyncedObjectOperation,
   SyncedObjectOperationSchema,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import type { PlayPacket } from "@dreamlab/proto/play.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import type { PlayPacket } from "@rebur/proto/play.ts";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
 
 // as an optimization we filter out old operations that are overruled by new ones,

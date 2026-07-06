@@ -1,14 +1,14 @@
-import { ConnectionId, JsonObject, JsonValue } from "@dreamlab/engine";
+import { ConnectionId, JsonObject, JsonValue } from "@rebur/engine";
 import {
   syncedObjectContainerObjectsField as objects,
   syncedObjectContainerReadyField as ready,
-} from "@dreamlab/engine/internal";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine/internal";
+import * as z from "@rebur/vendor/zod.ts";
 import { Accessor, AnySyncedObject, SyncedObject } from "../object.ts";
 import { SyncedObjectOperation } from "../operation.ts";
 import { isContainer, SyncedObjectContainer, SyncedObjectRegistry } from "../registry.ts";
 
-const deepObjectSymbol = Symbol.for("dreamlab.synced-objects.deep-object");
+const deepObjectSymbol = Symbol.for("rebur.synced-objects.deep-object");
 
 export const DeepObjectOperationSet = z.object({
   t: z.literal("deep-object-set"),

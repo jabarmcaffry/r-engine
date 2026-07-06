@@ -1,4 +1,4 @@
-import { element as elem } from "@dreamlab/ui";
+import { element as elem } from "@rebur/ui";
 
 export class IconPicker {
   #picker = elem("div", { className: "icon-picker" }, []);

@@ -6,7 +6,7 @@ import {
   TilingSprite,
   Vector2,
   Vector2Adapter,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 
 export class BackgroundBehavior extends Behavior {
   parallax: Vector2 = Vector2.ZERO;

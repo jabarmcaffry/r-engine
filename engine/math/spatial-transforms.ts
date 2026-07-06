@@ -1,4 +1,4 @@
-import { IVector2, Transform, Vector2 } from "@dreamlab/engine";
+import { IVector2, Transform, Vector2 } from "@rebur/engine";
 
 // prettier-ignore
 export interface Matrix2x2 {

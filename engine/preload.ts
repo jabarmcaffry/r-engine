@@ -1,6 +1,6 @@
-import type { ClientGame } from "@dreamlab/engine";
-import { preloadInfo } from "@dreamlab/engine/internal";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import type { ClientGame } from "@rebur/engine";
+import { preloadInfo } from "@rebur/engine/internal";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export type PreloadInfo = {
   readonly textures?: string[];

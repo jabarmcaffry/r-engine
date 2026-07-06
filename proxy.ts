@@ -12,7 +12,7 @@ const PUBLIC_DIR    = "./public";
 // Auth token for privileged multiplayer endpoints.
 // Never sent to the browser — the proxy adds it server-side for /api/dashboard/* routes.
 const MULTIPLAYER_AUTH_TOKEN =
-  Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN") ?? "token";
+  Deno.env.get("REBUR_MULTIPLAYER_AUTH_TOKEN") ?? "token";
 
 function isApiPath(pathname: string): boolean {
   return (
@@ -82,8 +82,8 @@ async function serveEditorPage(): Promise<Response> {
 async function serveWorldsList(): Promise<Response> {
   const worlds: Array<{ id: string; name: string }> = [];
   try {
-    for await (const entry of Deno.readDir("./multiplayer/worlds/dreamlab")) {
-      if (entry.isDirectory) worlds.push({ id: `dreamlab/${entry.name}`, name: entry.name });
+    for await (const entry of Deno.readDir("./multiplayer/worlds/rebur")) {
+      if (entry.isDirectory) worlds.push({ id: `rebur/${entry.name}`, name: entry.name });
     }
   } catch { /* worlds dir not found */ }
   worlds.sort((a, b) => a.id.localeCompare(b.id));

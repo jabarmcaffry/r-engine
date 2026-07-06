@@ -1,4 +1,4 @@
-import { Behavior, RawGraphics, Sprite } from "@dreamlab/engine";
+import { Behavior, RawGraphics, Sprite } from "@rebur/engine";
 
 class DrawSmileyBehavior extends Behavior {
   #canvas = this.entity.cast(RawGraphics);

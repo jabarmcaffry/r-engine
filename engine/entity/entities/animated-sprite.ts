@@ -15,8 +15,8 @@ import {
   TextureAdapter,
   Vector2,
   Vector2Adapter,
-} from "@dreamlab/engine";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+} from "@rebur/engine";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 // this shockingly fixes spritesheet bleeding
 PIXI.AbstractRenderer.defaultOptions.roundPixels = true;

@@ -5,9 +5,9 @@ import {
   Game,
   JsonValue,
   TransformOptions,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import type * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import type * as z from "@rebur/vendor/zod.ts";
 import {
   BehaviorDefinitionSchema,
   EntityDefinitionSchema,

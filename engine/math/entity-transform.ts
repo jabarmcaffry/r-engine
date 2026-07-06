@@ -1,11 +1,11 @@
-import type { IVector2 } from "@dreamlab/engine";
-import { Vector2 } from "@dreamlab/engine";
+import type { IVector2 } from "@rebur/engine";
+import { Vector2 } from "@rebur/engine";
 import {
   transformForceUpdate,
   transformOnChanged,
   vectorForceUpdate,
   vectorOnChanged,
-} from "@dreamlab/engine/internal";
+} from "@rebur/engine/internal";
 
 export interface ITransform {
   position: IVector2;

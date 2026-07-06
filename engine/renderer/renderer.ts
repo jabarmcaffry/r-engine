@@ -1,6 +1,6 @@
-import { type ClientGame, GameRenderResize } from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import * as PIXI from "@dreamlab/vendor/pixi.ts";
+import { type ClientGame, GameRenderResize } from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export class GameRenderer {
   #game: ClientGame;

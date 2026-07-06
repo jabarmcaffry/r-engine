@@ -8,9 +8,9 @@ import {
   MouseMove,
   PhysicsDebug,
   Vector2,
-} from "@dreamlab/engine";
-import type { BaseElement } from "@dreamlab/ui";
-import { element as elem } from "@dreamlab/ui";
+} from "@rebur/engine";
+import type { BaseElement } from "@rebur/ui";
+import { element as elem } from "@rebur/ui";
 import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
 import {
   AlertCircle,
@@ -255,7 +255,7 @@ export class Toolbar implements InspectorUIWidget {
   }
 
   #drawPhysicsDebugButton(): BaseElement {
-    const STORAGE_KEY = "@dreamlab/editor/show-physics-debug";
+    const STORAGE_KEY = "@rebur/editor/show-physics-debug";
     const setState = (value: boolean) => {
       if (value) localStorage.setItem(STORAGE_KEY, "true");
       else localStorage.removeItem(STORAGE_KEY);
@@ -319,7 +319,7 @@ export class Toolbar implements InspectorUIWidget {
   }
 
   #drawStatsButton(): BaseElement {
-    const STORAGE_KEY = "@dreamlab/editor/show-stats";
+    const STORAGE_KEY = "@rebur/editor/show-stats";
     const state = (): boolean => {
       return localStorage.getItem(STORAGE_KEY) === "true";
     };
@@ -412,7 +412,7 @@ export class Toolbar implements InspectorUIWidget {
       return [width, height];
     };
 
-    const STORAGE_KEY = "@dreamlab/editor/resolution";
+    const STORAGE_KEY = "@rebur/editor/resolution";
 
     const setRatio = (ratio: AspectRatio) => {
       setAspectRatio(ratio);

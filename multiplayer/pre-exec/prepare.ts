@@ -15,7 +15,7 @@ for (const key of Object.keys(denoJson.imports)) {
   if (denoJson.imports[key].startsWith("."))
     denoJson.imports[key] = "../" + denoJson.imports[key];
 }
-denoJson.imports["@dreamlab/engine"] = "./engine.js";
+denoJson.imports["@rebur/engine"] = "./engine.js";
 denoJson.lock = false;
 delete denoJson.tasks;
 await Deno.writeTextFile("./pre-exec/deno.host.json", JSON.stringify(denoJson));

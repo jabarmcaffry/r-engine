@@ -1,8 +1,8 @@
-import { SceneDescBehavior, ValueSchema } from "@dreamlab/scene";
-import { element as elem } from "@dreamlab/ui";
+import { SceneDescBehavior, ValueSchema } from "@rebur/scene";
+import { element as elem } from "@rebur/ui";
 
-import { ClientGame, Entity, Value } from "@dreamlab/engine";
-import type * as z from "@dreamlab/vendor/zod.ts";
+import { ClientGame, Entity, Value } from "@rebur/engine";
+import type * as z from "@rebur/vendor/zod.ts";
 import { icon, Trash2 as Trash } from "../../_icons.tsx";
 import { DataDetails, DataTable } from "../../components/mod.ts";
 import { BehaviorTypeInfo } from "../../util/behavior-type-info.ts";

@@ -1,9 +1,9 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
 import * as path from "@std/path";
 import { generate as generateUUIDv5 } from "@std/uuid/v5";
 
-import { SceneSchema } from "@dreamlab/scene";
+import { SceneSchema } from "@rebur/scene";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
 import type { WorkerIPCMessage } from "../../../server-common/ipc.ts";
 import { CONFIG } from "../../config.ts";
@@ -92,14 +92,14 @@ export const serveInstanceManagementAPI = (router: Router) => {
       },
       async (_ctx, { body }) => {
         // arbitrary
-        const DREAMLAB_EDIT_NAMESPACE = "b2d25565-3f12-4acd-90bb-7883eee613fe";
+        const REBUR_EDIT_NAMESPACE = "b2d25565-3f12-4acd-90bb-7883eee613fe";
 
         const instanceId =
           body.nil && CONFIG.IS_DEV
             ? "00000000-0000-0000-0000-000000000000"
             : body.edit_mode && !body.force_random_id
               ? await generateUUIDv5(
-                  DREAMLAB_EDIT_NAMESPACE,
+                  REBUR_EDIT_NAMESPACE,
                   new TextEncoder().encode(body.world_id),
                 )
               : crypto.randomUUID();

@@ -6,8 +6,8 @@ import {
   EntityDestroyed,
   GameRender,
   Vector2,
-} from "@dreamlab/engine";
-import "@dreamlab/vendor/howler.ts";
+} from "@rebur/engine";
+import "@rebur/vendor/howler.ts";
 
 export class AudioSource extends Entity {
   static {

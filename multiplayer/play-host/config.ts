@@ -1,4 +1,4 @@
-import * as z from "@dreamlab/vendor/zod.ts";
+import * as z from "@rebur/vendor/zod.ts";
 import { parseArgs } from "@std/cli";
 import { load as dotenv } from "@std/dotenv";
 import { createEnv } from "@t3-oss/env-core";
@@ -80,28 +80,28 @@ export const CONFIG = createEnv({
 
     SCRIPTS_PUBLIC_BASE_URL: z.string().optional(),
 
-    // optionally report existence to dreamlab-next (for running production play instances)
+    // optionally report existence to rebur-next (for running production play instances)
     ACTOR_ID: z.string().optional(),
     SERVER_TRACKER: z.url().optional(),
     MULTIPLAYER_AUTH_TOKEN: z.string().min(1).optional(),
     AUTO_CLEANUP_IDLE_SECS: z.coerce.number().optional(),
   },
   runtimeEnvStrict: {
-    NEXT_GAME_JWT_SECRET: Deno.env.get("DREAMLAB_NEXT_GAME_JWT_SECRET"),
-    MULTIPLAYER_PUBLIC_URL: Deno.env.get("DREAMLAB_MULTIPLAYER_PUBLIC_URL"),
-    KV_PUBLIC_URL: Deno.env.get("DREAMLAB_KV_PUBLIC_URL"),
-    KV_SIGNING_KEY: Deno.env.get("DREAMLAB_KV_SIGNING_KEY"),
-    WORLDS_DIRECTORY: Deno.env.get("DREAMLAB_MULTIPLAYER_WORLDS_DIRECTORY"),
-    STANDALONE: Deno.env.get("DREAMLAB_MULTIPLAYER_STANDALONE"),
-    RUNTIME_SCRIPT: Deno.env.get("DREAMLAB_MULTIPLAYER_RUNTIME_SCRIPT"),
-    CLIENT_DIRECTORY: Deno.env.get("DREAMLAB_MULTIPLAYER_CLIENT_DIRECTORY"),
-    INSTANCE_ID: cli["instance-id"] ?? Deno.env.get("DREAMLAB_MULTIPLAYER_INSTANCE_ID"),
-    WORLD_ID: cli["world-id"] ?? Deno.env.get("DREAMLAB_MULTIPLAYER_WORLD_ID"),
-    SCRIPTS_PUBLIC_BASE_URL: Deno.env.get("DREAMLAB_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL"),
-    SERVER_TRACKER: Deno.env.get("DREAMLAB_NEXT_PUBLIC_URL"),
-    MULTIPLAYER_AUTH_TOKEN: Deno.env.get("DREAMLAB_MULTIPLAYER_AUTH_TOKEN"),
-    ACTOR_ID: Deno.env.get("DREAMLAB_ACTOR_ID"),
-    AUTO_CLEANUP_IDLE_SECS: Deno.env.get("DREAMLAB_MULTIPLAYER_AUTO_CLEANUP_IDLE_SECS"),
+    NEXT_GAME_JWT_SECRET: Deno.env.get("REBUR_NEXT_GAME_JWT_SECRET"),
+    MULTIPLAYER_PUBLIC_URL: Deno.env.get("REBUR_MULTIPLAYER_PUBLIC_URL"),
+    KV_PUBLIC_URL: Deno.env.get("REBUR_KV_PUBLIC_URL"),
+    KV_SIGNING_KEY: Deno.env.get("REBUR_KV_SIGNING_KEY"),
+    WORLDS_DIRECTORY: Deno.env.get("REBUR_MULTIPLAYER_WORLDS_DIRECTORY"),
+    STANDALONE: Deno.env.get("REBUR_MULTIPLAYER_STANDALONE"),
+    RUNTIME_SCRIPT: Deno.env.get("REBUR_MULTIPLAYER_RUNTIME_SCRIPT"),
+    CLIENT_DIRECTORY: Deno.env.get("REBUR_MULTIPLAYER_CLIENT_DIRECTORY"),
+    INSTANCE_ID: cli["instance-id"] ?? Deno.env.get("REBUR_MULTIPLAYER_INSTANCE_ID"),
+    WORLD_ID: cli["world-id"] ?? Deno.env.get("REBUR_MULTIPLAYER_WORLD_ID"),
+    SCRIPTS_PUBLIC_BASE_URL: Deno.env.get("REBUR_MULTIPLAYER_SCRIPTS_PUBLIC_BASE_URL"),
+    SERVER_TRACKER: Deno.env.get("REBUR_NEXT_PUBLIC_URL"),
+    MULTIPLAYER_AUTH_TOKEN: Deno.env.get("REBUR_MULTIPLAYER_AUTH_TOKEN"),
+    ACTOR_ID: Deno.env.get("REBUR_ACTOR_ID"),
+    AUTO_CLEANUP_IDLE_SECS: Deno.env.get("REBUR_MULTIPLAYER_AUTO_CLEANUP_IDLE_SECS"),
   },
   emptyStringAsUndefined: true,
 });

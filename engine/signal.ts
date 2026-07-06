@@ -2,7 +2,7 @@
 
 export type Signal = object;
 
-export const exclusiveSignalType = Symbol.for("dreamlab.exclusiveSignalType");
+export const exclusiveSignalType = Symbol.for("rebur.exclusiveSignalType");
 export interface ExclusiveSignal<T> {
   [exclusiveSignalType]: (new (...args: any[]) => T) | (abstract new (...args: any[]) => T);
 }

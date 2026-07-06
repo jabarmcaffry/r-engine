@@ -1,6 +1,6 @@
-import { JSX } from "@dreamlab/ui/jsx-runtime";
+import { JSX } from "@rebur/ui/jsx-runtime";
 
-export abstract class DreamlabEditorUIComponent {
+export abstract class ReburEditorUIComponent {
   private uiRoot: HTMLElement | undefined;
   private container: HTMLElement | undefined;
 
@@ -39,7 +39,7 @@ export abstract class DreamlabEditorUIComponent {
       this.uiRoot.appendChild(this.container);
       this.rerender();
     } else {
-      console.warn("Attempted to show DreamlabEditorUIComponent that has not been mounted.");
+      console.warn("Attempted to show ReburEditorUIComponent that has not been mounted.");
     }
   };
 }

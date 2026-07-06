@@ -1,6 +1,6 @@
 // TODO: everything
 
-import type { Behavior, Entity, JsonValue } from "@dreamlab/engine";
+import type { Behavior, Entity, JsonValue } from "@rebur/engine";
 import { inferSyncedObjectType } from "./inference.ts";
 import { AnyAccessor, SyncedObjectInfo } from "./object.ts";
 import type {

@@ -5,9 +5,9 @@ import {
   EntityDestroyed,
   enumAdapter,
   Vector2,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import RAPIER from "@dreamlab/vendor/rapier.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import RAPIER from "@rebur/vendor/rapier.ts";
 
 type RigidBodyType = (typeof rigidbodyTypes)[number];
 const rigidbodyTypes = [

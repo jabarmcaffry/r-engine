@@ -1,0 +1,40 @@
+import { Behavior, IVector2, value, Vector2 } from "@rebur/engine";
+import { PlayerMoved } from "./player-movement.ts";
+
+export default class TileAction extends Behavior {
+  @value()
+  debug: boolean = false;
+
+  get tilePos(): IVector2 {
+    return this.entity.pos.floor();
+  }
+
+  onInitialize(): void {
+    if (!this.debug) {
+      // disable any children used for editor visibility
+      for (const child of this.entity.children.values()) {
+        child.enabled = false;
+      }
+    }
+
+    this.listen(this.game, PlayerMoved, ev => {
+      const inTile = Vector2.eq(ev.position, this.tilePos);
+      if (!this.#inTile && inTile) this.onTileEnter(ev);
+      else if (this.#inTile && !inTile) this.onTileExit(ev);
+
+      this.#inTile = inTile;
+    });
+  }
+
+  #inTile: boolean = false;
+
+  // deno-lint-ignore no-unused-vars
+  public onTileEnter(ev: PlayerMoved): void {
+    // implemented in child classes
+  }
+
+  // deno-lint-ignore no-unused-vars
+  public onTileExit(ev: PlayerMoved): void {
+    // implemented in child classes
+  }
+}

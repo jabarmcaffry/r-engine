@@ -1,5 +1,5 @@
-import { GameTick, type ClientGame, type JsonValue } from "@dreamlab/engine";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
+import { GameTick, type ClientGame, type JsonValue } from "@rebur/engine";
+import { createId } from "@rebur/vendor/nanoid.ts";
 import * as common from "./_common.ts";
 import type { PresignRequest, PresignResponse, SignRequest, SignResponse } from "./_rpc.ts";
 import { KvBase } from "./base.ts";

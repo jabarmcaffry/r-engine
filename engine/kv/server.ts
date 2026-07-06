@@ -1,6 +1,6 @@
-import { GameTick, type JsonValue, type ServerGame } from "@dreamlab/engine";
-import { createId } from "@dreamlab/vendor/nanoid.ts";
-import { decodeBase64Url } from "@dreamlab/vendor/std__encoding.ts";
+import { GameTick, type JsonValue, type ServerGame } from "@rebur/engine";
+import { createId } from "@rebur/vendor/nanoid.ts";
+import { decodeBase64Url } from "@rebur/vendor/std__encoding.ts";
 import * as common from "./_common.ts";
 import { createPayload, presign, sign } from "./_crypto.ts";
 import type { PresignRequest, PresignResponse, SignRequest, SignResponse } from "./_rpc.ts";

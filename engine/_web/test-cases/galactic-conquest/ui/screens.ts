@@ -67,7 +67,7 @@ button:hover {
     this.#element.appendChild(title);
 
     const description = document.createElement("p");
-    description.innerText = "Embark on an epic space adventure, powered by Dreamlab v2!";
+    description.innerText = "Embark on an epic space adventure, powered by Rebur v2!";
     this.#element.appendChild(description);
 
     this.#button = document.createElement("button");

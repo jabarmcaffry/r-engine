@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-import-prefix
-import { Entity } from "@dreamlab/engine";
+import { Entity } from "@rebur/engine";
 import * as path from "jsr:@std/path@^1";
 
 export const projectTemplate = () => ({
@@ -25,26 +25,26 @@ export const projectTemplate = () => ({
   },
 });
 
-export const denoJson = (root: string = "./.dreamlab-engine") => ({
+export const denoJson = (root: string = "./.rebur-engine") => ({
   imports: {
     // deno demands leading ./ or it errors
-    "@dreamlab/engine": "./" + path.join(root, "engine/mod.ts"),
-    "@dreamlab/engine/internal": "./" + path.join(root, "engine/internal.ts"),
-    "@dreamlab/vendor/": "./" + path.join(root, "engine/_deps/"),
-    "@dreamlab/ui": "./" + path.join(root, "ui/mod.ts"),
-    "@dreamlab/ui/jsx-runtime": "./" + path.join(root, "ui/jsx.ts"),
-    "@dreamlab/util/": "./" + path.join(root, "util/"),
+    "@rebur/engine": "./" + path.join(root, "engine/mod.ts"),
+    "@rebur/engine/internal": "./" + path.join(root, "engine/internal.ts"),
+    "@rebur/vendor/": "./" + path.join(root, "engine/_deps/"),
+    "@rebur/ui": "./" + path.join(root, "ui/mod.ts"),
+    "@rebur/ui/jsx-runtime": "./" + path.join(root, "ui/jsx.ts"),
+    "@rebur/util/": "./" + path.join(root, "util/"),
   },
   compilerOptions: {
     lib: ["deno.window", "dom"],
     noImplicitOverride: false,
-    jsxImportSource: "@dreamlab/ui",
+    jsxImportSource: "@rebur/ui",
   },
 });
 
 export const helloWorldScript =
   `
-import { Behavior } from "@dreamlab/engine";
+import { Behavior } from "@rebur/engine";
 
 export default class HelloWorld extends Behavior {
   onInitialize() {

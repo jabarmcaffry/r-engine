@@ -1,4 +1,4 @@
-import "@dreamlab/vendor/polyfills.ts";
+import "@rebur/vendor/polyfills.ts";
 
 import "./css/singleplayer.css";
 
@@ -11,10 +11,10 @@ import {
   GameShutdown,
   GameStatus,
   GameStatusChange,
-} from "@dreamlab/engine";
-import * as internal from "@dreamlab/engine/internal";
-import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@dreamlab/scene";
-import * as z from "@dreamlab/vendor/zod.ts";
+} from "@rebur/engine";
+import * as internal from "@rebur/engine/internal";
+import { getSceneFromProject, loadSceneDefinition, ProjectSchema } from "@rebur/scene";
+import * as z from "@rebur/vendor/zod.ts";
 import { setAspectRatio } from "../../client/src/aspect-ratio.ts";
 import {
   createFetch,
@@ -80,7 +80,7 @@ const BehaviorSchema = z.record(
 );
 
 const behaviorPreloadInfo = await game
-  .fetch("res://_dreamlab_behaviors.json")
+  .fetch("res://_rebur_behaviors.json")
   .then(r => r.json())
   .then(BehaviorSchema.parse);
 game[internal.behaviorLoader].submitPreloadInfo([...Object.values(behaviorPreloadInfo)]);
@@ -92,7 +92,7 @@ try {
   const resp = await game.fetch("res://custom.css");
   if (resp.ok) {
     const style = document.createElement("style");
-    style.id = "dreamlab-custom-css";
+    style.id = "rebur-custom-css";
     style.append(document.createTextNode(await resp.text()));
     document.head.append(style);
 

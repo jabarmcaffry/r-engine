@@ -5,17 +5,17 @@ import {
   CustomMessageListener,
   ServerGame,
   ServerNetworking,
-} from "@dreamlab/engine";
+} from "@rebur/engine";
 import {
   PlayerConnectionDropped,
   PlayerConnectionEstablished,
-} from "@dreamlab/proto/common/signals.ts";
+} from "@rebur/proto/common/signals.ts";
 import {
   ClientPacket,
   PLAY_PROTO_VERSION,
   PlayPacket,
   ServerPacket,
-} from "@dreamlab/proto/play.ts";
+} from "@rebur/proto/play.ts";
 import { IPCMessageBus } from "../ipc.ts";
 import { handleCustomMessages } from "./custom-messages.ts";
 import { handleEntitySync } from "./entity-sync.ts";
