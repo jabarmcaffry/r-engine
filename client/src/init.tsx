@@ -162,6 +162,10 @@ export const init = async () => {
   connectUrl.searchParams.set("token", info.token);
   connectUrl.searchParams.set("player_id", info.playerId);
   connectUrl.searchParams.set("nickname", info.nickname);
+  // Forward play_session flag when launched from the editor's play button
+  if (new URLSearchParams(window.location.search).has("play_session")) {
+    connectUrl.searchParams.set("play_session", "1");
+  }
 
   startGame(
     connectUrl,

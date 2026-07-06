@@ -69,9 +69,6 @@ main > div {
 
   &:not(:first-child) {
     height: calc(100% - var(--toolbar-height));
-    @media (max-width: 600px) {
-      height: 100%;
-    }
   }
 
   &.white-background {
@@ -244,70 +241,3 @@ html[data-popout="true"] #viewport > div#games {
   height: 100% !important;
 }
 
-/* ── Mobile layout (≤ 600px) ─────────────────────────────────────────────── */
-
-@media only screen and (max-width: 600px) {
-  main {
-    --mobile-nav-height: 3.5rem;
-
-    padding: 0;
-
-    /* Three rows: top bar | content area | mobile nav */
-    grid-template-areas:
-      "top"
-      "content"
-      "mobile-nav";
-    grid-template-columns: 1fr;
-    grid-template-rows: 3em 1fr var(--mobile-nav-height);
-  }
-
-  /* Drag handles: hidden on mobile */
-  main > #left-sidebar-drag,
-  main > #right-sidebar-drag,
-  main > #bottom-bar-drag {
-    display: none !important;
-  }
-
-  /* All panels occupy the same "content" grid area and are hidden by default */
-  main > #gameview,
-  main > #left-sidebar,
-  main > #right-sidebar,
-  main > #bottom-bar {
-    grid-area: content;
-    margin: 0;
-    overflow: auto;
-    display: none !important;
-  }
-
-  /* Game view: default visible panel */
-  main:not([data-mobile-panel]) > #gameview,
-  main[data-mobile-panel="game"] > #gameview {
-    display: flex !important;
-    overflow: hidden;
-  }
-
-  /* Project panel (left sidebar) */
-  main[data-mobile-panel="project"] > #left-sidebar {
-    display: flex !important;
-    height: 100%;
-  }
-
-  /* Inspector panel (right sidebar) */
-  main[data-mobile-panel="inspector"] > #right-sidebar {
-    display: flex !important;
-    height: 100%;
-  }
-
-  /* Panels (bottom bar / tabs) */
-  main[data-mobile-panel="panels"] > #bottom-bar {
-    display: block !important;
-    height: 100%;
-  }
-
-  /* Sidebars use full width on mobile */
-  main > #left-sidebar,
-  main > #right-sidebar {
-    width: 100%;
-    max-width: 100%;
-  }
-}

@@ -48,8 +48,13 @@ echo "==> Starting editor build watcher..."
 (cd editor && deno run -A _build.ts --watch) &
 BUILD_PID=$!
 
+echo "==> Starting client (player) build watcher..."
+(cd client && deno run -A _build.ts --watch) &
+CLIENT_BUILD_PID=$!
+
 echo "==> Starting proxy server on port 5000..."
 deno run -A proxy.ts
 
 # Cleanup on exit
 kill $BUILD_PID 2>/dev/null || true
+kill $CLIENT_BUILD_PID 2>/dev/null || true

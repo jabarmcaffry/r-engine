@@ -123,10 +123,7 @@ export class AppMenu {
     this.ctxMenu.show(this.uiRoot);
 
     this.#attachSplitMenu(this.controls.play, [
-      { label: "Open in new tab", onClick: () => this.#openNewTab(), group: 0 },
-      { label: "Open 1 pop-out", onClick: () => this.#openPopouts(1), group: 1 },
-      { label: "Open 2 pop-outs", onClick: () => this.#openPopouts(2), group: 1 },
-      { label: "Open 3 pop-outs", onClick: () => this.#openPopouts(3), group: 1 },
+      { label: "Open play in new tab", onClick: () => this.#openPlayTab(), group: 0 },
     ]);
 
     this.#attachSplitMenu(this.controls.edit, [
@@ -136,31 +133,9 @@ export class AppMenu {
       { label: "Open 3 pop-outs", onClick: () => this.#openPopouts(3), group: 1 },
     ]);
 
-    this.controls.play.addEventListener("click", async () => {
-      const playButton = this.controls.play.querySelector("button")!;
-      const stopButton = this.controls.stop.querySelector("button")!;
-
-      if (playButton.disabled || stopButton.disabled) return;
-
-      playButton.disabled = true;
-      stopButton.disabled = false;
-
-      try {
-        if (!this.games.play) {
-          await this.#connectToPlayGame(editUI);
-        }
-
-        this.playFocused = true;
-        this.updateButtonStates();
-        this.updateViewportStates(editUI);
-        if (this.games.play?.container) {
-          this.games.play.container.focus();
-        }
-        window.parent.postMessage("analytics-playButtonClicked", "*");
-        editUI.selectedEntity.entities = [];
-      } finally {
-        playButton.disabled = false;
-      }
+    this.controls.play.addEventListener("click", () => {
+      this.#openPlayTab();
+      window.parent.postMessage("analytics-playButtonClicked", "*");
     });
 
     this.controls.edit.addEventListener("click", () => {
@@ -551,12 +526,21 @@ export class AppMenu {
     });
   }
 
+  #openPlayTab() {
+    // Use /play/ (trailing slash) so relative ./dist/... asset URLs in client/web/index.html
+    // resolve to /play/dist/... (player bundle), not /dist/... (editor bundle).
+    const playUrl = new URL("/play/", window.location.origin);
+    playUrl.searchParams.set("instance", this.games.edit.instanceId);
+    playUrl.searchParams.set("server", this.#resolveWsRoot());
+    playUrl.searchParams.set("play_session", "1");
+    const w = window.open(playUrl.toString(), "_blank");
+    if (!w) console.warn("Play tab was blocked by the browser.");
+  }
+
   #openNewTab() {
     const url = this.#buildEditorUrl();
     const w = window.open(url, "_blank");
-    if (!w) {
-      console.warn("New tab was blocked by the browser.");
-    }
+    if (!w) console.warn("New tab was blocked by the browser.");
   }
 
   #openPopouts(count: number) {

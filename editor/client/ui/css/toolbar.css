@@ -21,15 +21,6 @@
   }
 }
 
-@media (max-width: 600px) {
-  #toolbar {
-    display: none !important;
-  }
-
-  #overlays {
-    display: none !important;
-  }
-}
 
 #toolbar button {
   all: unset;

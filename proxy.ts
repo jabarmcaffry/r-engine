@@ -5,9 +5,10 @@
 
 import { serveDir } from "jsr:@std/http@^1/file-server";
 
-const API_PORT      = 8000;
+const API_PORT       = 8000;
 const EDITOR_WEB_DIR = "./editor/web";
-const PUBLIC_DIR    = "./public";
+const CLIENT_WEB_DIR = "./client/web";
+const PUBLIC_DIR     = "./public";
 
 // Auth token for privileged multiplayer endpoints.
 // Never sent to the browser — the proxy adds it server-side for /api/dashboard/* routes.
@@ -62,19 +63,12 @@ async function serveFile(filePath: string): Promise<Response> {
   }
 }
 
-// Serve the editor, injecting the mobile overlay script.
 async function serveEditorPage(): Promise<Response> {
-  try {
-    let html = await Deno.readTextFile(EDITOR_WEB_DIR + "/index.html");
-    // Inject mobile overlay just before </body>
-    html = html.replace(
-      "</body>",
-      `  <script src="/public/mobile-overlay.js" defer></script>\n</body>`,
-    );
-    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
-  } catch {
-    return new Response("Not Found", { status: 404 });
-  }
+  return serveFile(EDITOR_WEB_DIR + "/index.html");
+}
+
+async function servePlayPage(): Promise<Response> {
+  return serveFile(CLIENT_WEB_DIR + "/index.html");
 }
 
 // ── World list (filesystem, no forward to port 8000) ─────────────────────────
@@ -184,8 +178,25 @@ Deno.serve({ port: 5000, hostname: "0.0.0.0" }, async (req) => {
   // ── Root routing ──────────────────────────────────────────────────────────
   if (pathname === "/" || pathname === "") {
     return url.searchParams.has("instance")
-      ? serveEditorPage()                          // editor with mobile overlay
+      ? serveEditorPage()                          // editor (studio)
       : serveFile(PUBLIC_DIR + "/dashboard.html"); // launcher dashboard
+  }
+
+  // ── Play client (separate from editor, no editor chrome) ──────────────────
+  // Redirect /play → /play/ so relative ./dist/... URLs in index.html resolve correctly.
+  if (pathname === "/play") {
+    const redirectUrl = new URL(req.url);
+    redirectUrl.pathname = "/play/";
+    return Response.redirect(redirectUrl.toString(), 301);
+  }
+  if (pathname === "/play/") {
+    return servePlayPage();
+  }
+  if (pathname.startsWith("/play/")) {
+    const clientResp = await serveDir(req, { fsRoot: CLIENT_WEB_DIR, urlRoot: "play", quiet: true });
+    // SPA fallback: unknown /play/* routes serve the player client HTML
+    if (clientResp.status === 404) return servePlayPage();
+    return clientResp;
   }
 
   // ── Editor static assets (dist/, sprites/, fonts/, etc.) ─────────────────
@@ -198,7 +209,8 @@ Deno.serve({ port: 5000, hostname: "0.0.0.0" }, async (req) => {
 
 console.log("Rebur Engine proxy running on http://0.0.0.0:5000");
 console.log("  /                   → dashboard");
-console.log("  /?instance=<id>     → editor (+ mobile overlay)");
+console.log("  /?instance=<id>     → editor (studio)");
+console.log("  /play?instance=<id> → player client (no editor chrome)");
 console.log("  /docs               → documentation");
 console.log("  /public/*           → static public assets");
 console.log("  /api/dashboard/*    → privileged proxy (auth server-side)");

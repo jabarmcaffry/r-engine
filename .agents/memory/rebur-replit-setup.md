@@ -1,6 +1,6 @@
 ---
 name: Rebur Engine Replit Setup
-description: Non-obvious lessons about running Rebur Engine on Replit — port mapping, env, branding, and feature notes.
+description: Non-obvious lessons about running Rebur Engine on Replit — port mapping, env quirks, deno-2 module requirement, and feature implementation notes.
 ---
 
 ## Editor connection flow (non-obvious)
@@ -31,9 +31,25 @@ Monaco's AMD loader (`require(['vs/editor/editor.main'], callback)`) does NOT pa
 **Why:** Standard Monaco AMD behavior — the module is self-registering and populates `globalThis.monaco`.
 **How to apply:** Always use `(globalThis as any).monaco` inside the AMD callback, not the callback parameter.
 
-## Mobile layout approach
+## Play/Editor separation (Roblox-style)
 
-Mobile panel switching uses `data-mobile-panel` attribute on `main` element. CSS uses `grid-area: content` for all panels so they overlap, then `display: none !important` for inactive ones. The mobile nav bar (`#mobile-nav`) sets `grid-area: mobile-nav` and is hidden on desktop via `@media (min-width: 601px) { display: none }`.
+Play mode is fully separated from the editor:
+- **Editor (Studio)**: `/?instance=<id>` — full editor UI, for world creators
+- **Player (Game)**: `/play?instance=<id>&play_session=1&server=<wsUrl>` — player client (client/), no editor chrome
+
+**Implementation:**
+- Play button in editor opens `/play?...` in a new tab via `#openPlayTab()`
+- `client/src/init.tsx` forwards `play_session=1` from URL params to the WebSocket URL
+- proxy.ts serves `client/web/` at `/play/*` via `serveDir` with `urlRoot: "play"`
+- `start-editor.sh` watch-builds both `editor/` and `client/` in parallel
+- Stop button in editor still calls `POST /api/v1/stop-play-session/<instanceId>`
+- Server-side play session state is pushed back via `edit:play-session` WebSocket channel
+
+**Why:** Roblox-style separation — editors stay in studio, players connect to a separate client with no editor chrome.
+
+## Mobile layout removal
+
+All mobile-specific CSS and JS has been removed (no @media max-width: 600px breakpoints). The editor uses desktop layout on all screen sizes. Deleted files: `editor/client/mobile-nav.ts`, `editor/client/css/mobile-nav.css`. Removed imports and `setupMobileNav()` call from `editor/client/main.ts`.
 
 ## Worlds directory
 

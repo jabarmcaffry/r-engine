@@ -2,7 +2,6 @@ import "@rebur/vendor/polyfills.ts";
 
 import "./css/main.css";
 import "./css/script-editor.css";
-import "./css/mobile-nav.css";
 
 import "@rebur/client/_env.ts";
 import "../../build-system/live-reload.js";
@@ -43,7 +42,7 @@ import { AppMenu } from "./ui/app-menu.ts";
 import { BottomTabs } from "./ui/bottom-tabs.tsx";
 import { InspectorUI } from "./ui/inspector.ts";
 import { UndoRedoManager } from "./undo-redo.ts";
-import { setupMobileNav } from "./mobile-nav.ts";
+
 
 const nickname = "Player" + Math.floor(Math.random() * 999) + 1;
 const info = await auth(nickname);
@@ -352,8 +351,6 @@ if (editModeFlag) {
   bottomTabs.show(uiRoot);
 }
 
-// Mobile navigation (hidden on desktop via CSS)
-setupMobileNav(uiRoot);
 
 // Handle postMessage from file-tree and behavior-editor double-click → open script
 window.addEventListener("message", (e: MessageEvent) => {
