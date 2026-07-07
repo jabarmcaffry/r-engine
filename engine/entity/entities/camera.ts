@@ -3,6 +3,7 @@ import {
   EntitySpawned,
   EntityDestroyed,
   EntityEnableChanged,
+  GameRender,
   type EntityContext,
   type Game,
   Vector2,
@@ -66,6 +67,8 @@ export class Camera extends Entity {
 
   constructor(ctx: EntityContext) {
     super(ctx);
+
+    this.listen(this.game, GameRender, () => this.#onFrame());
 
     this.defineValue(Camera, "active", { description: "Whether this camera renders the scene." });
     this.defineValue(Camera, "fov", { description: "Vertical field of view in degrees." });
@@ -138,7 +141,7 @@ export class Camera extends Entity {
   /** Orbit-mode pitch: 45° looking down-forward. */
   static readonly #ORBIT_PITCH = Quat.fromAxisAngle({ x: 1, y: 0, z: 0 }, -Math.PI / 4);
 
-  onFrame(): void {
+  #onFrame(): void {
     const game = this.game;
     if (!game.isClient() || this.#cameraHandle === undefined) return;
 

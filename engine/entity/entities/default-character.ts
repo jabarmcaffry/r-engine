@@ -15,6 +15,8 @@ import {
   Camera,
   EntityDestroyed,
   EntitySpawned,
+  GameRender,
+  GameTick,
   Mesh,
   MouseDown,
   MouseMove,
@@ -84,6 +86,9 @@ export class DefaultCharacter extends CharacterController {
         this.#bindInputs();
       }
     });
+
+    this.listen(this.game, GameTick, () => this.#onTick());
+    this.listen(this.game, GameRender, () => this.#onFrame());
 
     this.on(EntityDestroyed, () => {
       if (this.#pointerLocked && this.game.isClient()) {
@@ -162,7 +167,7 @@ export class DefaultCharacter extends CharacterController {
     });
   }
 
-  onTick(): void {
+  #onTick(): void {
     if (!this.#hasLocalControl()) return;
     const inputs = this.game.inputs;
     const dt = this.game.time.delta / 1000;
@@ -202,7 +207,7 @@ export class DefaultCharacter extends CharacterController {
     this.transform.rotation = Quat.fromAxisAngle({ x: 0, y: 1, z: 0 }, this.#yaw);
   }
 
-  onFrame(): void {
+  #onFrame(): void {
     if (!this.#hasLocalControl()) return;
     const camera = this.#camera();
     if (!camera) return;
