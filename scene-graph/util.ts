@@ -55,21 +55,47 @@ export const serializeBehaviorDefinition = (
 };
 
 export const serializeTransform = (transform: TransformOptions): SceneDescTransform => {
-  const txfm = {
+  const txfm: SceneDescTransform = {
     position: transform.position
-      ? { x: transform.position.x ?? 0, y: transform.position.y ?? 0 }
+      ? {
+          x: transform.position.x ?? 0,
+          y: transform.position.y ?? 0,
+          z: transform.position.z ?? 0,
+        }
       : undefined,
-    rotation: transform.rotation,
+    rotation: transform.rotation
+      ? {
+          x: transform.rotation.x ?? 0,
+          y: transform.rotation.y ?? 0,
+          z: transform.rotation.z ?? 0,
+          w: transform.rotation.w ?? 1,
+        }
+      : undefined,
     scale: transform.scale
-      ? { x: transform.scale.x ?? 1, y: transform.scale.y ?? 1 }
+      ? {
+          x: transform.scale.x ?? 1,
+          y: transform.scale.y ?? 1,
+          z: transform.scale.z ?? 1,
+        }
       : undefined,
-    z: transform.z,
   };
 
-  if (txfm.position?.x === 0 && txfm.position?.y === 0) delete txfm.position;
-  if (txfm?.rotation === 0) delete txfm.rotation;
-  if (txfm.scale?.x === 1 && txfm.scale?.y === 1) delete txfm.scale;
-  if (txfm?.z === 0) delete txfm.z;
+  // omit identity components to keep scene files small
+  if (txfm.position && txfm.position.x === 0 && txfm.position.y === 0 && txfm.position.z === 0) {
+    delete txfm.position;
+  }
+  if (
+    txfm.rotation &&
+    txfm.rotation.x === 0 &&
+    txfm.rotation.y === 0 &&
+    txfm.rotation.z === 0 &&
+    txfm.rotation.w === 1
+  ) {
+    delete txfm.rotation;
+  }
+  if (txfm.scale && txfm.scale.x === 1 && txfm.scale.y === 1 && txfm.scale.z === 1) {
+    delete txfm.scale;
+  }
 
   return txfm;
 };

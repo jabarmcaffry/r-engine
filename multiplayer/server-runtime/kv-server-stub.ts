@@ -1,5 +1,5 @@
 import { KvServerBase, KvServerBaseOptions } from "@rebur/engine";
-import { JsonValue } from "../../engine/value/data.ts";
+import type { JsonValue } from "../../engine/value/data.ts";
 
 // TODO: maybe we should do an in-memory store
 export class KvServerStub extends KvServerBase {
@@ -19,5 +19,13 @@ export class KvServerStub extends KvServerBase {
   }
   protected override async clear(_scope: string) {
     console.warn("KV is not configured on this server!");
+  }
+  protected override async list(_scope: string): Promise<Record<string, JsonValue>> {
+    console.warn("KV is not configured on this server!");
+    return {};
+  }
+  protected override async players(_scope: string): Promise<Set<string>> {
+    console.warn("KV is not configured on this server!");
+    return new Set();
   }
 }

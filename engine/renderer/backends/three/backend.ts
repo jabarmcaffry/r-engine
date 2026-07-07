@@ -204,6 +204,7 @@ function applyMaterialUpdate(mat: THREE.Material, desc: Partial<MaterialDesc>): 
 // ---------------------------------------------------------------------------
 export class ThreeRendererBackend implements IRendererBackend {
   readonly canvas: HTMLCanvasElement;
+  #container: HTMLDivElement;
   #renderer: THREE.WebGLRenderer;
   #scene: THREE.Scene;
   #gridHelper: THREE.GridHelper;
@@ -217,9 +218,16 @@ export class ThreeRendererBackend implements IRendererBackend {
   #boxHelpers = new Map<string, THREE.BoxHelper>();
 
   constructor(container: HTMLDivElement) {
+    this.#container = container;
     this.#renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.#renderer.setPixelRatio(globalThis.devicePixelRatio ?? 1);
     this.#renderer.setSize(container.clientWidth || 800, container.clientHeight || 600);
+
+    // Self-resize whenever the container's layout changes (also fixes the
+    // initial 0x0 size when the renderer is constructed before first layout).
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => this.resize()).observe(container);
+    }
     this.#renderer.shadowMap.enabled = true;
     this.#renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.#renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -254,10 +262,24 @@ export class ThreeRendererBackend implements IRendererBackend {
     this.#renderer.render(this.#scene, cam);
   }
 
-  resize(width: number, height: number): void {
-    this.#renderer.setSize(width, height);
+  /**
+   * Resize the drawing buffer. With no numeric arguments (legacy callers pass
+   * a boolean or nothing) the size is measured from the container element.
+   */
+  resize(width?: number | boolean, height?: number): void {
+    let w: number, h: number;
+    if (typeof width === "number" && typeof height === "number") {
+      w = width;
+      h = height;
+    } else {
+      w = this.#container.clientWidth || globalThis.innerWidth || 800;
+      h = this.#container.clientHeight || globalThis.innerHeight || 600;
+    }
+    if (w <= 0 || h <= 0) return;
+
+    this.#renderer.setSize(w, h);
     for (const cam of this.#cameras.values()) {
-      cam.aspect = width / height;
+      cam.aspect = w / h;
       cam.updateProjectionMatrix();
     }
   }
@@ -268,12 +290,13 @@ export class ThreeRendererBackend implements IRendererBackend {
 
   // ---- Meshes --------------------------------------------------------------
 
-  createMesh(_entityRef: string, geometry: GeometryDesc, material: MaterialDesc): MeshHandle {
+  createMesh(entityRef: string, geometry: GeometryDesc, material: MaterialDesc): MeshHandle {
     const geo = buildGeometry(geometry);
     const mat = buildMaterial(material);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.castShadow = material.castShadow ?? true;
     mesh.receiveShadow = material.receiveShadow ?? true;
+    mesh.userData["entityRef"] = entityRef;
     this.#scene.add(mesh);
     const handle = this.#handleCounter++ as unknown as MeshHandle;
     this.#meshes.set(handle, mesh);
@@ -493,7 +516,7 @@ export class ThreeRendererBackend implements IRendererBackend {
 
     const existing = this.#boxHelpers.get(entityRef);
     if (existing) {
-      existing.object = targetMesh as THREE.Object3D;
+      (existing as unknown as { object: THREE.Object3D }).object = targetMesh;
       existing.setFromObject(targetMesh);
       (existing.material as THREE.LineBasicMaterial).color.setHex(color);
       return;
@@ -502,6 +525,77 @@ export class ThreeRendererBackend implements IRendererBackend {
     const helper = new THREE.BoxHelper(targetMesh, color);
     this.#scene.add(helper);
     this.#boxHelpers.set(entityRef, helper);
+  }
+
+  // ---- Debug lines -----------------------------------------------------------
+
+  #debugLines = new Map<string, THREE.LineSegments>();
+
+  setDebugLines(id: string, vertices: Float32Array, colors: Float32Array): void {
+    let lines = this.#debugLines.get(id);
+    if (!lines) {
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.LineBasicMaterial({ vertexColors: true });
+      lines = new THREE.LineSegments(geometry, material);
+      lines.frustumCulled = false;
+      this.#scene.add(lines);
+      this.#debugLines.set(id, lines);
+    }
+    lines.geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+    lines.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 4));
+    lines.geometry.attributes["position"].needsUpdate = true;
+    lines.geometry.attributes["color"].needsUpdate = true;
+  }
+
+  removeDebugLines(id: string): void {
+    const lines = this.#debugLines.get(id);
+    if (!lines) return;
+    lines.geometry.dispose();
+    (lines.material as THREE.Material).dispose();
+    this.#scene.remove(lines);
+    this.#debugLines.delete(id);
+  }
+
+  // ---- Picking ---------------------------------------------------------------
+
+  #raycaster = new THREE.Raycaster();
+
+  #screenToNDC(screenX: number, screenY: number): THREE.Vector2 {
+    const w = this.canvas.clientWidth || this.canvas.width;
+    const h = this.canvas.clientHeight || this.canvas.height;
+    return new THREE.Vector2((screenX / w) * 2 - 1, -(screenY / h) * 2 + 1);
+  }
+
+  pickEntities(screenX: number, screenY: number): string[] {
+    const cam = this.#activeCameraHandle !== undefined
+      ? this.#cameras.get(this.#activeCameraHandle)
+      : undefined;
+    if (!cam) return [];
+
+    cam.updateMatrixWorld();
+    this.#raycaster.setFromCamera(this.#screenToNDC(screenX, screenY), cam);
+    const hits = this.#raycaster.intersectObjects([...this.#meshes.values()], false);
+
+    const refs: string[] = [];
+    for (const hit of hits) {
+      const ref = hit.object.userData["entityRef"];
+      if (typeof ref === "string" && !refs.includes(ref)) refs.push(ref);
+    }
+    return refs;
+  }
+
+  screenToGroundPoint(screenX: number, screenY: number, planeY = 0): IVec3 | undefined {
+    const cam = this.#activeCameraHandle !== undefined
+      ? this.#cameras.get(this.#activeCameraHandle)
+      : undefined;
+    if (!cam) return undefined;
+
+    cam.updateMatrixWorld();
+    this.#raycaster.setFromCamera(this.#screenToNDC(screenX, screenY), cam);
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -planeY);
+    const hit = new THREE.Vector3();
+    if (this.#raycaster.ray.intersectPlane(plane, hit) === null) return undefined;
+    return { x: hit.x, y: hit.y, z: hit.z };
   }
 
   // ---- Screen-space projection ---------------------------------------------

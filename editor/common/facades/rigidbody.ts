@@ -20,6 +20,10 @@ export class EditorFacadeRigidbody extends Entity {
   }
 
   type: RigidBodyType = "dynamic";
+  gravityScale: number = 1;
+  linearDamping: number = 0;
+  angularDamping: number = 0;
+  ccd: boolean = false;
 
   static readonly icon = Rigidbody.icon;
   readonly bounds = undefined;
@@ -30,10 +34,22 @@ export class EditorFacadeRigidbody extends Entity {
       type: RigidbodyTypeAdapter,
       description: "Defines the type of the rigidbody, such as dynamic or fixed.",
     });
+    this.defineValue(EditorFacadeRigidbody, "gravityScale", {
+      description: "Gravity scale multiplier.",
+    });
+    this.defineValue(EditorFacadeRigidbody, "linearDamping", {
+      description: "Linear velocity damping.",
+    });
+    this.defineValue(EditorFacadeRigidbody, "angularDamping", {
+      description: "Angular velocity damping.",
+    });
+    this.defineValue(EditorFacadeRigidbody, "ccd", {
+      description: "Continuous collision detection.",
+    });
   }
 }
 
 type _HasAllValues = EnsureCompatible<
-  Omit<EntityValueProps<Rigidbody>, "body">,
+  Omit<EntityValueProps<Rigidbody>, "body" | "bodyHandle" | "colliderHandle" | "linearVelocity" | "angularVelocity">,
   EntityValueProps<EditorFacadeRigidbody>
 >;

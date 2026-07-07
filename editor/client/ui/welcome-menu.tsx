@@ -60,7 +60,8 @@ export class WelcomeMenu implements InspectorUIWidget {
       </div>
     ) as HTMLDivElement;
 
-    uiRoot.appendChild(this.welcomeCard);
+    // deno-lint-ignore no-non-null-assertion
+    uiRoot.appendChild(this.welcomeCard!);
   }
 
   hide(): void {

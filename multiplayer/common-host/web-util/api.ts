@@ -118,7 +118,7 @@ export function typedJsonHandler<
       if (opts.params) {
         try {
           const params = ctx.params;
-          inputParams = await opts.params.parseAsync(params);
+          inputParams = (await opts.params.parseAsync(params)) as z.infer<NonNullable<ParamSchema>>;
         } catch (error) {
           if (error instanceof ZodError) {
             createZodErrorResponse(ctx, error, "Malformed path parameters", Status.BadRequest);
@@ -133,7 +133,7 @@ export function typedJsonHandler<
       if (opts.query) {
         try {
           const query = Object.fromEntries(ctx.request.url.searchParams.entries());
-          inputQuery = await opts.query.parseAsync(query);
+          inputQuery = (await opts.query.parseAsync(query)) as z.infer<NonNullable<QuerySchema>>;
         } catch (error) {
           if (error instanceof ZodError) {
             createZodErrorResponse(ctx, error, "Malformed query parameters", Status.BadRequest);
@@ -148,7 +148,7 @@ export function typedJsonHandler<
       if (opts.body) {
         try {
           const body = await ctx.request.body.json();
-          inputBody = await opts.body.parseAsync(body);
+          inputBody = (await opts.body.parseAsync(body)) as z.infer<NonNullable<BodySchema>>;
         } catch (error) {
           if (error instanceof ZodError) {
             createZodErrorResponse(ctx, error, "Malformed body", Status.BadRequest);

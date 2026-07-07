@@ -104,7 +104,7 @@ export class Gizmo extends Entity {
     Entity.registerType(this, "@editor");
   }
 
-  static readonly icon = "➡️";
+  static readonly icon: string = "➡️";
   readonly bounds: undefined;
 
   // ---- Overlay canvas -------------------------------------------------------
@@ -179,6 +179,14 @@ export class Gizmo extends Entity {
       }
     | undefined;
 
+
+  /** worldToScreen via the client renderer; undefined on the server. */
+  #worldToScreen(pos: { x: number; y: number; z: number }): { x: number; y: number } | undefined {
+    const game = this.game;
+    if (!game.isClient()) return undefined;
+    return game.renderer.worldToScreen(pos);
+  }
+
   // ---- Pointer handlers (bound to overlay) ----------------------------------
   #onPointerDown = (e: PointerEvent) => {
     if (e.button !== 0) return;
@@ -187,20 +195,20 @@ export class Gizmo extends Entity {
 
     // Compute projected positions for the primary entity
     const primaryPos = this.#target!.globalTransform.position;
-    const center = this.game.renderer.worldToScreen(primaryPos);
+    const center = this.#worldToScreen(primaryPos);
     if (!center) return;
 
-    const xTip = this.game.renderer.worldToScreen({
+    const xTip = this.#worldToScreen({
       x: primaryPos.x + HANDLE_LEN,
       y: primaryPos.y,
       z: primaryPos.z,
     });
-    const yTip = this.game.renderer.worldToScreen({
+    const yTip = this.#worldToScreen({
       x: primaryPos.x,
       y: primaryPos.y + HANDLE_LEN,
       z: primaryPos.z,
     });
-    const zTip = this.game.renderer.worldToScreen({
+    const zTip = this.#worldToScreen({
       x: primaryPos.x,
       y: primaryPos.y,
       z: primaryPos.z + HANDLE_LEN,
@@ -236,8 +244,6 @@ export class Gizmo extends Entity {
           pointerType: e.pointerType,
           clientX: e.clientX,
           clientY: e.clientY,
-          offsetX: e.offsetX,
-          offsetY: e.offsetY,
           screenX: e.screenX,
           screenY: e.screenY,
           button: e.button,
@@ -280,7 +286,7 @@ export class Gizmo extends Entity {
       transform: originalTransforms.get(entity)!,
     }));
     this.fire(GizmoUpdateStart, "translate", entityList);
-    this.game.fire(new GizmoUpdateStart("translate", entityList));
+    this.game.fire(GizmoUpdateStart, "translate", entityList);
   };
 
   #onPointerMove = (e: PointerEvent) => {
@@ -346,7 +352,7 @@ export class Gizmo extends Entity {
       transform: entity.globalTransform.clone(),
     }));
     this.fire(GizmoUpdateMove, "translate", entityList);
-    this.game.fire(new GizmoUpdateMove("translate", entityList));
+    this.game.fire(GizmoUpdateMove, "translate", entityList);
   };
 
   #onPointerUp = (e: PointerEvent) => {
@@ -360,7 +366,7 @@ export class Gizmo extends Entity {
     }));
 
     this.fire(GizmoUpdateEnd, "translate", entityList);
-    this.game.fire(new GizmoUpdateEnd("translate", entityList));
+    this.game.fire(GizmoUpdateEnd, "translate", entityList);
 
     this.#overlay!.releasePointerCapture(e.pointerId);
     this.#action = undefined;
@@ -380,20 +386,20 @@ export class Gizmo extends Entity {
     // Use the primary entity's position for the gizmo origin
     const primaryPos = this.#target!.globalTransform.position;
 
-    const center = this.game.renderer.worldToScreen(primaryPos);
+    const center = this.#worldToScreen(primaryPos);
     if (!center) return;
 
-    const xTip = this.game.renderer.worldToScreen({
+    const xTip = this.#worldToScreen({
       x: primaryPos.x + HANDLE_LEN,
       y: primaryPos.y,
       z: primaryPos.z,
     });
-    const yTip = this.game.renderer.worldToScreen({
+    const yTip = this.#worldToScreen({
       x: primaryPos.x,
       y: primaryPos.y + HANDLE_LEN,
       z: primaryPos.z,
     });
-    const zTip = this.game.renderer.worldToScreen({
+    const zTip = this.#worldToScreen({
       x: primaryPos.x,
       y: primaryPos.y,
       z: primaryPos.z + HANDLE_LEN,
@@ -475,7 +481,9 @@ export class Gizmo extends Entity {
   onInitialize() {
     if (!this.game.isClient()) return;
 
-    const rendererCanvas = this.game.renderer.canvas;
+    const game = this.game;
+    if (!game.isClient()) return;
+    const rendererCanvas = game.renderer.canvas;
     const parent = rendererCanvas.parentElement ?? document.body;
 
     // Create overlay canvas

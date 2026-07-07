@@ -1,4 +1,4 @@
-import { CameraAspectChanged, RichText, type ClientGame } from "@rebur/engine";
+import { RichText, type ClientGame } from "@rebur/engine";
 import { setAspectRatio, updateAspectRatio } from "./aspect-ratio.ts";
 import { preloadFonts } from "./fonts.ts";
 import { connectToGame, pickCodec } from "./game-connection.ts";
@@ -32,9 +32,6 @@ export async function startGame(
   const [game, conn, handshake] = await connectToGame(instanceId, container, socket, codec);
   gameCallback(game);
 
-  game.on(CameraAspectChanged, ({ camera }) => {
-    setAspectRatio(camera.lockAspectRatio, camera.aspectRatio);
-  });
 
   await setupGame(game, conn, handshake.edit_mode);
   fonts.then(() => {

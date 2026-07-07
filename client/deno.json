@@ -12,18 +12,27 @@
     "@rebur/ui": "../ui/mod.ts",
     "@rebur/ui/jsx-runtime": "../ui/jsx.ts",
     "@rebur/util/": "../util/",
-    "env": "data:application/javascript,export default {}"
+    "env": "data:application/javascript,export default {}",
+    "@std/uuid": "../util/std/uuid.ts",
+    "@std/uuid/constants": "../util/std/uuid.ts"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "dom"],
+    "lib": [
+      "deno.window",
+      "dom"
+    ],
     "noImplicitOverride": false,
     "jsx": "react-jsx",
     "jsxImportSource": "@rebur/ui"
   },
-  "exclude": ["./web/dist/*"],
+  "exclude": [
+    "./web/dist/*"
+  ],
   "lint": {
     "rules": {
-      "exclude": ["no-window"]
+      "exclude": [
+        "no-window"
+      ]
     }
   }
 }

@@ -1,2 +1,6 @@
-export * from "jsr:@std/encoding@^1/base64";
-export * from "jsr:@std/encoding@^1/base64url";
+export {
+  decodeBase64,
+  decodeBase64Url,
+  encodeBase64,
+  encodeBase64Url,
+} from "../../util/std/encoding.ts";

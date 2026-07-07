@@ -12,7 +12,7 @@ export class PointLight extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🔆";
+  static readonly icon: string = "🔆";
 
   color: number = 0xffffff;
   intensity: number = 1;

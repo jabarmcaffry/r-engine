@@ -31,6 +31,9 @@ export class EditorFacadeCamera extends Entity {
   public unlocked: boolean = false;
   public active: boolean = false;
   public zoom: number = 1;
+  public fov: number = 75;
+  public near: number = 0.1;
+  public far: number = 1000;
   public showBounds: boolean = false;
   public lockAspectRatio: boolean = false;
   public aspectRatio: readonly [number, number] = [1, 1];
@@ -57,6 +60,15 @@ export class EditorFacadeCamera extends Entity {
       description: "Indicates if the camera is active in the editor.",
     });
 
+    this.defineValue(EditorFacadeCamera, "fov", {
+      description: "Vertical field of view in degrees.",
+    });
+    this.defineValue(EditorFacadeCamera, "near", {
+      description: "Near clipping plane.",
+    });
+    this.defineValue(EditorFacadeCamera, "far", {
+      description: "Far clipping plane.",
+    });
     this.defineValue(EditorFacadeCamera, "smooth", {
       description: "Controls the smoothness of the camera movement.",
     });
@@ -167,6 +179,6 @@ export class EditorFacadeCamera extends Entity {
 
 
 type _HasAllValues = EnsureCompatible<
-  Omit<EntityValueProps<Camera>, "container" | "smoothed" | "frustum">,
+  Omit<EntityValueProps<Camera>, "container" | "smoothed" | "frustum" | "orbit" | "focus" | "orbitDistance">,
   EntityValueProps<EditorFacadeCamera>
 >;

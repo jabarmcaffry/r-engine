@@ -15,7 +15,7 @@ export class UILayer extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
-  static readonly icon = "🗂";
+  static readonly icon: string = "🗂";
   get bounds() { return undefined; }
 
   #element: HTMLDivElement | undefined;

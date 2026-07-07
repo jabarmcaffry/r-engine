@@ -12,6 +12,8 @@ import {
   Root,
   Value,
   Vector2,
+  Vec3,
+  Camera,
 } from "@rebur/engine";
 import { element as elem, element } from "@rebur/ui";
 import { EmptyFacade } from "../../common/facades/empty.ts";
@@ -1001,9 +1003,10 @@ export class SceneGraph implements InspectorUIWidget {
         if (!lockedByEntity) {
           contextMenuItems.push(
             createEntityMenu("New Entity", type => {
-              let pos = new Vector2(0, 0);
+              let pos = new Vec3(0, 0, 0);
               if (entity instanceof EditorRootFacadeEntity || entity instanceof Root) {
-                pos = this.game.local._.Camera.globalTransform.position;
+                const camera = this.game.local._.Camera.cast(Camera);
+                pos = camera.orbit ? camera.focus.clone() : camera.globalTransform.position;
               }
               const typeToSpawn = ui.editMode ? Facades.lookupFacadeEntityType(type) : type;
               const newEntity = entity.spawn({

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --ext=ts -A
 // deno-lint-ignore-file no-import-prefix
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import * as fs from "../util/std/fs.ts";
+import * as path from "../util/std/path.ts";
 import { homedir } from "node:os";
 import {
   intro,

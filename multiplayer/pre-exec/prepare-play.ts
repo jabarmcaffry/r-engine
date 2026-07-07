@@ -10,7 +10,6 @@ for (const key of Object.keys(denoJson.imports)) {
 
   if (!key.startsWith("@rebur/")) delete denoJson.imports[key];
 }
-denoJson.imports["@rebur/engine"] = "./engine.js";
 denoJson.lock = false;
 delete denoJson.tasks;
 await Deno.writeTextFile("./pre-exec/deno.runtime.json", JSON.stringify(denoJson));

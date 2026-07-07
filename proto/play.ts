@@ -158,41 +158,6 @@ export const ServerSyncedObjectReports = z.object({
     .optional(),
 });
 
-export const ClientUpdateTilemapPacketSchema = z.object({
-  t: z.literal("UpdateTilemap"),
-  ref: EntityReferenceSchema,
-  xs: z.array(z.number()),
-  ys: z.array(z.number()),
-  values: z.array(z.number().optional()),
-  types: z.array(z.literal("atlas").or(z.literal("color"))),
-});
-
-export const ServerUpdateTilemapPacketSchema = ClientUpdateTilemapPacketSchema.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientDumpTilemapPacketSchema = z.object({
-  t: z.literal("DumpTilemap"),
-  ref: EntityReferenceSchema,
-  type: z.literal("atlas").or(z.literal("color")),
-  chunkX: z.number(),
-  chunkY: z.number(),
-  data: z.unknown(), // uint8array
-});
-
-export const ServerDumpTilemapPacketSchema = ClientDumpTilemapPacketSchema.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
-export const ClientClearTilemapPacketSchema = z.object({
-  t: z.literal("ClearTilemap"),
-  ref: EntityReferenceSchema,
-});
-
-export const ServerClearTilemapPacketSchema = ClientClearTilemapPacketSchema.extend({
-  from: ConnectionIdSchema.optional(),
-});
-
 const BaseReparentEntityPacket = z.object({
   t: z.literal("ReparentEntity"),
   entity: EntityReferenceSchema,
@@ -237,10 +202,14 @@ export const ClientReportEntityTransformsPacket = z.object({
   ref: z.array(EntityReferenceSchema),
   posX: z.array(z.number()),
   posY: z.array(z.number()),
-  rot: z.array(z.number()),
+  posZ: z.array(z.number()),
+  rotX: z.array(z.number()),
+  rotY: z.array(z.number()),
+  rotZ: z.array(z.number()),
+  rotW: z.array(z.number()),
   sclX: z.array(z.number()),
   sclY: z.array(z.number()),
-  z: z.array(z.number()),
+  sclZ: z.array(z.number()),
   tp: z.array(z.boolean()),
 });
 
@@ -354,9 +323,6 @@ export const ClientPacketSchema = z.discriminatedUnion("t", [
   ClientEntityEnableChanged,
   ClientEntityEnableReport,
   ClientSyncedObjectReports,
-  ClientUpdateTilemapPacketSchema,
-  ClientDumpTilemapPacketSchema,
-  ClientClearTilemapPacketSchema,
   ClientDismissEditorActionsPacket,
 ]);
 export type ClientPacket = z.infer<typeof ClientPacketSchema>;
@@ -388,9 +354,6 @@ export const ServerPacketSchema = z.discriminatedUnion("t", [
   ServerEntityEnableChanged,
   ServerEntityEnableReport,
   ServerSyncedObjectReports,
-  ServerUpdateTilemapPacketSchema,
-  ServerDumpTilemapPacketSchema,
-  ServerClearTilemapPacketSchema,
 ]);
 export type ServerPacket = z.infer<typeof ServerPacketSchema>;
 

@@ -33,7 +33,7 @@ export class RichText extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🔡";
+  static readonly icon: string = "🔡";
 
   get bounds(): IBounds | undefined { return undefined; }
 

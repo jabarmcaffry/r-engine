@@ -12,7 +12,7 @@ export class CharacterController extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🚶";
+  static readonly icon: string = "🚶";
 
   /** Skin offset above ground to prevent snagging. */
   offset: number = 0.01;

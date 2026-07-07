@@ -40,10 +40,14 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
     ref: [],
     posX: [],
     posY: [],
-    rot: [],
+    posZ: [],
+    rotX: [],
+    rotY: [],
+    rotZ: [],
+    rotW: [],
     sclX: [],
     sclY: [],
-    z: [],
+    sclZ: [],
     tp: [],
   };
 
@@ -66,10 +70,14 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
           entityTransformReports.ref.push(entity.ref);
           entityTransformReports.posX.push(transform.position.x);
           entityTransformReports.posY.push(transform.position.y);
-          entityTransformReports.rot.push(transform.rotation);
+          entityTransformReports.posZ.push(transform.position.z);
+          entityTransformReports.rotX.push(transform.rotation.x);
+          entityTransformReports.rotY.push(transform.rotation.y);
+          entityTransformReports.rotZ.push(transform.rotation.z);
+          entityTransformReports.rotW.push(transform.rotation.w);
           entityTransformReports.sclX.push(transform.scale.x);
           entityTransformReports.sclY.push(transform.scale.y);
-          entityTransformReports.z.push(transform.z);
+          entityTransformReports.sclZ.push(transform.scale.z);
           entityTransformReports.tp.push(entity[internal.entityTeleportingThisTick]);
         }
       }
@@ -84,10 +92,14 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
         entityTransformReports.ref.length = 0;
         entityTransformReports.posX.length = 0;
         entityTransformReports.posY.length = 0;
-        entityTransformReports.rot.length = 0;
+        entityTransformReports.posZ.length = 0;
+        entityTransformReports.rotX.length = 0;
+        entityTransformReports.rotY.length = 0;
+        entityTransformReports.rotZ.length = 0;
+        entityTransformReports.rotW.length = 0;
         entityTransformReports.sclX.length = 0;
         entityTransformReports.sclY.length = 0;
-        entityTransformReports.z.length = 0;
+        entityTransformReports.sclZ.length = 0;
         entityTransformReports.tp.length = 0;
       }
 
@@ -163,13 +175,19 @@ export const handleTransformSync: ServerNetworkSetupRoutine = (net, game) => {
             position: {
               x: packet.posX[i],
               y: packet.posY[i],
+              z: packet.posZ[i],
             },
-            rotation: packet.rot[i],
+            rotation: {
+              x: packet.rotX[i],
+              y: packet.rotY[i],
+              z: packet.rotZ[i],
+              w: packet.rotW[i],
+            },
             scale: {
               x: packet.sclX[i],
               y: packet.sclY[i],
+              z: packet.sclZ[i],
             },
-            z: packet.z[i],
           }),
           true,
         );

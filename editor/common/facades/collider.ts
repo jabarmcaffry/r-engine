@@ -15,7 +15,7 @@ import { DebugCapsule, DebugCircle, DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
 type ColliderShape = enumAdapter.Union<typeof ColliderShapeAdapter>;
-const ColliderShapeAdapter = enumAdapter(["Rectangle", "Circle" /*, "Capsule" */]);
+const ColliderShapeAdapter = enumAdapter(["box", "sphere", "capsule", "cylinder"]);
 
 export class EditorFacadeCollider extends Entity {
   static {
@@ -24,7 +24,7 @@ export class EditorFacadeCollider extends Entity {
   }
 
   isSensor: boolean = false;
-  shape: ColliderShape = "Rectangle";
+  shape: ColliderShape = "box";
   mass: number = 1;
   restitution: number = 0;
   friction: number = 1;
@@ -91,9 +91,9 @@ export class EditorFacadeCollider extends Entity {
   }
 
   #createDebugShape(): DebugSquare | DebugCircle | DebugCapsule {
-    return this.shape === "Rectangle"
+    return this.shape === "box"
       ? new DebugSquare({ entity: this })
-      : this.shape === "Circle"
+      : this.shape === "sphere"
         ? new DebugCircle({ entity: this })
         : new DebugCapsule({ entity: this });
   }
@@ -107,6 +107,6 @@ export class EditorFacadeCollider extends Entity {
 }
 
 type _HasAllValues = EnsureCompatible<
-  Omit<EntityValueProps<Collider>, "collider">,
+  Omit<EntityValueProps<Collider>, "collider" | "colliderHandle">,
   EntityValueProps<EditorFacadeCollider>
 >;

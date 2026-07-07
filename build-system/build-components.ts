@@ -1,4 +1,4 @@
-import * as path from "jsr:@std/path@^1";
+import * as path from "../util/std/path.ts";
 import {
   denoPlugins,
   reburCssPlugin,
@@ -129,7 +129,13 @@ export const bundleEngine = async (
         configPath: await Deno.realPath(denoJsonPath),
       }),
     ],
-    entryPoints: [{ in: path.join(engineDir, "mod.ts"), out: "engine" }],
+    // mod.ts and internal.ts are bundled together (with splitting) so they share
+    // chunks — bundling them separately would produce two copies of the Entity
+    // class and break private-field access across the boundary.
+    entryPoints: [
+      { in: path.join(engineDir, "mod.ts"), out: "engine" },
+      { in: path.join(engineDir, "internal.ts"), out: "engine-internal" },
+    ],
     outdir,
   };
 

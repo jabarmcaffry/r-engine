@@ -21,7 +21,7 @@ export class Sprite extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🖼️";
+  static readonly icon: string = "🖼️";
 
   width: number = 1;
   height: number = 1;

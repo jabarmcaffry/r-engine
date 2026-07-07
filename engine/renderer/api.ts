@@ -67,7 +67,8 @@ export interface IRendererBackend {
 
   // ---- Frame -------------------------------------------------------------
   render(): void;
-  resize(width: number, height: number): void;
+  /** Resize the drawing buffer; with no numeric args, measures the container. */
+  resize(width?: number | boolean, height?: number): void;
   setPixelRatio(ratio: number): void;
 
   // ---- Meshes ------------------------------------------------------------
@@ -103,9 +104,30 @@ export interface IRendererBackend {
   /** Add or update a bounding-box highlight around an entity mesh. */
   setEntityHighlight(entityRef: string, visible: boolean, color?: number): void;
 
+  /**
+   * Create or update a named batch of debug line segments.
+   * `vertices` is xyz triplets (2 per segment); `colors` is rgba per vertex.
+   */
+  setDebugLines(id: string, vertices: Float32Array, colors: Float32Array): void;
+  removeDebugLines(id: string): void;
+
   // ---- Screen-space projection -------------------------------------------
   /** Project a 3D world position to canvas pixel coordinates. Returns undefined if no active camera. */
   worldToScreen(worldPos: IVec3): { x: number; y: number } | undefined;
+
+  // ---- Picking -------------------------------------------------------------
+  /**
+   * Raycast into the scene through the given canvas pixel coordinates.
+   * Returns the entityRefs of hit meshes, nearest first.
+   */
+  pickEntities(screenX: number, screenY: number): string[];
+
+  /**
+   * Intersect a ray through the given canvas pixel coordinates with the
+   * horizontal plane `y = planeY`. Returns the world-space hit point, or
+   * undefined if the ray is parallel to / points away from the plane.
+   */
+  screenToGroundPoint(screenX: number, screenY: number, planeY?: number): IVec3 | undefined;
 
   dispose(): void;
 }

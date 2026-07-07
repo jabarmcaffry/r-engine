@@ -1,4 +1,4 @@
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { NIL_UUID } from "@std/uuid/constants";
 
 const instanceId = NIL_UUID;
 await fetch(`http://127.0.0.1:8000/api/v1/edit/${instanceId}/files/src/test-behavior.ts`, {

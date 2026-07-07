@@ -44,10 +44,30 @@ export class IPCWorker {
     const DENO_DIR = Deno.env.get("DENO_DIR");
     if (DENO_DIR) env["DENO_DIR"] = DENO_DIR;
 
+    // Pass TLS/proxy configuration through to the sandboxed worker so it can
+    // fetch npm dependencies in environments with custom CAs or proxies.
+    for (const key of [
+      "DENO_CERT",
+      "DENO_TLS_CA_STORE",
+      "SSL_CERT_FILE",
+      "HTTP_PROXY",
+      "HTTPS_PROXY",
+      "NO_PROXY",
+    ]) {
+      const value = Deno.env.get(key);
+      if (value) env[key] = value;
+    }
+
     const args = [
       Deno.execPath(),
       "run",
       "-c",
+      denoConfigJson,
+      // -c alone does not override the import map from an auto-discovered
+      // deno.jsonc (Deno 2), so pass the map explicitly — otherwise the worker
+      // resolves @rebur/engine to source AND the prebuilt bundle at once,
+      // producing two Entity classes that break private-field access.
+      "--import-map",
       denoConfigJson,
       ...(!workerData.editMode && workerData.inspect
         ? [`--inspect=${workerData.inspect}`]

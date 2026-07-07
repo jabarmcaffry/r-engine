@@ -1,5 +1,5 @@
 import * as z from "@rebur/vendor/zod.ts";
-import { decode, verify } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
+import { decode, verify } from "@rebur/util/http/jwt.ts";
 
 export const AuthTokenSchema = z.object({
   instance_id: z.string(),

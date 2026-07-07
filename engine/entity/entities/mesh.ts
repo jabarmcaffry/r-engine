@@ -12,7 +12,7 @@ export class Mesh extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🧊";
+  static readonly icon: string = "🧊";
 
   // Geometry
   geometryType: GeometryDesc["type"] = "box";

@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-import-prefix
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import * as fs from "../../util/std/fs.ts";
+import * as path from "../../util/std/path.ts";
 
 export const initServerEnv = async (root: string | URL, token = "token"): Promise<boolean> => {
   const serverEnvLocal = path.join(root, "multiplayer", ".env.local");
@@ -10,6 +10,7 @@ export const initServerEnv = async (root: string | URL, token = "token"): Promis
     `
 REBUR_MULTIPLAYER_AUTH_TOKEN="${token}"
 REBUR_NEXT_GAME_JWT_SECRET="${token}"
+IS_DEV="true"
 `.trim() + "\n";
 
   await Deno.writeTextFile(serverEnvLocal, env);

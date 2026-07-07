@@ -254,7 +254,7 @@ export class Properties implements InspectorUIWidget {
 
             for (const [key, value] of Object.entries(behavior.overrides)) {
               behaviorOverrides[behavior.script] ??= {};
-              behaviorOverrides[behavior.script][key] = value;
+              behaviorOverrides[behavior.script][key] = value as JsonValue;
             }
           }
 

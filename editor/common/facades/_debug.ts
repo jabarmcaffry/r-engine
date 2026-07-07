@@ -102,11 +102,19 @@ export abstract class DebugShape {
   // Internal helpers
   // ---------------------------------------------------------------------------
 
+  /** Client renderer, or undefined on the server (debug visuals are client-only). */
+  get #renderer() {
+    const game = this.entity.game;
+    return game.isClient() ? game.renderer : undefined;
+  }
+
   #createMesh(): void {
     const bounds = this.getBounds();
     if (!bounds) return;
     const ref = `__dbg_${_seq++}_${this.entity.ref}`;
-    this.#handle = this.entity.game.renderer.createMesh(ref, this.buildGeometry(bounds), {
+    const renderer = this.#renderer;
+    if (!renderer) return;
+    this.#handle = renderer.createMesh(ref, this.buildGeometry(bounds), {
       color: this.#color,
       transparent: true,
       opacity: this.#alpha,
@@ -121,20 +129,17 @@ export abstract class DebugShape {
     if (this.#handle === undefined) return;
     const t = this.entity.globalTransform;
     const scale = this.disableScale ? { x: 1, y: 1, z: 1 } : t.scale;
-    this.entity.game.renderer.setMeshTransform(this.#handle, t.position, t.rotation, scale);
+    this.#renderer?.setMeshTransform(this.#handle, t.position, t.rotation, scale);
   }
 
   #applyVisible(): void {
     if (this.#handle === undefined) return;
-    this.entity.game.renderer.setMeshVisible(
-      this.#handle,
-      this.#enabled && this.entity.enabled,
-    );
+    this.#renderer?.setMeshVisible(this.#handle, this.#enabled && this.entity.enabled);
   }
 
   #applyMaterial(): void {
     if (this.#handle === undefined) return;
-    this.entity.game.renderer.updateMeshMaterial(this.#handle, {
+    this.#renderer?.updateMeshMaterial(this.#handle, {
       color: this.#color,
       opacity: this.#alpha,
     });
@@ -144,7 +149,7 @@ export abstract class DebugShape {
     if (this.#handle === undefined) return;
     const bounds = this.getBounds();
     if (!bounds) return;
-    this.entity.game.renderer.updateMeshGeometry(this.#handle, this.buildGeometry(bounds));
+    this.#renderer?.updateMeshGeometry(this.#handle, this.buildGeometry(bounds));
   }
 
   // ---------------------------------------------------------------------------
@@ -164,7 +169,7 @@ export abstract class DebugShape {
 
   destroy(): void {
     if (this.#handle !== undefined) {
-      this.entity.game.renderer.destroyMesh(this.#handle);
+      this.#renderer?.destroyMesh(this.#handle);
       this.#handle = undefined;
     }
     this.#onTransform?.unsubscribe();

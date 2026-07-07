@@ -115,9 +115,17 @@ export class BehaviorTypeInfoService {
           ping: 0,
           connections: [],
           self: createId("conn"),
+          get selfInfo() {
+            return { id: this.self, playerId: "dummy", nickname: "dummy" };
+          },
+          connection() {
+            return undefined;
+          },
           sendCustomMessage() {},
           broadcastCustomMessage() {},
-          onReceiveCustomMessage() {},
+          onReceiveCustomMessage() {
+            return { unsubscribe() {} };
+          },
           disconnect() {},
         },
         kv: DUMMY_CLIENT_KV,

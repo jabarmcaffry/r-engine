@@ -1,6 +1,6 @@
-import * as encoding from "jsr:@std/encoding@^1";
-import * as fs from "jsr:@std/fs@1";
-import * as path from "jsr:@std/path@^1";
+import * as encoding from "../util/std/encoding.ts";
+import * as fs from "../util/std/fs.ts";
+import * as path from "../util/std/path.ts";
 import {
   denoPlugins,
   reburEngineExternalPlugin,

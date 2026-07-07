@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-import-prefix
 import { Entity } from "@rebur/engine";
-import * as path from "jsr:@std/path@^1";
+import * as path from "../../util/std/path.ts";
 
 export const projectTemplate = () => ({
   meta: {

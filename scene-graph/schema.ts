@@ -17,10 +17,11 @@ export const ResourceLocationSchema = z.string().describe("Resource URI");
 // ---------------------------------------------------------------------------
 // 3D math schemas
 // ---------------------------------------------------------------------------
+// `z` defaults to 0 so scenes saved by the 2D-era engine still load.
 export const Vec3Schema = z.object({
   x: z.number(),
   y: z.number(),
-  z: z.number(),
+  z: z.number().default(0),
 });
 
 export const QuatSchema = z.object({

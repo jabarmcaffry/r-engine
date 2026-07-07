@@ -1,4 +1,4 @@
-import { debounce } from "jsr:@std/async/debounce";
+import { debounce } from "@std/async/debounce";
 import { emitScriptEditNotifications } from "./edit-notification.ts";
 import { GameSession } from "./session.ts";
 

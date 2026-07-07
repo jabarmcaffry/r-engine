@@ -1,4 +1,4 @@
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { NIL_UUID } from "@std/uuid/constants";
 
 export interface ServerConnectionDetails {
   serverUrl: string;

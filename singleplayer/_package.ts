@@ -1,8 +1,8 @@
-import * as cli from "jsr:@std/cli@^1";
-import { crypto } from "jsr:@std/crypto@^1";
-import { encodeHex } from "jsr:@std/encoding@^1";
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import * as cli from "@std/cli";
+import { crypto } from "@std/crypto";
+import { encodeHex } from "@std/encoding";
+import * as fs from "@std/fs";
+import * as path from "@std/path";
 import { bundleSingleplayerWorld } from "./_build-world.ts";
 
 async function* readPaths(

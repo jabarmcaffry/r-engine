@@ -13,7 +13,7 @@ import {
 } from "@rebur/engine";
 import * as internal from "@rebur/engine/internal";
 import { element as elem } from "@rebur/ui";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { NIL_UUID } from "@std/uuid/constants";
 import {
   ArrowUpDown,
   Box,
@@ -327,8 +327,7 @@ export class AppMenu {
         gamesDiv.dataset.aspectDisabled = "";
       }
 
-      const aspect: AspectRatio = camera.lockAspectRatio ? camera.aspectRatio : "unlocked";
-      setAspectRatio(aspect, true);
+      setAspectRatio("unlocked", true);
     });
 
     // restore aspect ratio

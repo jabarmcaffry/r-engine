@@ -1,5 +1,5 @@
-import { ensureDir } from "jsr:@std/fs@1";
-import { dirname, relative } from "jsr:@std/path@1";
+import { ensureDir } from "@std/fs";
+import { dirname, relative } from "@std/path";
 import { bundleWorld } from "../build-system/mod.ts";
 
 export async function bundleSingleplayerWorld(

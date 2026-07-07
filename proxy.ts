@@ -3,7 +3,7 @@
 // Port 5000: serves dashboard, editor, docs, public assets.
 // Forwards /api/* /internal/* /worlds/* to the multiplayer server on port 8000.
 
-import { serveDir } from "jsr:@std/http@^1/file-server";
+import { serveDir } from "./util/std/file-server.ts";
 
 const API_PORT       = 8000;
 const EDITOR_WEB_DIR = "./editor/web";

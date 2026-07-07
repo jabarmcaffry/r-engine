@@ -1045,7 +1045,7 @@ export abstract class Entity implements ISignalHandler {
     if (teleporting) {
       this[internal.entityTeleportingThisTick] = true;
       this.transform[internal.transformForceUpdate](transform);
-      this.transform[internal.transformOnChanged]();
+      this.transform[internal.transformOnChanged]?.();
     } else {
       this.#netTransformFrom = new Transform(this.transform);
       this.#netTransformTo = new Transform(transform);
@@ -1431,7 +1431,7 @@ export abstract class Entity implements ISignalHandler {
     }
   }
 
-  teleportTo(position: Vector2): void {
+  teleportTo(position: IVec3): void {
     this.setGlobalTransform({ position });
   }
 

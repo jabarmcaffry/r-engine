@@ -193,9 +193,12 @@ export class Toolbar implements InspectorUIWidget {
     const combined = (
       <Button icon={Move3D} label="Edit Transform" title="Edit Transform (Q)" />
     ) as HTMLButtonElement;
+    // "Edit Dimensions" (2D box resize) is retired in 3D — dimensions are
+    // edited via the Inspector. Keep a detached button so tool plumbing works.
     const dimensions = (
-      <Button icon={BoxSelect} label="Edit Dimensions" title="Edit Dimensions (W)" />
+      <Button icon={BoxSelect} label="Edit Dimensions" title="Edit Dimensions" />
     ) as HTMLButtonElement;
+    dimensions.style.display = "none";
 
     type Tool = keyof typeof tools;
     const tools = { combined, dimensions };
@@ -466,7 +469,7 @@ export class Toolbar implements InspectorUIWidget {
     this.game.on(InternalGameTick, () => {
       const camera = Camera.getActive(this.game);
       if (!camera) return; // no active camera?
-      cameraPos.textContent = this.#formatVector(camera.pos);
+      cameraPos.textContent = this.#formatVector(camera.focus);
       const zoom = camera.cast(Camera).zoom;
       zoomLevel.textContent = `${zoom.toFixed(2)} \u00d7`;
     });

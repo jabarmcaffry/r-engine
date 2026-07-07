@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-import-prefix
-import * as cli from "jsr:@std/cli@^1";
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import * as cli from "../util/std/cli.ts";
+import * as fs from "../util/std/fs.ts";
+import * as path from "../util/std/path.ts";
 import { denoJson, helloWorldScript, projectTemplate } from "./_utils/generate-project.ts";
 
 if (import.meta.main) {
