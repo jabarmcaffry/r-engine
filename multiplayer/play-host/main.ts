@@ -1,7 +1,7 @@
 import { Codec, getCodec, isCodec } from "@rebur/proto/codecs/mod.ts";
 import { createId } from "@rebur/vendor/nanoid.ts";
 import { Application, Router, Status } from "@oak/oak";
-import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
+import { oakCors } from "@oak/oak";
 
 import { z } from "@rebur/vendor/zod.ts";
 import * as uuid from "jsr:@std/uuid@1.0.9";

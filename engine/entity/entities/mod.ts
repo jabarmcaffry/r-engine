@@ -5,12 +5,6 @@ export * from "./clickable.ts";
 // Renderer-backed
 export * from "./mesh.ts";
 export * from "./sprite.ts";
-export * from "./tiling-sprite.ts";
-export * from "./animated-sprite.ts";
-export * from "./colored-square.ts";
-export * from "./solid-color.ts";
-export * from "./colored-polygon.ts";
-export * from "./vector-sprite.ts";
 export * from "./rich-text.ts";
 export * from "./render-container.ts";
 
@@ -26,7 +20,6 @@ export * from "./camera.ts";
 // Physics-backed
 export * from "./rigidbody.ts";
 export * from "./collider.ts";
-export * from "./complex-collider.ts";
 export * from "./character-controller.ts";
 
 // Audio-backed

@@ -466,7 +466,7 @@ export class Toolbar implements InspectorUIWidget {
     this.game.on(InternalGameTick, () => {
       const camera = Camera.getActive(this.game);
       if (!camera) return; // no active camera?
-      cameraPos.textContent = this.#formatVector(camera.pos);
+      cameraPos.textContent = this.#formatVector(camera.focus);
       const zoom = camera.cast(Camera).zoom;
       zoomLevel.textContent = `${zoom.toFixed(2)} \u00d7`;
     });

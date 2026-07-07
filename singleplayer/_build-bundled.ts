@@ -1,7 +1,7 @@
-import * as encoding from "jsr:@std/encoding@^1";
-import { format as formatBytes } from "jsr:@std/fmt@^1/bytes";
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import * as encoding from "@std/encoding";
+import { format as formatBytes } from "@std/fmt/bytes";
+import * as fs from "@std/fs";
+import * as path from "@std/path";
 import * as html from "npm:html-to-ast";
 import { esbuild } from "../build-system/mod.ts";
 

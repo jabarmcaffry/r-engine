@@ -1,5 +1,5 @@
 import { KvServerBase, KvServerBaseOptions } from "@rebur/engine";
-import { JsonValue } from "../../engine/value/data.ts";
+import type { JsonValue } from "../../engine/value/data.ts";
 
 // TODO: maybe we should do an in-memory store
 export class KvServerStub extends KvServerBase {

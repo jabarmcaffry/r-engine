@@ -1,6 +1,6 @@
-import { encodeHex } from "jsr:@std/encoding@^1";
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import { encodeHex } from "../util/std/encoding.ts";
+import * as fs from "../util/std/fs.ts";
+import * as path from "../util/std/path.ts";
 
 const dir = Deno.args[0];
 const htmlPath = path.join(dir, "index.html");

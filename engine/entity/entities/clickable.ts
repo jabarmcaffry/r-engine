@@ -11,7 +11,7 @@ import {
   MouseOut,
   MouseOver,
   MouseUp,
-  Vector2,
+  type IVec3,
   enumAdapter,
   pointWorldToLocal,
 } from "@rebur/engine";
@@ -149,7 +149,7 @@ export abstract class ClickableEntity extends Entity {
     }
   }
 
-  public abstract isInBounds(worldPosition: Vector2): boolean;
+  public abstract isInBounds(worldPosition: IVec3): boolean;
 
   static [internal.clickableTeardownGame](game: ClientGame) {
     ClickableEntity.#GameRenderListeners.delete(game);
@@ -221,7 +221,7 @@ export class Clickable extends ClickableEntity {
     });
   }
 
-  public isInBounds(worldPosition: Vector2): boolean {
+  public isInBounds(worldPosition: IVec3): boolean {
     if (!this.active) return false;
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
@@ -235,7 +235,7 @@ export class Clickable extends ClickableEntity {
     } else if (this.shape === "Circle") {
       const radiusSq = this.radius * this.radius;
       const innerSq = this.innerRadius * this.innerRadius;
-      const distanceSq = localPosition.magnitudeSquared();
+      const distanceSq = localPosition.lengthSq();
 
       return distanceSq >= innerSq && distanceSq <= radiusSq;
     } else {
@@ -269,7 +269,7 @@ export class ClickableRect extends ClickableEntity {
     this.defineValues(ClickableRect, "width", "height");
   }
 
-  public isInBounds(worldPosition: Vector2): boolean {
+  public isInBounds(worldPosition: IVec3): boolean {
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     return (
@@ -302,12 +302,12 @@ export class ClickableCircle extends ClickableEntity {
     this.defineValues(ClickableCircle, "radius", "innerRadius");
   }
 
-  public isInBounds(worldPosition: Vector2): boolean {
+  public isInBounds(worldPosition: IVec3): boolean {
     const localPosition = pointWorldToLocal(this.globalTransform, worldPosition);
 
     const radiusSq = this.radius * this.radius;
     const innerSq = this.innerRadius * this.innerRadius;
-    const distanceSq = localPosition.magnitudeSquared();
+    const distanceSq = localPosition.lengthSq();
 
     return distanceSq >= innerSq && distanceSq <= radiusSq;
   }

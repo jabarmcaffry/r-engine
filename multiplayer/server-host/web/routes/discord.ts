@@ -1,6 +1,6 @@
 import * as z from "@rebur/vendor/zod.ts";
 import { Router, Status } from "@oak/oak";
-import { create } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
+import { create } from "@rebur/util/http/jwt.ts";
 import { JsonAPIError, typedJsonHandler } from "../../../common-host/web-util/api.ts";
 import { AuthToken, importSecretKey } from "../../../server-common/game-auth.ts";
 import { CONFIG } from "../../config.ts";

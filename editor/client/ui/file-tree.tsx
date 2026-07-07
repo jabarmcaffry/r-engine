@@ -1,7 +1,7 @@
 import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import { ClientGame } from "@rebur/engine";
 import { element as elem } from "@rebur/ui";
-import * as path from "jsr:@std/path@1";
+import * as path from "@std/path";
 import {
   AudioLines,
   Braces,

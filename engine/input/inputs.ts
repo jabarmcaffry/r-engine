@@ -27,6 +27,7 @@ import {
   MouseUp,
   Scroll,
   Vector2,
+  Vec3,
 } from "@rebur/engine";
 import { actionSetHeld, inputsRegisterHandlers } from "@rebur/engine/internal";
 
@@ -34,7 +35,8 @@ import { actionSetHeld, inputsRegisterHandlers } from "@rebur/engine/internal";
 
 export type Cursor = {
   // TODO: Readonly Vectors
-  readonly world: Vector2 | undefined;
+  /** Cursor position projected onto the world ground plane (y = 0). */
+  readonly world: Vec3 | undefined;
   readonly screen: Vector2 | undefined;
 };
 
@@ -120,11 +122,13 @@ export class Inputs implements ISignalHandler {
           return undefined;
         }
 
+        if (!game.isClient()) return undefined;
         const camera = Camera.getActive(game);
         if (!camera) {
           return undefined;
         }
-        return camera.screenToWorld(this.screen);
+        const point = game.renderer.screenToGroundPoint(this.screen.x, this.screen.y);
+        return point ? new Vec3(point) : undefined;
       },
     };
   }
@@ -299,7 +303,8 @@ export class Inputs implements ISignalHandler {
   }
 
   #onWheel = (ev: WheelEvent) => {
-    const scale = Camera.METERS_TO_PIXELS;
+    // Pixels-per-scroll-unit; keeps Scroll event deltas in small, stable units.
+    const scale = 100;
     this.fire(Scroll, new Vector2({ x: ev.deltaX / scale, y: ev.deltaY / scale }), ev);
   };
   // #endregion

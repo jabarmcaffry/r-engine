@@ -58,6 +58,7 @@ export class CameraPanBehavior extends Behavior {
     this.listen(this.game.inputs, MouseOut, this.#onMouseOut.bind(this));
     this.listen(this.game.inputs, Scroll, this.#onScroll.bind(this));
 
+    this.#camera.orbit = true;
     this.#camera.zoom = 0.3;
 
     this.listen(this.#space, ActionChanged, ({ value }) => {
@@ -522,31 +523,6 @@ export class CameraPanBehavior extends Behavior {
     }
   }
 
-  #isPointInComplexCollider(entity: Entity, point: Vector2): boolean {
-    const children = [...entity.children.values()]
-      .filter(child => child.name !== "__EditorMetadata")
-      .map(child => child.pos);
-
-    if (children.length < 3) return false;
-
-    // Point-in-polygon algorithm (ray casting)
-    // thank you claude
-    let inside = false;
-    for (let i = 0, j = children.length - 1; i < children.length; j = i++) {
-      const xi = children[i].x,
-        yi = children[i].y;
-      const xj = children[j].x,
-        yj = children[j].y;
-
-      const intersect =
-        yi > point.y !== yj > point.y &&
-        point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
-
-      if (intersect) inside = !inside;
-    }
-
-    return inside;
-  }
 
   #lastParentPrepended: undefined | EmptyFacade = undefined;
 
@@ -574,13 +550,6 @@ export class CameraPanBehavior extends Behavior {
         .filter(entity => entity.enabled)
         .filter(entity => this.ui?.sceneGraph?.entryElementMap?.has(entity.ref) ?? true)
         .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined)
-        .filter(entity => {
-          // Special case for ComplexCollider
-          if (entity.constructor.name === "EditorFacadeComplexCollider" && event.cursor.world) {
-            return this.#isPointInComplexCollider(entity, event.cursor.world);
-          }
-          return true;
-        })
         .toSorted((a, b) => {
           const depthA = a.depth;
           const depthB = b.depth;
@@ -690,7 +659,7 @@ export class CameraPanBehavior extends Behavior {
       .screenToWorld(delta)
       .sub(this.#camera.screenToWorld(Vector2.ZERO));
 
-    this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+    this.#camera.focus.assign(this.#camera.focus.add(worldDelta));
   }
 
   #onMouseOver() {
@@ -731,7 +700,7 @@ export class CameraPanBehavior extends Behavior {
           .screenToWorld(scrollDelta)
           .sub(this.#camera.screenToWorld(Vector2.ZERO));
 
-        this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+        this.#camera.focus.assign(this.#camera.focus.add(worldDelta));
       } else {
         const zoomFactor = ev.altKey ? 1.5 : 1.1;
         const zoomDirection = delta.y > 0 ? 1 : -1;
@@ -743,8 +712,8 @@ export class CameraPanBehavior extends Behavior {
 
         const cursorPos = this.game.inputs.cursor.world;
         if (delta.y < 0 && cursorPos) {
-          const cursorDelta = cursorPos.sub(this.#camera.pos);
-          this.#camera.pos = this.#camera.pos.add(cursorDelta.mul(1 / 10));
+          const cursorDelta = cursorPos.sub(this.#camera.focus);
+          this.#camera.focus = this.#camera.focus.add(cursorDelta.mul(1 / 10));
         }
       }
     }
@@ -764,7 +733,7 @@ export class CameraPanBehavior extends Behavior {
           .screenToWorld(scrollDelta)
           .sub(this.#camera.screenToWorld(Vector2.ZERO));
 
-        this.#camera.pos.assign(this.#camera.pos.add(worldDelta));
+        this.#camera.focus.assign(this.#camera.focus.add(worldDelta));
       } else {
         // Zoom the camera proportionally to the pinch gesture
         const zoomAmount = ev.deltaY * 0.018; // Adjust sensitivity as needed
@@ -779,10 +748,10 @@ export class CameraPanBehavior extends Behavior {
         // Keep the zoom centered around the cursor position
         const cursorPos = this.game.inputs.cursor.world;
         if (cursorPos) {
-          const beforeZoom = cursorPos.sub(this.#camera.pos);
+          const beforeZoom = cursorPos.sub(this.#camera.focus);
           const afterZoom = beforeZoom.mul(zoomFactor);
           const adjustment = beforeZoom.sub(afterZoom);
-          this.#camera.pos.assign(this.#camera.pos.add(adjustment));
+          this.#camera.focus.assign(this.#camera.focus.add(adjustment));
         }
       }
     }

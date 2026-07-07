@@ -1,6 +1,6 @@
 import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import type { ClientGame } from "@rebur/engine";
-import { NIL_UUID } from "jsr:@std/uuid@1/constants";
+import { NIL_UUID } from "@std/uuid/constants";
 import { icon, X } from "../_icons.tsx";
 import { ReburEditorUIComponent } from "./_component.tsx";
 

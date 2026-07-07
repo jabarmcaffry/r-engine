@@ -1,10 +1,10 @@
-import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@0.11.1";
+import { denoPlugins } from "./deno-resolver-plugin.ts";
 import * as esbuild from "npm:esbuild@0.24.0";
 export { denoPlugins, esbuild };
 
-import * as dotenv from "jsr:@std/dotenv@0.225.2";
-import * as encoding from "jsr:@std/encoding@^1";
-import * as path from "jsr:@std/path@^1";
+import * as dotenv from "../util/std/dotenv.ts";
+import * as encoding from "../util/std/encoding.ts";
+import * as path from "../util/std/path.ts";
 
 export const reburExternalPlugin = (name: string, ...filters: RegExp[]): esbuild.Plugin => ({
   name,

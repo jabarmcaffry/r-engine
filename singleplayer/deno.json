@@ -15,6 +15,12 @@
     "@rebur/scene": "../scene-graph/mod.ts",
     "@rebur/ui": "../ui/mod.ts",
     "@rebur/util/": "../util/",
+    "@std/cli": "../util/std/cli.ts",
+    "@std/crypto": "../util/std/crypto.ts",
+    "@std/encoding": "../util/std/encoding.ts",
+    "@std/fmt/bytes": "../util/std/fmt-bytes.ts",
+    "@std/fs": "../util/std/fs.ts",
+    "@std/path": "../util/std/path.ts",
     "env": "data:application/javascript,export default {}"
   },
   "compilerOptions": {

@@ -1,22 +1,22 @@
 #!/usr/bin/env -S deno run --ext=ts -A
 // deno-lint-ignore-file no-import-prefix no-explicit-any
-import { Command } from "jsr:@cliffy/command@1.0.0-rc.8";
-import * as fs from "jsr:@std/fs@^1";
-import * as path from "jsr:@std/path@^1";
+import * as fs from "../util/std/fs.ts";
+import * as path from "../util/std/path.ts";
 import { stripVTControlCharacters } from "node:util";
 import { intro, log, outro, spinner } from "npm:@clack/prompts@^0.11.0";
 import color from "npm:picocolors@^1.1.1";
 
 const REBUR_ROOT = path.join(path.fromFileUrl(import.meta.url), "../..");
 
-const cli = new Command()
-  .name("rebur")
-  .command(
-    "up [path:string]",
-    "Start the Rebur Engine in a project directory. Defaults to cwd",
-  )
-  .action(async (_opts: any, dir = Deno.cwd()) => {
-    intro(color.bgCyan(" rebur up "));
+const showHelp = () => {
+  console.log(`rebur — Rebur Engine CLI
+
+Usage:
+  rebur up [path]   Start the Rebur Engine in a project directory. Defaults to cwd`);
+};
+
+const up = async (dir = Deno.cwd()) => {
+  intro(color.bgCyan(" rebur up "));
 
     const exists = await fs.exists(path.join(dir, "project.json"));
     if (!exists) {
@@ -148,12 +148,13 @@ const cli = new Command()
     for await (const chunk of serverHandle.stdout.values({ preventCancel: true })) {
       await stdout.write(chunk);
     }
-  })
-  .reset()
-  .action(() => {
-    cli.showHelp();
-  });
+};
 
 if (import.meta.main) {
-  await cli.parse(Deno.args);
+  const [command, ...rest] = Deno.args;
+  if (command === "up") {
+    await up(rest[0]);
+  } else {
+    showHelp();
+  }
 }

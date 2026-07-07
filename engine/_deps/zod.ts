@@ -1,1 +1,1 @@
-export * from "jsr:@zod/zod@4.3.5";
+export * from "npm:zod@^4.0.0";

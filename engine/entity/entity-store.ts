@@ -3,9 +3,9 @@ import type {
   BehaviorConstructor,
   Entity,
   EntityConstructor,
-  IVector2,
+  IVec3,
 } from "@rebur/engine";
-import { pointWorldToLocal, Vector2 } from "@rebur/engine";
+import { pointWorldToLocal } from "@rebur/engine";
 import {
   entityStoreRegister,
   entityStoreRegisterRoot,
@@ -52,7 +52,7 @@ export class EntityStore {
     return entities;
   }
 
-  lookupByPosition(position: IVector2): readonly Entity[] {
+  lookupByPosition(position: IVec3): readonly Entity[] {
     const entities: Entity[] = [];
     for (const entity of this.#entitiesById.values()) {
       const bounds = entity.bounds;
@@ -60,7 +60,7 @@ export class EntityStore {
 
       let local = pointWorldToLocal(entity.globalTransform, position);
       if (bounds.offset !== undefined) {
-        local = Vector2.sub(local, bounds.offset);
+        local = local.sub({ x: bounds.offset.x, y: bounds.offset.y, z: 0 });
       }
 
       const inBounds =

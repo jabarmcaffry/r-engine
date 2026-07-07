@@ -96,26 +96,3 @@ export class Collider extends Entity {
       this.game.physics.setColliderShape(this.#colliderHandle, this.#physicsShape());
   }
 }
-
-/**
- * 2D-era rectangle collider retained for backwards compatibility.
- * In the 3D engine this is a lightweight sensor entity without full physics.
- * For 3D physics use {@link Collider} with shape "box" directly.
- */
-export class RectCollider extends Entity {
-  static {
-    Entity.registerType(this, "@core");
-  }
-
-  static readonly icon = "🧱";
-  isSensor: boolean = false;
-
-  get bounds() { return undefined; }
-
-  constructor(ctx: EntityContext) {
-    super(ctx);
-    this.defineValue(RectCollider, "isSensor", {
-      description: "Trigger (no physics response) when true.",
-    });
-  }
-}

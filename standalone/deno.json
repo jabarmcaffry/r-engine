@@ -10,6 +10,8 @@
     "@rebur/proto/": "../proto/",
     "@rebur/scene": "../scene-graph/mod.ts",
     "@rebur/ui": "../ui/mod.ts",
-    "@rebur/util/": "../util/"
+    "@rebur/util/": "../util/",
+    "@std/fs": "../util/std/fs.ts",
+    "@std/path": "../util/std/path.ts"
   }
 }

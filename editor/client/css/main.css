@@ -1,4 +1,4 @@
-@import url(https://cdn.jsdelivr.net/npm/modern-normalize@3.0.0/modern-normalize.css);
+@import "modern-normalize";
 
 @import url(../../../client/src/css/base.css);
 

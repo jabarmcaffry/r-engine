@@ -16,14 +16,8 @@ export function getEntityTypes(): [type: EntityConstructor, namespace: string][]
 
 const categories = new Map<string, string[]>([
   [
-    "3D Meshes",
-    [
-      "@core/Mesh",
-      "@core/ColoredSquare",
-      "@core/ColoredPolygon",
-      "@core/Sprite",
-      "@core/VectorSprite",
-    ],
+    "3D Objects",
+    ["@core/Mesh", "@core/Sprite", "@core/Empty"],
   ],
   [
     "Lighting",
@@ -34,23 +28,21 @@ const categories = new Map<string, string[]>([
       "@core/SpotLight",
     ],
   ],
-  ["UI", ["@core/UILayer", "@core/UIPanel"]],
+  ["UI", ["@core/UILayer", "@core/UIPanel", "@core/RichText"]],
   [
     "Physics",
     ["@core/Rigidbody", "@core/Collider", "@core/CharacterController"],
   ],
   [
     "Advanced",
-    ["@core/RenderContainer", "@core/AnimatedSprite", "@core/TilingSprite", "@core/AudioSource"],
+    ["@core/RenderContainer", "@core/AudioSource", "@core/Camera"],
   ],
   [
     "Hidden",
     [
-      "@core/SolidColor",
       "@core/Text",
       "@core/ClickableRect",
       "@core/ClickableCircle",
-      "@core/RichText",
     ],
   ],
 ]);

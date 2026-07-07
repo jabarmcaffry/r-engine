@@ -1,6 +1,6 @@
 // crypto utilities for KV store signing/verification
 import { decodeBase64Url, encodeBase64Url } from "@rebur/vendor/std__encoding.ts";
-import { getPublicKeyAsync, signAsync, verifyAsync } from "jsr:@noble/ed25519@3.0.0";
+import { getPublicKeyAsync, signAsync, verifyAsync } from "npm:@noble/ed25519@3.0.0";
 
 export type Action = (typeof actions)[number];
 export const actions = ["get", "list", "players", "set", "delete", "clear"] as const;

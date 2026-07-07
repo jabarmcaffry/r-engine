@@ -1,51 +1,12 @@
-import { IVector2, Transform, Vector2 } from "@rebur/engine";
-
-// prettier-ignore
-export interface Matrix2x2 {
-  xx: number; xy: number;
-  yx: number; yy: number;
-}
-
-// prettier-ignore
-const mult2x2 = (a: Matrix2x2, b: Matrix2x2): Matrix2x2 => ({
-  xx: a.xx * b.xx + a.xy * b.yx, xy: a.xx * b.xy + a.xy * b.yy,
-  yx: a.yx * b.xx + a.yy * b.yx, yy: a.yx * b.xy + a.yy * b.yy,
-});
-
-const mult2x2Point = (m: Matrix2x2, p: IVector2): Vector2 =>
-  new Vector2(p.x * m.xx + p.y * m.xy, p.x * m.yx + p.y * m.yy);
-
-export function transformWorldToLocal(
-  parentWorldTransform: Transform,
-  worldTransform: Transform,
-): Transform {
-  const a = parentWorldTransform;
-  const b = worldTransform;
-
-  // prettier-ignore
-  const inverseScale = {
-    xx: 1 / a.scale.x,  xy: 0.0,
-    yx: 0.0,            yy: 1 / a.scale.y,
-  }
-
-  const th = a.rotation;
-  const cth = Math.cos(-th);
-  const sth = Math.sin(-th);
-  // prettier-ignore
-  const inverseRotation = {
-    xx: cth, xy: -sth,
-    yx: sth, yy: cth,
-  }
-
-  const inverseM = mult2x2(inverseScale, inverseRotation);
-
-  return new Transform({
-    position: mult2x2Point(inverseM, b.position.sub(a.position)),
-    scale: new Vector2(b.scale.x / a.scale.x, b.scale.y / a.scale.y),
-    rotation: b.rotation - a.rotation,
-    z: b.z - a.z,
-  });
-}
+// 3D TRS (translate-rotate-scale) transform composition.
+//
+// Conventions: column-vector convention, `world = parent ∘ local`, i.e.
+//   worldPos = parentPos + parentRot * (parentScale ⊙ localPos)
+//   worldRot = parentRot * localRot
+//   worldScale = parentScale ⊙ localScale   (component-wise; assumes no shear)
+import { Quat } from "./quat.ts";
+import { Transform } from "./entity-transform.ts";
+import { Vec3, type IVec3 } from "./vec3.ts";
 
 export function transformLocalToWorld(
   parentWorldTransform: Transform,
@@ -54,65 +15,76 @@ export function transformLocalToWorld(
   const a = parentWorldTransform;
   const b = localTransform;
 
-  // prettier-ignore
-  const scale = {
-    xx: a.scale.x,  xy: 0.0,
-    yx: 0.0,        yy: a.scale.y,
-  }
-
-  const th = a.rotation;
-  const cth = Math.cos(th);
-  const sth = Math.sin(th);
-  // prettier-ignore
-  const rotation = {
-    xx: cth, xy: -sth,
-    yx: sth, yy: cth,
-  }
-  const m = mult2x2(rotation, scale);
+  const scaled = new Vec3(
+    b.position.x * a.scale.x,
+    b.position.y * a.scale.y,
+    b.position.z * a.scale.z,
+  );
+  const rotated = a.rotation.rotateVec3(scaled);
 
   return new Transform({
-    position: mult2x2Point(m, b.position).add(a.position),
-    scale: new Vector2(a.scale.x * b.scale.x, a.scale.y * b.scale.y),
-    rotation: a.rotation + b.rotation,
-    z: a.z + b.z,
+    position: new Vec3(rotated).add(a.position),
+    rotation: a.rotation.multiply(b.rotation).normalized(),
+    scale: new Vec3(a.scale.x * b.scale.x, a.scale.y * b.scale.y, a.scale.z * b.scale.z),
   });
 }
 
-export function pointLocalToWorld(worldTransform: Transform, localPoint: IVector2): Vector2 {
-  const t = worldTransform;
-  // prettier-ignore
-  const scale = {
-    xx: t.scale.x, xy: 0.0,
-    yx: 0.0, yy: t.scale.y
-  }
-  const th = t.rotation;
-  const cth = Math.cos(th);
-  const sth = Math.sin(th);
-  // prettier-ignore
-  const rotation = {
-    xx: cth, xy: -sth,
-    yx: sth, yy: cth,
-  }
-  const m = mult2x2(rotation, scale);
-  return mult2x2Point(m, localPoint).add(t.position);
+export function transformWorldToLocal(
+  parentWorldTransform: Transform,
+  worldTransform: Transform,
+): Transform {
+  const a = parentWorldTransform;
+  const b = worldTransform;
+
+  const invRotation = a.rotation.normalized().conjugate();
+  const delta = b.position.sub(a.position);
+  const unrotated = invRotation.rotateVec3(delta);
+
+  return new Transform({
+    position: new Vec3(
+      unrotated.x / (a.scale.x || 1),
+      unrotated.y / (a.scale.y || 1),
+      unrotated.z / (a.scale.z || 1),
+    ),
+    rotation: invRotation.multiply(b.rotation).normalized(),
+    scale: new Vec3(
+      b.scale.x / (a.scale.x || 1),
+      b.scale.y / (a.scale.y || 1),
+      b.scale.z / (a.scale.z || 1),
+    ),
+  });
 }
 
-export function pointWorldToLocal(worldTransform: Transform, worldPoint: IVector2): Vector2 {
+export function pointLocalToWorld(worldTransform: Transform, localPoint: IVec3): Vec3 {
   const t = worldTransform;
-  const inverseScale = {
-    xx: 1 / t.scale.x,
-    xy: 0.0,
-    yx: 0.0,
-    yy: 1 / t.scale.y,
-  };
-  const th = t.rotation;
-  const cth = Math.cos(-th);
-  const sth = Math.sin(-th);
-  // prettier-ignore
-  const inverseRotation = {
-    xx: cth, xy: -sth,
-    yx: sth, yy: cth,
-  }
-  const inverseM = mult2x2(inverseScale, inverseRotation);
-  return mult2x2Point(inverseM, Vector2.sub(worldPoint, t.position));
+  const scaled = new Vec3(
+    localPoint.x * t.scale.x,
+    localPoint.y * t.scale.y,
+    localPoint.z * t.scale.z,
+  );
+  return new Vec3(t.rotation.rotateVec3(scaled)).add(t.position);
 }
+
+export function pointWorldToLocal(worldTransform: Transform, worldPoint: IVec3): Vec3 {
+  const t = worldTransform;
+  const invRotation = t.rotation.normalized().conjugate();
+  const delta = new Vec3(worldPoint).sub(t.position);
+  const unrotated = invRotation.rotateVec3(delta);
+  return new Vec3(
+    unrotated.x / (t.scale.x || 1),
+    unrotated.y / (t.scale.y || 1),
+    unrotated.z / (t.scale.z || 1),
+  );
+}
+
+/** Rotate a direction vector from local space to world space (ignores position/scale). */
+export function directionLocalToWorld(worldTransform: Transform, localDir: IVec3): Vec3 {
+  return new Vec3(worldTransform.rotation.rotateVec3(localDir));
+}
+
+/** Rotate a direction vector from world space to local space (ignores position/scale). */
+export function directionWorldToLocal(worldTransform: Transform, worldDir: IVec3): Vec3 {
+  return new Vec3(worldTransform.rotation.normalized().conjugate().rotateVec3(worldDir));
+}
+
+export { Quat, Transform, Vec3 };

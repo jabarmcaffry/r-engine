@@ -1,0 +1,38 @@
+{
+  "name": "rebur-engine",
+  "private": true,
+  "description": "npm dependencies for browser bundles. esbuild resolves `npm:` specifiers from this node_modules; versions here must match the specifiers used in source (see build-system/deno-resolver-plugin.ts). Run `npm install` once after cloning.",
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.14.0",
+    "@discord/embedded-app-sdk": "^2.1.0",
+    "@noble/ed25519": "3.0.0",
+    "@paralleldrive/cuid2": "2.2.2",
+    "cbor2": "^2.0.1",
+    "fast-deep-equal": "3.1.3",
+    "howler": "2.2.4",
+    "html-to-ast": "^0.0.6",
+    "iterator-helpers-polyfill": "3.0.1",
+    "jwt-decode": "^4.0.0",
+    "lucide-static": "0.429.0",
+    "modern-normalize": "^3.0.1",
+    "morphdom": "2.7.7",
+    "nanoid": "5.1.6",
+    "object-inspect": "1.13.2",
+    "pako": "2.1.0",
+    "partysocket": "1.0.2",
+    "simple-icons": "13.6.0",
+    "stats.js": "0.17.0",
+    "strip-ansi": "7.1.0",
+    "three": "0.176.0",
+    "type-fest": "5.1.0",
+    "vanilla-colorful": "^0.7.2",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/howler": "2.2.12",
+    "@types/object-inspect": "1.13.0",
+    "@types/pako": "2.0.4",
+    "@types/stats.js": "0.17.3",
+    "@types/three": "^0.176.0"
+  }
+}

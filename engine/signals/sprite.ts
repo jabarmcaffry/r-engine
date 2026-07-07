@@ -1,5 +1,5 @@
-import type { AnimatedSprite, Sprite, TilingSprite } from "@rebur/engine";
+import type { Sprite } from "@rebur/engine";
 
 export class SpriteTextureChanged {
-  constructor(public readonly sprite: Sprite | AnimatedSprite | TilingSprite) {}
+  constructor(public readonly sprite: Sprite) {}
 }

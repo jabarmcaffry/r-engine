@@ -1,5 +1,5 @@
 import { Application, Router, Status } from "@oak/oak";
-import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
+import { oakCors } from "@oak/oak";
 import { handleJsonAPIErrors } from "../../common-host/web-util/api.ts";
 
 import { serveWorlds } from "../../common-host/routes/worlds.ts";

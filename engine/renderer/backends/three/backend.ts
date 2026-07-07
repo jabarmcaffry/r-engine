@@ -268,12 +268,13 @@ export class ThreeRendererBackend implements IRendererBackend {
 
   // ---- Meshes --------------------------------------------------------------
 
-  createMesh(_entityRef: string, geometry: GeometryDesc, material: MaterialDesc): MeshHandle {
+  createMesh(entityRef: string, geometry: GeometryDesc, material: MaterialDesc): MeshHandle {
     const geo = buildGeometry(geometry);
     const mat = buildMaterial(material);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.castShadow = material.castShadow ?? true;
     mesh.receiveShadow = material.receiveShadow ?? true;
+    mesh.userData["entityRef"] = entityRef;
     this.#scene.add(mesh);
     const handle = this.#handleCounter++ as unknown as MeshHandle;
     this.#meshes.set(handle, mesh);
@@ -493,7 +494,7 @@ export class ThreeRendererBackend implements IRendererBackend {
 
     const existing = this.#boxHelpers.get(entityRef);
     if (existing) {
-      existing.object = targetMesh as THREE.Object3D;
+      (existing as unknown as { object: THREE.Object3D }).object = targetMesh;
       existing.setFromObject(targetMesh);
       (existing.material as THREE.LineBasicMaterial).color.setHex(color);
       return;
@@ -502,6 +503,48 @@ export class ThreeRendererBackend implements IRendererBackend {
     const helper = new THREE.BoxHelper(targetMesh, color);
     this.#scene.add(helper);
     this.#boxHelpers.set(entityRef, helper);
+  }
+
+  // ---- Picking ---------------------------------------------------------------
+
+  #raycaster = new THREE.Raycaster();
+
+  #screenToNDC(screenX: number, screenY: number): THREE.Vector2 {
+    const w = this.canvas.clientWidth || this.canvas.width;
+    const h = this.canvas.clientHeight || this.canvas.height;
+    return new THREE.Vector2((screenX / w) * 2 - 1, -(screenY / h) * 2 + 1);
+  }
+
+  pickEntities(screenX: number, screenY: number): string[] {
+    const cam = this.#activeCameraHandle !== undefined
+      ? this.#cameras.get(this.#activeCameraHandle)
+      : undefined;
+    if (!cam) return [];
+
+    cam.updateMatrixWorld();
+    this.#raycaster.setFromCamera(this.#screenToNDC(screenX, screenY), cam);
+    const hits = this.#raycaster.intersectObjects([...this.#meshes.values()], false);
+
+    const refs: string[] = [];
+    for (const hit of hits) {
+      const ref = hit.object.userData["entityRef"];
+      if (typeof ref === "string" && !refs.includes(ref)) refs.push(ref);
+    }
+    return refs;
+  }
+
+  screenToGroundPoint(screenX: number, screenY: number, planeY = 0): IVec3 | undefined {
+    const cam = this.#activeCameraHandle !== undefined
+      ? this.#cameras.get(this.#activeCameraHandle)
+      : undefined;
+    if (!cam) return undefined;
+
+    cam.updateMatrixWorld();
+    this.#raycaster.setFromCamera(this.#screenToNDC(screenX, screenY), cam);
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -planeY);
+    const hit = new THREE.Vector3();
+    if (this.#raycaster.ray.intersectPlane(plane, hit) === null) return undefined;
+    return { x: hit.x, y: hit.y, z: hit.z };
   }
 
   // ---- Screen-space projection ---------------------------------------------

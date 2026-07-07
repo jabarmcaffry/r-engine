@@ -7,9 +7,21 @@ import {
   type Game,
   Vector2,
   Vec3,
+  Quat,
 } from "@rebur/engine";
 import type { CameraHandle } from "../../renderer/api.ts";
 
+/**
+ * Perspective camera.
+ *
+ * Two positioning modes:
+ * - **Transform mode** (default, used in games): the camera renders from the
+ *   entity's own world transform. Move/rotate the entity (or parent it to a
+ *   character rig) to control the view.
+ * - **Orbit mode** (used by the editor viewport): the camera orbits a `focus`
+ *   point at a distance controlled by `zoom`, pitched down 45°. The editor's
+ *   pan/zoom controls drive `focus` and `zoom` directly.
+ */
 export class Camera extends Entity {
   static {
     Entity.registerType(this, "@core");
@@ -23,18 +35,22 @@ export class Camera extends Entity {
   far: number = 1000;
 
   /**
-   * Editor-facing zoom level. A zoom of 1 = camera at its default distance.
-   * Higher zoom = camera moves closer. Controlled by CameraPanBehavior.
-   * Stored on the Camera so editor behaviors can read/write it.
+   * When true, the camera positions itself by orbiting `focus` (editor
+   * viewport behaviour). When false, the camera uses the entity transform.
+   */
+  orbit: boolean = false;
+
+  /**
+   * Orbit-mode zoom level. 1 = camera at BASE_DISTANCE from focus.
+   * Higher zoom = closer. Ignored in transform mode.
    */
   zoom: number = 1;
 
   /**
-   * Editor-facing focus/pan position (world XZ plane).
-   * Camera orbits around this point. Controlled by CameraPanBehavior.
-   * Mutated in-place by the editor (uses .assign()).
+   * Orbit-mode focus point (world space). The editor pans by mutating this
+   * in place (uses `.assign()`). Ignored in transform mode.
    */
-  pos: Vec3 = new Vec3(0, 0, 0);
+  focus: Vec3 = new Vec3(0, 0, 0);
 
   /** Base distance from focus point when zoom == 1. */
   static readonly BASE_DISTANCE = 20;
@@ -44,7 +60,9 @@ export class Camera extends Entity {
 
   #cameraHandle: CameraHandle | undefined;
 
-  get bounds() { return undefined; }
+  get bounds() {
+    return undefined;
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -87,25 +105,26 @@ export class Camera extends Entity {
     return game.entities.lookupByType(Camera).find(c => c.active);
   }
 
+  /** Current camera distance from the focus point (orbit mode). */
+  get orbitDistance(): number {
+    return Camera.BASE_DISTANCE / Math.max(0.001, this.zoom);
+  }
+
   /**
-   * Convert a screen-space delta (pixels) to a world-space delta.
-   * In the 3D editor this scales pixel offsets by the camera distance (zoom-dependent).
+   * Convert a screen-space delta (pixels) to a world-space delta at the focus
+   * distance. Used by the editor for drag-to-pan. Returns a 2D delta: x maps
+   * to world X, y maps to the view's vertical axis.
    */
   screenToWorld(screen: { x: number; y: number }): Vector2 {
-    // Canvas size
     const canvas = this.game.isClient() ? this.game.renderer.canvas : undefined;
     const canvasH = canvas?.clientHeight || 600;
-    const distance = Camera.BASE_DISTANCE / Math.max(0.001, this.zoom);
+    const distance = this.orbit ? this.orbitDistance : Camera.BASE_DISTANCE;
 
-    // How many world units per pixel at this distance and FOV
+    // world units per pixel at this distance and FOV
     const fovRad = this.fov * (Math.PI / 180);
-    const worldUnitsPerPixelY = (2 * Math.tan(fovRad / 2) * distance) / canvasH;
-    const worldUnitsPerPixelX = worldUnitsPerPixelY;
+    const worldUnitsPerPixel = (2 * Math.tan(fovRad / 2) * distance) / canvasH;
 
-    return new Vector2(
-      screen.x * worldUnitsPerPixelX,
-      screen.y * worldUnitsPerPixelY,
-    );
+    return new Vector2(screen.x * worldUnitsPerPixel, screen.y * worldUnitsPerPixel);
   }
 
   activate(): void {
@@ -116,22 +135,29 @@ export class Camera extends Entity {
     }
   }
 
+  /** Orbit-mode pitch: 45° looking down-forward. */
+  static readonly #ORBIT_PITCH = Quat.fromAxisAngle({ x: 1, y: 0, z: 0 }, -Math.PI / 4);
+
   onFrame(): void {
     const game = this.game;
     if (!game.isClient() || this.#cameraHandle === undefined) return;
 
-    // Position camera above the focus point (pos), looking down at it
-    const distance = Camera.BASE_DISTANCE / Math.max(0.001, this.zoom);
-    const camPos = new Vec3(this.pos.x, this.pos.y + distance, this.pos.z + distance * 0.5);
+    if (this.orbit) {
+      // Orbit the focus point from above/behind at 45°.
+      const distance = this.orbitDistance;
+      const offset = distance * Math.SQRT1_2; // sin/cos of 45°
+      const camPos = new Vec3(this.focus.x, this.focus.y + offset, this.focus.z + offset);
+      game.renderer.setCameraTransform(this.#cameraHandle, camPos, Camera.#ORBIT_PITCH);
+    } else {
+      const t = this.interpolated;
+      game.renderer.setCameraTransform(this.#cameraHandle, t.position, t.rotation);
+    }
 
-    // Look toward the focus point from above/front
-    // Pitch: -45° looking down-forward
-    const { Quat } = (this as unknown as { game: { math?: Record<string, unknown> } });
-    const pitchAngle = -Math.atan2(1, 1); // 45° downward
-    const pitchQuat = { x: Math.sin(pitchAngle / 2), y: 0, z: 0, w: Math.cos(pitchAngle / 2) };
-
-    game.renderer.setCameraTransform(this.#cameraHandle, camPos, pitchQuat);
     if (this.active) game.renderer.setActiveCamera(this.#cameraHandle);
-    game.renderer.updateCamera(this.#cameraHandle, { fov: this.fov, near: this.near, far: this.far });
+    game.renderer.updateCamera(this.#cameraHandle, {
+      fov: this.fov,
+      near: this.near,
+      far: this.far,
+    });
   }
 }

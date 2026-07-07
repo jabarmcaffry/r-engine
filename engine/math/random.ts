@@ -1,14 +1,14 @@
 import * as internal from "@rebur/engine/internal";
-import type { Prng, RandomOptions, SampleOptions } from "jsr:@std/random@0.1.0";
+import type { Prng, RandomOptions, SampleOptions } from "@rebur/util/std/random.ts";
 import {
   randomBetween,
   randomIntegerBetween,
   randomSeeded,
   sample,
   shuffle,
-} from "jsr:@std/random@0.1.0";
+} from "@rebur/util/std/random.ts";
 
-export type { Prng, RandomOptions } from "jsr:@std/random@0.1.0";
+export type { Prng, RandomOptions } from "@rebur/util/std/random.ts";
 
 // #region Rng
 /**
