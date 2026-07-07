@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/player-spawner.ts"],
+  "sourcesContent": ["import { Behavior, Sprite } from \"@rebur/engine\";\nimport CleanupOnLeaveBehavior from \"./cleanup-on-leave.ts\";\nimport WASDMovementBehavior from \"./wasd.ts\";\n\nexport default class PlayerSpawner extends Behavior {\n  onInitialize(): void {\n    if (!this.game.isClient()) return;\n\n    const player = this.game.world.spawn({\n      type: Sprite,\n      name: \"Player.\" + this.game.network.self,\n      authority: this.game.network.self,\n      behaviors: [{ type: WASDMovementBehavior }, { type: CleanupOnLeaveBehavior }],\n    });\n    player.takeAuthority();\n  }\n}\n"],
+  "mappings": "yJAAA,OAAS,SAAU,WAAc,gBAIjC,IAAqB,cAArB,cAA2C,QAAS,CAJpD,MAIoD,8BAClD,cAAqB,CACnB,GAAI,CAAC,KAAK,KAAK,SAAS,EAAG,OAEZ,KAAK,KAAK,MAAM,MAAM,CACnC,KAAM,OACN,KAAM,UAAY,KAAK,KAAK,QAAQ,KACpC,UAAW,KAAK,KAAK,QAAQ,KAC7B,UAAW,CAAC,CAAE,KAAM,oBAAqB,EAAG,CAAE,KAAM,sBAAuB,CAAC,CAC9E,CAAC,EACM,cAAc,CACvB,CACF",
+  "names": []
+}

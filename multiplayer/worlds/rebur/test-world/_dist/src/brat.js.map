@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/brat.ts"],
+  "sourcesContent": ["import { Behavior, UIPanel } from \"@rebur/engine\";\n\nexport default class Brat extends Behavior {\n  #ui = this.entity.cast(UIPanel);\n\n  onInitialize(): void {\n    if (this.game.isServer()) return;\n\n    this.#ui.globalTransform.scale.assign({ x: 2.5, y: 4 });\n    this.#ui.element.append(document.createTextNode(\"brat\"));\n    this.#ui.element.style.color = \"black\";\n  }\n}\n"],
+  "mappings": "yCAAA,OAAS,SAAU,YAAe,gBAElC,IAAqB,KAArB,cAAkC,QAAS,CAF3C,MAE2C,qBACzC,IAAM,KAAK,OAAO,KAAK,OAAO,EAE9B,cAAqB,CACf,KAAK,KAAK,SAAS,IAEvB,KAAK,IAAI,gBAAgB,MAAM,OAAO,CAAE,EAAG,IAAK,EAAG,CAAE,CAAC,EACtD,KAAK,IAAI,QAAQ,OAAO,SAAS,eAAe,MAAM,CAAC,EACvD,KAAK,IAAI,QAAQ,MAAM,MAAQ,QACjC,CACF",
+  "names": []
+}

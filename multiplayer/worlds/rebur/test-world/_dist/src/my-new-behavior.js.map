@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/my-new-behavior.ts"],
+  "sourcesContent": ["import { Behavior, ObjectAdapter } from \"@rebur/engine\";\n\nexport default class MyNewBehavior extends Behavior {\n  mySwagObject = {\n    hello: \"world\",\n    hi: \"there\",\n  };\n\n  onInitialize(): void {\n    this.defineValue(MyNewBehavior, \"mySwagObject\", { type: ObjectAdapter });\n\n    console.log(\"Hello, world!\");\n  }\n}\n"],
+  "mappings": "yCAAA,OAAS,SAAU,kBAAqB,gBAExC,IAAqB,cAArB,MAAqB,uBAAsB,QAAS,CAFpD,MAEoD,8BAClD,aAAe,CACb,MAAO,QACP,GAAI,OACN,EAEA,cAAqB,CACnB,KAAK,YAAY,eAAe,eAAgB,CAAE,KAAM,aAAc,CAAC,EAEvE,QAAQ,IAAI,eAAe,CAC7B,CACF",
+  "names": []
+}

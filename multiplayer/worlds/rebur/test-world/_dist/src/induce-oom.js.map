@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/induce-oom.ts"],
+  "sourcesContent": ["import { Behavior } from \"@rebur/engine\";\n\nexport default class InduceOOM extends Behavior {\n  data: Record<string, string> = {};\n\n  override onTickServer(): void {\n    /* const buf1 = new Uint8Array(16);\n    const buf2 = new Uint8Array(36);\n    for (let i = 0; i < 512; i++) {\n      crypto.getRandomValues(buf1);\n      crypto.getRandomValues(buf2);\n      this.data[encodeBase32(buf1)] = encodeBase64(buf2);\n    } */\n\n    if (this.game.time.ticks > 60) {\n      const buf1 = new Uint8Array(64);\n      while (true) {\n        crypto.getRandomValues(buf1);\n      }\n    }\n  }\n}\n"],
+  "mappings": "yCAAA,OAAS,aAAgB,gBAEzB,IAAqB,UAArB,cAAuC,QAAS,CAFhD,MAEgD,0BAC9C,KAA+B,CAAC,EAEvB,cAAqB,CAS5B,GAAI,KAAK,KAAK,KAAK,MAAQ,GAAI,CAC7B,IAAM,KAAO,IAAI,WAAW,EAAE,EAC9B,OACE,OAAO,gBAAgB,IAAI,CAE/B,CACF,CACF",
+  "names": []
+}

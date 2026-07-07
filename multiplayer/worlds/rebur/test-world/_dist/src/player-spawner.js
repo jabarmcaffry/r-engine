@@ -1,0 +1,3 @@
+import{WASDMovementBehavior}from"../chunk-KJ47H3UA.js";import{CleanupOnLeaveBehavior}from"../chunk-QJZ2L74Z.js";import{__name}from"../chunk-EHGQLVHU.js";import{Behavior,Sprite}from"@rebur/engine";var PlayerSpawner=class extends Behavior{static{__name(this,"PlayerSpawner")}onInitialize(){if(!this.game.isClient())return;this.game.world.spawn({type:Sprite,name:"Player."+this.game.network.self,authority:this.game.network.self,behaviors:[{type:WASDMovementBehavior},{type:CleanupOnLeaveBehavior}]}).takeAuthority()}};export{PlayerSpawner as default};
+// built with <3 using rebur ^-^
+//# sourceMappingURL=player-spawner.js.map

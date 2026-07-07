@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/hello-world.ts"],
+  "sourcesContent": ["import { Behavior } from \"@rebur/engine\";\n\nexport default class HelloWorld extends Behavior {\n  onInitialize() {\n    console.log(\"hello world!\");\n  }\n\n  onTick(): void {\n    if (!this.game.isServer()) return;\n    this.entity.transform.rotation += 0.01;\n  }\n}\n"],
+  "mappings": "gHAAA,OAAS,aAAgB,gBAEzB,IAAqB,WAArB,cAAwC,QAAS,CAFjD,MAEiD,2BAC/C,cAAe,CACb,QAAQ,IAAI,cAAc,CAC5B,CAEA,QAAe,CACR,KAAK,KAAK,SAAS,IACxB,KAAK,OAAO,UAAU,UAAY,IACpC,CACF",
+  "names": []
+}

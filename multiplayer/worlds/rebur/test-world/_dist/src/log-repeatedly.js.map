@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/log-repeatedly.ts"],
+  "sourcesContent": ["import { Behavior, BehaviorDestroyed } from \"@rebur/engine\";\n\nexport default class LogRepeatedly extends Behavior {\n  message: string = \"Hello, world!\";\n\n  onInitialize(): void {\n    this.defineValue(LogRepeatedly, \"message\");\n\n    if (!this.game.isServer()) return;\n\n    const interval = setInterval(() => {\n      console.log(this.message);\n    }, 2500);\n\n    this.on(BehaviorDestroyed, () => {\n      clearInterval(interval);\n    });\n  }\n}\n"],
+  "mappings": "yCAAA,OAAS,SAAU,sBAAyB,gBAE5C,IAAqB,cAArB,MAAqB,uBAAsB,QAAS,CAFpD,MAEoD,8BAClD,QAAkB,gBAElB,cAAqB,CAGnB,GAFA,KAAK,YAAY,eAAe,SAAS,EAErC,CAAC,KAAK,KAAK,SAAS,EAAG,OAE3B,IAAM,SAAW,YAAY,IAAM,CACjC,QAAQ,IAAI,KAAK,OAAO,CAC1B,EAAG,IAAI,EAEP,KAAK,GAAG,kBAAmB,IAAM,CAC/B,cAAc,QAAQ,CACxB,CAAC,CACH,CACF",
+  "names": []
+}

@@ -1,41 +1,36 @@
-import {
-  Bounds,
-  ColorAdapter,
-  Entity,
-  EntityContext,
-  EntityTransformUpdate,
-  IBounds,
-  PixiEntity,
-} from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
-
 /**
- * @deprecated Use `ColoredSquare` entity instead
+ * SolidColor — a colored plane in 3D space.
+ * @deprecated Use ColoredSquare instead.
  */
-export class SolidColor extends PixiEntity {
+import {
+  Entity,
+  EntitySpawned,
+  EntityDestroyed,
+  EntityEnableChanged,
+  type EntityContext,
+  ColorAdapter,
+  type IBounds,
+  Bounds,
+} from "@rebur/engine";
+import type { MeshHandle, GeometryDesc, MaterialDesc } from "../../renderer/api.ts";
+
+/** @deprecated Use ColoredSquare instead. */
+export class SolidColor extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
   static readonly icon = "🟪";
-  get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
-    return new Bounds(this.width, this.height);
-  }
 
   width: number = 1;
   height: number = 1;
   color: string = "white";
 
-  get #color(): PIXI.Color {
-    try {
-      return new PIXI.Color(this.color);
-    } catch {
-      return new PIXI.Color("white");
-    }
-  }
+  #meshHandle: MeshHandle | undefined;
 
-  #gfx: PIXI.Graphics | undefined;
+  get bounds(): IBounds | undefined {
+    return new Bounds(this.width, this.height);
+  }
 
   constructor(ctx: EntityContext) {
     super(ctx);
@@ -43,39 +38,46 @@ export class SolidColor extends PixiEntity {
     this.defineValues(SolidColor, "width", "height");
     this.defineValue(SolidColor, "color", { type: ColorAdapter });
 
-    const updateGfx = () => {
-      this.#draw();
-    };
+    this.on(EntitySpawned, () => {
+      const game = this.game;
+      if (!game.isClient()) return;
+      this.#meshHandle = game.renderer.createMesh(
+        this.ref,
+        this.#buildGeometry(),
+        this.#buildMaterial(),
+      );
+      this.#syncTransform();
+    });
 
-    this.on(EntityTransformUpdate, updateGfx);
-    const widthValue = this.values.get("width");
-    const heightValue = this.values.get("height");
-    widthValue?.onChanged(updateGfx);
-    heightValue?.onChanged(updateGfx);
+    this.on(EntityDestroyed, () => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.destroyMesh(this.#meshHandle);
+    });
 
-    const colorValue = this.values.get("color");
-    colorValue?.onChanged(updateGfx);
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.setMeshVisible(this.#meshHandle, enabled);
+    });
   }
 
-  #draw(): void {
-    if (!this.#gfx) return;
-
-    const width = this.width * this.globalTransform.scale.x;
-    const height = this.height * this.globalTransform.scale.y;
-    const color = this.#color;
-    this.#gfx
-      .clear()
-      .rect(-width / 2, -height / 2, width, height)
-      .fill({ color: color, alpha: color.alpha });
+  #buildGeometry(): GeometryDesc {
+    return { type: "plane", width: this.width, height: this.height };
   }
 
-  onInitialize() {
-    super.onInitialize();
-    if (!this.container) return;
+  #buildMaterial(): MaterialDesc {
+    return { type: "unlit", color: this.color, side: "double" };
+  }
 
-    this.#gfx = new PIXI.Graphics();
-    this.#draw();
+  #syncTransform(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    const t = this.globalTransform;
+    this.game.renderer.setMeshTransform(this.#meshHandle, t.position, t.rotation, t.scale);
+  }
 
-    this.container.addChild(this.#gfx);
+  onFrame(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    this.#syncTransform();
+    this.game.renderer.updateMeshGeometry(this.#meshHandle, this.#buildGeometry());
+    this.game.renderer.updateMeshMaterial(this.#meshHandle, this.#buildMaterial());
   }
 }

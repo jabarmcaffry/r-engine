@@ -1,11 +1,13 @@
+/**
+ * BoundsDebug — draws entity bounding boxes as editor overlays.
+ * In 3D: uses the renderer's BoxHelper-based entity highlight system.
+ */
 import {
   Entity,
-  EntityContext,
+  type EntityContext,
   EntityDestroyed,
   GamePostRender,
-  Vector2,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export class BoundsDebug extends Entity {
   static {
@@ -15,8 +17,6 @@ export class BoundsDebug extends Entity {
   static readonly icon: string = "🪛";
   readonly bounds: undefined;
 
-  #gfx: PIXI.Graphics | undefined;
-
   constructor(ctx: EntityContext) {
     super(ctx);
 
@@ -25,32 +25,44 @@ export class BoundsDebug extends Entity {
     });
 
     this.on(EntityDestroyed, () => {
-      this.#gfx?.destroy({ children: true });
+      this.#clearHighlights();
     });
   }
 
-  onInitialize(): void {
-    if (!this.game.isClient()) return;
-
-    this.#gfx = new PIXI.Graphics({ zIndex: Number.MAX_SAFE_INTEGER });
-    this.game.renderer.scene.addChild(this.#gfx);
-  }
+  #highlighted = new Set<string>();
 
   #render(): void {
-    if (!this.#gfx) return;
-    this.#gfx.clear();
+    if (!this.game.isClient()) return;
+    const renderer = this.game.renderer;
+    if (!renderer.setEntityHighlight) return;
 
-    for (const child of this.children.values()) {
-      const bounds = child.bounds;
-      if (!bounds) continue;
-
-      const offset = bounds.offset ?? Vector2.ZERO;
-      const center = child.pos.add(offset);
-      const tl = center.sub({ x: bounds.width / 2, y: bounds.height / -2 });
-
-      this.#gfx
-        .rect(tl.x, -tl.y, bounds.width, bounds.height)
-        .stroke({ color: "red", pixelLine: true });
+    const current = new Set<string>();
+    for (const entity of this.game.entities.all) {
+      if (!entity.bounds) continue;
+      const ref = entity.ref;
+      current.add(ref);
+      if (!this.#highlighted.has(ref)) {
+        renderer.setEntityHighlight(ref, true, 0x00ff00);
+        this.#highlighted.add(ref);
+      }
     }
+
+    // Remove highlights for destroyed entities
+    for (const ref of this.#highlighted) {
+      if (!current.has(ref)) {
+        renderer.setEntityHighlight(ref, false);
+        this.#highlighted.delete(ref);
+      }
+    }
+  }
+
+  #clearHighlights(): void {
+    if (!this.game.isClient()) return;
+    const renderer = this.game.renderer;
+    if (!renderer.setEntityHighlight) return;
+    for (const ref of this.#highlighted) {
+      renderer.setEntityHighlight(ref, false);
+    }
+    this.#highlighted.clear();
   }
 }

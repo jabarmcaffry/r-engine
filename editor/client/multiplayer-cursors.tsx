@@ -104,7 +104,7 @@ export class MultiplayerCursors {
     if (!element) return;
 
     const canvas = element.closest("canvas");
-    if (canvas && canvas === this.game.renderer.app.canvas) {
+    if (canvas && canvas === this.game.renderer.canvas) {
       const camera = Camera.getActive(this.game);
       if (camera) {
         const canvasRect = canvas.getBoundingClientRect();
@@ -136,7 +136,7 @@ export class MultiplayerCursors {
         case "edit-game": {
           const activeCamera = Camera.getActive(this.game);
           if (!activeCamera) continue;
-          const viewportRect = this.game.renderer.app.canvas.getBoundingClientRect();
+          const viewportRect = this.game.renderer.canvas.getBoundingClientRect();
           const canvasPos = activeCamera.worldToScreen(position.world);
 
           // TODO: clamp canvasPos to viewportRect bounds

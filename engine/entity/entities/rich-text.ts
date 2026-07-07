@@ -1,55 +1,41 @@
+/**
+ * RichText — styled text rendered as an HTML overlay positioned in 3D space.
+ * The element is an absolutely-positioned div that projects the entity's world position
+ * to screen space each frame. Attach to a UILayer's coordinate system for HUD text,
+ * or to a world entity for billboarded labels.
+ */
 import {
-  Camera,
-  CameraFilterModeChanged,
-  ColorAdapter,
   Entity,
-  EntityContext,
-  EntityTransformUpdate,
+  EntitySpawned,
+  EntityDestroyed,
+  EntityEnableChanged,
+  type EntityContext,
+  ColorAdapter,
+  type IBounds,
   enumAdapter,
-  IBounds,
-  PixiEntity,
-  Value,
+  type ClientGame,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
 
 type FontStyle = enumAdapter.Union<typeof FontStyleAdapter>;
 const FontStyleAdapter = enumAdapter(["normal", "italic", "oblique"]);
 
 type FontWeight = enumAdapter.Union<typeof FontWeightAdapter>;
 const FontWeightAdapter = enumAdapter([
-  "normal",
-  "bold",
-  "100",
-  "200",
-  "300",
-  "400",
-  "500",
-  "600",
-  "700",
-  "800",
-  "900",
+  "normal", "bold",
+  "100", "200", "300", "400", "500", "600", "700", "800", "900",
 ]);
 
 type Align = enumAdapter.Union<typeof AlignAdapter>;
 const AlignAdapter = enumAdapter(["left", "center", "right"]);
 
-type StrokeJoin = enumAdapter.Union<typeof StrokeJoinAdapter>;
-const StrokeJoinAdapter = enumAdapter(["round", "bevel", "miter"]);
-
-type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
-const ScaleFilterModeAdapter = enumAdapter(["default", "linear", "nearest"]);
-
-export class RichText extends PixiEntity {
+export class RichText extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon: string = "🔡";
+  static readonly icon = "🔡";
 
-  #bounds: IBounds | undefined;
-  get bounds(): IBounds | undefined {
-    return this.#bounds;
-  }
+  get bounds(): IBounds | undefined { return undefined; }
 
   text: string = "Sample Text";
   fontFamily: string = "Inter";
@@ -61,218 +47,94 @@ export class RichText extends PixiEntity {
   stroke: boolean = false;
   strokeColor: string = "black";
   strokeWidth: number = 3;
-  strokeJoin: StrokeJoin = "round";
-  scaleFilterMode: ScaleFilterMode = "default";
 
-  #text: PIXI.Text | undefined;
-  #style: PIXI.TextStyle | undefined;
-
-  get style(): PIXI.TextStyle {
-    if (!this.#style) throw new Error("cannot access property 'style' on the server");
-    return this.#style;
-  }
+  #el: HTMLDivElement | undefined;
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(RichText, "text", {
-      description: "The text content to be displayed.",
-    });
-    this.defineValue(RichText, "fontFamily", {
-      description: "The font family used for the text.",
-    });
-    this.defineValue(RichText, "fontSize", {
-      description: "The size of the font in pixels.",
-    });
-
-    this.defineValue(RichText, "fontStyle", {
-      type: FontStyleAdapter,
-      description: "The style of the font (normal, italic, oblique).",
-    });
-
-    this.defineValue(RichText, "fontWeight", {
-      type: FontWeightAdapter,
-      description: "The weight of the font (e.g., normal, bold, or numeric values).",
-    });
-
-    this.defineValue(RichText, "align", {
-      type: AlignAdapter,
-      description: "The text alignment (left, center, right).",
-    });
-
-    this.defineValue(RichText, "color", {
-      type: ColorAdapter,
-      description: "The color of the text.",
-    });
-
-    this.defineValue(RichText, "stroke", {
-      description: "Whether the text has a stroke (outline) applied.",
-    });
-
-    const hidden: Value["hidden"] = values => values.get("stroke")?.value !== true;
+    this.defineValue(RichText, "text", { description: "Text content." });
+    this.defineValue(RichText, "fontFamily", { description: "Font family." });
+    this.defineValue(RichText, "fontSize", { description: "Font size in pixels." });
+    this.defineValue(RichText, "fontStyle", { type: FontStyleAdapter, description: "Font style." });
+    this.defineValue(RichText, "fontWeight", { type: FontWeightAdapter, description: "Font weight." });
+    this.defineValue(RichText, "align", { type: AlignAdapter, description: "Text alignment." });
+    this.defineValue(RichText, "color", { type: ColorAdapter, description: "Text color." });
+    this.defineValue(RichText, "stroke", { description: "Show text outline." });
     this.defineValue(RichText, "strokeColor", {
       type: ColorAdapter,
-      hidden: hidden,
-      description: "The color of the text stroke.",
+      description: "Outline color.",
+    });
+    this.defineValue(RichText, "strokeWidth", { description: "Outline width in pixels." });
+
+    this.on(EntitySpawned, () => {
+      if (!this.game.isClient()) return;
+      this.#createElement();
     });
 
-    this.defineValue(RichText, "strokeWidth", {
-      hidden: hidden,
-      description: "The width of the text stroke.",
+    this.on(EntityDestroyed, () => {
+      this.#el?.remove();
+      this.#el = undefined;
     });
 
-    this.defineValue(RichText, "strokeJoin", {
-      type: StrokeJoinAdapter,
-      hidden: hidden,
-      description: "The join style for the stroke (round, bevel, miter).",
-    });
-
-    this.defineValue(RichText, "scaleFilterMode", {
-      type: ScaleFilterModeAdapter,
-      description: "The scale filter mode used for texture scaling (default, linear, nearest).",
-    });
-
-    // const scaleFilterModeValue = this.values.get("scaleFilterMode");
-    // scaleFilterModeValue?.onChanged(() => {
-    //   const sprite = this.#sprite;
-    //   if (!sprite) return;
-
-    //   void this.#getTexture().then(texture => {
-    //     sprite.texture = texture;
-    //     updateSize();
-    //   });
-    // });
-
-    const fonts = new Set(["fontFamily", "fontStyle", "fontWeight"]);
-    const ignored = new Set(["clonedFromRef", "static", "hidden", ...fonts]);
-    for (const [key, value] of this.values) {
-      if (ignored.has(key)) continue;
-      value.onChanged(() => {
-        this.#reflow();
-      });
-    }
-
-    for (const [key, value] of this.values) {
-      if (!fonts.has(key)) continue;
-
-      value.onChanged(() => {
-        void this.#loadFont();
-      });
-    }
-
-    this.on(EntityTransformUpdate, () => {
-      if (!this.#text) return;
-
-      const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS_UNSCALED);
-      this.#text.scale.set(scale.x, scale.y);
-    });
-
-    this.listen(this.game, CameraFilterModeChanged, () => {
-      this.#reflow();
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (this.#el) this.#el.style.display = enabled ? "block" : "none";
     });
   }
 
-  #reflow(): void {
-    if (!this.container) return;
+  #createElement(): void {
+    const container = (this.game as ClientGame).container;
+    if (container.style.position === "") container.style.position = "relative";
 
-    if (!this.#text) {
-      this.#text = new PIXI.Text();
-      this.container.addChild(this.#text);
-    }
+    this.#el = document.createElement("div");
+    this.#el.style.cssText = [
+      "position:absolute",
+      "pointer-events:none",
+      "white-space:pre",
+      "user-select:none",
+      "transform:translate(-50%,-50%)",
+    ].join(";");
+    container.appendChild(this.#el);
+    this.#applyStyle();
+  }
 
-    this.#style ??= new PIXI.TextStyle();
-    this.#style.fontFamily = this.fontFamily;
-    this.#style.fontSize = this.fontSize;
-    this.#style.fontStyle = this.fontStyle;
-    this.#style.fontWeight = this.fontWeight;
-    this.#style.fill = this.color;
-
-    const camera = Camera.getActive(this.game);
-    const scaleMode: Exclude<ScaleFilterMode, "default"> =
-      this.scaleFilterMode === "default"
-        ? (camera?.scaleFilterMode ?? "nearest")
-        : this.scaleFilterMode;
-
-    this.#text.textureStyle ??= new PIXI.TextureStyle();
-    this.#text.textureStyle.scaleMode = scaleMode;
-
+  #applyStyle(): void {
+    if (!this.#el) return;
+    this.#el.textContent = this.text;
+    this.#el.style.fontFamily = this.fontFamily;
+    this.#el.style.fontSize = `${this.fontSize}px`;
+    this.#el.style.fontStyle = this.fontStyle;
+    this.#el.style.fontWeight = this.fontWeight;
+    this.#el.style.textAlign = this.align;
+    this.#el.style.color = this.color;
     if (this.stroke) {
-      this.#style.stroke = {
-        color: this.strokeColor,
-        width: this.strokeWidth,
-        join: this.strokeJoin,
-      };
+      const sw = this.strokeWidth;
+      this.#el.style.textShadow = [
+        `-${sw}px -${sw}px 0 ${this.strokeColor}`,
+        `${sw}px -${sw}px 0 ${this.strokeColor}`,
+        `-${sw}px ${sw}px 0 ${this.strokeColor}`,
+        `${sw}px ${sw}px 0 ${this.strokeColor}`,
+      ].join(",");
     } else {
-      this.#style.stroke = "transparent";
-    }
-
-    this.#text.style = this.#style;
-    this.#text.text = this.text;
-
-    const scale = this.globalTransform.scale.div(Camera.METERS_TO_PIXELS_UNSCALED);
-    this.#text.scale.set(scale.x, scale.y);
-
-    const anchor = this.align === "center" ? 0.5 : this.align === "left" ? 0 : 1;
-    this.#text.anchor.set(anchor, 0.5);
-
-    const localBounds = this.container.getLocalBounds().rectangle;
-    localBounds.scale(1 / this.globalTransform.scale.x, 1 / this.globalTransform.scale.y);
-    const width = localBounds.width;
-    const height = localBounds.height;
-    const x = localBounds.x + width / 2;
-    const y = localBounds.y + height / 2;
-
-    this.#bounds = { width, height, offset: { x, y } };
-    this.#text.onViewUpdate();
-  }
-
-  async #loadFont(): Promise<void> {
-    if (!this.container) return;
-    await document.fonts.ready;
-
-    const family = this.fontFamily;
-    const style = this.fontStyle;
-    const weight = this.fontWeight;
-    const fontSpecifier = `${weight} ${style} 16px "${family}"`;
-
-    try {
-      await document.fonts.load(fontSpecifier);
-    } catch {
-      // ignore
-    } finally {
-      this.rerender();
+      this.#el.style.textShadow = "";
     }
   }
 
-  async onInitialize(): Promise<void> {
-    super.onInitialize();
-    if (!this.container) return;
+  onFrame(): void {
+    if (!this.game.isClient() || !this.#el) return;
 
-    await this.#loadFont();
-    this.#reflow();
+    this.#applyStyle();
+
+    // Project world position to screen
+    const pos = this.globalTransform.position;
+    const screen = this.game.renderer.worldToScreen?.(pos);
+    if (screen) {
+      this.#el.style.left = `${screen.x}px`;
+      this.#el.style.top = `${screen.y}px`;
+    }
   }
 
   rerender(): void {
-    this.#text?.destroy();
-    this.#text = undefined;
-    this.#style = undefined;
-
-    this.#reflow();
-  }
-
-  #knownFonts = 0;
-  onUpdate(): void {
-    super.onUpdate();
-    if (!this.container) return;
-
-    // this is dumb but as far as i can see there is no event for
-    // when a font is registered but not loading/loaded yet
-    // ignore vs expect-error: Typechecker claims expect-error is unused.
-    // @ts-ignore: for some reason this has a bad type
-    const fonts: number = document.fonts.size;
-    if (fonts > this.#knownFonts) {
-      this.#knownFonts = fonts;
-      void this.#loadFont();
-    }
+    this.#applyStyle();
   }
 }

@@ -2,15 +2,15 @@ import type { IVec3 } from "../math/vec3.ts";
 import type { IQuat } from "../math/quat.ts";
 
 // ---------------------------------------------------------------------------
-// Opaque handle types — game code never touches Three.js / WebGPU objects.
-// Swapping the renderer backend never breaks entity types or behaviors.
+// Opaque handle types
 // ---------------------------------------------------------------------------
 export type MeshHandle = number & { readonly _brand: "MeshHandle" };
 export type LightHandle = number & { readonly _brand: "LightHandle" };
 export type CameraHandle = number & { readonly _brand: "CameraHandle" };
+export type HelperHandle = number & { readonly _brand: "HelperHandle" };
 
 // ---------------------------------------------------------------------------
-// Descriptor types (pure data, no backend coupling)
+// Descriptor types
 // ---------------------------------------------------------------------------
 export type GeometryDesc =
   | { type: "box"; width: number; height: number; depth: number }
@@ -19,21 +19,31 @@ export type GeometryDesc =
   | { type: "cylinder"; radiusTop: number; radiusBottom: number; height: number; segments?: number }
   | { type: "cone"; radius: number; height: number; segments?: number }
   | { type: "plane"; width: number; height: number }
+  | { type: "polygon"; sides: number; width: number; height: number }
   | { type: "gltf"; url: string };
 
 export interface MaterialDesc {
   type?: "standard" | "unlit";
-  color?: number;         // 0xRRGGBB hex
-  texture?: string;       // URL or res:// URI
+  /** Hex number (0xRRGGBB) or CSS color string ("white", "#ff0000"). */
+  color?: number | string;
+  texture?: string;
   roughness?: number;
   metalness?: number;
-  emissive?: number;
+  emissive?: number | string;
   emissiveIntensity?: number;
   transparent?: boolean;
   opacity?: number;
   wireframe?: boolean;
   castShadow?: boolean;
   receiveShadow?: boolean;
+  /** Alpha cutoff — fragments below this opacity are discarded. Good for textures with transparency. */
+  alphaTest?: number;
+  /** Which face(s) to render. "double" is needed for flat planes viewed from both sides. Default: "front". */
+  side?: "front" | "double" | "back";
+  /** UV tiling repeat (texture wraps this many times). */
+  uvRepeat?: { x: number; y: number };
+  /** UV scroll offset (0-1 range per axis). */
+  uvOffset?: { x: number; y: number };
 }
 
 export type LightDesc =
@@ -51,13 +61,11 @@ export interface CameraDesc {
 
 // ---------------------------------------------------------------------------
 // The contract every renderer backend must fulfill.
-// Entity types (Mesh, Camera, PointLight…) import ONLY this interface.
 // ---------------------------------------------------------------------------
 export interface IRendererBackend {
   readonly canvas: HTMLCanvasElement;
 
   // ---- Frame -------------------------------------------------------------
-  /** Render a frame using the currently active camera. */
   render(): void;
   resize(width: number, height: number): void;
   setPixelRatio(ratio: number): void;
@@ -86,12 +94,18 @@ export interface IRendererBackend {
   updateCamera(handle: CameraHandle, desc: Partial<CameraDesc>): void;
 
   // ---- Environment -------------------------------------------------------
-  setBackground(color: number): void;
+  setBackground(color: number | string): void;
   setShadowsEnabled(enabled: boolean): void;
 
-  // ---- Editor helpers (no-ops in production) ----------------------------
+  // ---- Editor helpers ----------------------------------------------------
   setGridVisible(visible: boolean): void;
   setAxesVisible(visible: boolean): void;
+  /** Add or update a bounding-box highlight around an entity mesh. */
+  setEntityHighlight(entityRef: string, visible: boolean, color?: number): void;
+
+  // ---- Screen-space projection -------------------------------------------
+  /** Project a 3D world position to canvas pixel coordinates. Returns undefined if no active camera. */
+  worldToScreen(worldPos: IVec3): { x: number; y: number } | undefined;
 
   dispose(): void;
 }

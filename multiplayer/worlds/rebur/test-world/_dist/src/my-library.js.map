@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/my-library.ts"],
+  "sourcesContent": ["// hello\nexport function addNumbers(a: number, b: number) {\n  return a + b;\n}\n"],
+  "mappings": "yCACO,SAAS,WAAW,EAAW,EAAW,CAC/C,OAAO,EAAI,CACb,CAFgB",
+  "names": []
+}

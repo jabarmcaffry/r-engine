@@ -1,13 +1,11 @@
 import type { ClientGame } from "@rebur/engine";
 import { preloadInfo } from "@rebur/engine/internal";
-import * as PIXI from "@rebur/vendor/pixi.ts";
 
 export type PreloadInfo = {
   readonly textures?: string[];
   readonly images?: string[];
   readonly spritesheets?: string[];
   readonly audioClips?: string[];
-  // TODO: more things
 
   readonly custom?: () => void | Promise<void>;
 };
@@ -19,38 +17,38 @@ export function definePreload(
   return Object.assign(_info, { [preloadInfo]: true as const });
 }
 
+/** Preload an image URL using the browser Image API. */
+function preloadImage(url: string): Promise<void> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve(); // don't block on failures
+    img.src = url;
+  });
+}
+
 export async function preload(game: ClientGame, info: PreloadInfo): Promise<void> {
   const jobs: Promise<unknown>[] = [];
 
   if (info.textures) {
-    const textures = info.textures.map(url => game.resolveResource(url));
-    jobs.push(PIXI.Assets.load(textures));
+    const urls = info.textures.map(url => game.resolveResource(url));
+    // Use browser Image preloading — Three.js TextureLoader will reuse the cache.
+    jobs.push(Promise.all(urls.map(preloadImage)));
   }
 
   if (info.images) {
-    const images = info.images.map(url => game.resolveResource(url));
-    const job = images.map(async url => {
-      try {
-        const img = new Image();
-        img.src = url;
-        await img.decode();
-      } catch {
-        // ignore
-      }
-    });
-
-    jobs.push(Promise.all(job));
+    const urls = info.images.map(url => game.resolveResource(url));
+    jobs.push(Promise.all(urls.map(preloadImage)));
   }
 
   if (info.spritesheets) {
-    const spritesheets = info.spritesheets.map(url => game.resolveResource(url));
-    jobs.push(PIXI.Assets.load(spritesheets));
+    // In 3D, spritesheets are just images — preload the atlas PNG.
+    const urls = info.spritesheets.map(url => game.resolveResource(url));
+    jobs.push(Promise.all(urls.map(preloadImage)));
   }
 
   if (info.audioClips) {
-    const _audioClips = info.audioClips.map(url => game.resolveResource(url));
-    console.warn("preloading audio clips is not implemented yet");
-    // TODO: implement preloading audio clips
+    console.warn("preload: audio clip preloading not yet implemented");
   }
 
   if (info.custom) {
@@ -59,13 +57,12 @@ export async function preload(game: ClientGame, info: PreloadInfo): Promise<void
       (async () => {
         try {
           await fn();
-        } catch (error) {
-          console.warn("error occurred in custom preload fn", error);
+        } catch (err) {
+          console.error("preload: custom preload function threw", err);
         }
       })(),
     );
   }
 
-  if (jobs.length === 0) return Promise.resolve();
   await Promise.all(jobs);
 }

@@ -1,29 +1,27 @@
+/**
+ * Sprite — a textured flat plane in 3D space.
+ * Replaces the PixiJS 2D Sprite with a Three.js plane mesh.
+ */
 import {
-  Bounds,
-  Camera,
-  CameraFilterModeChanged,
-  ColorAdapter,
   Entity,
-  EntityContext,
+  EntitySpawned,
+  EntityDestroyed,
   EntityEnableChanged,
-  EntityTransformUpdate,
-  IBounds,
-  PixiEntity,
-  SpriteTextureChanged,
+  type EntityContext,
   TextureAdapter,
+  ColorAdapter,
+  type IBounds,
+  Bounds,
+  SpriteTextureChanged,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
+import type { MeshHandle, GeometryDesc, MaterialDesc } from "../../renderer/api.ts";
 
-export class Sprite extends PixiEntity {
+export class Sprite extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
   static readonly icon = "🖼️";
-  get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
-    return new Bounds(this.width, this.height);
-  }
 
   width: number = 1;
   height: number = 1;
@@ -32,9 +30,10 @@ export class Sprite extends PixiEntity {
   tint: string = "white";
   preserveAspectRatio: boolean = false;
 
-  #sprite: PIXI.Sprite | undefined;
-  get sprite(): PIXI.Sprite | undefined {
-    return this.#sprite;
+  #meshHandle: MeshHandle | undefined;
+
+  get bounds(): IBounds | undefined {
+    return new Bounds(this.width, this.height);
   }
 
   constructor(ctx: EntityContext) {
@@ -43,186 +42,67 @@ export class Sprite extends PixiEntity {
     this.defineValue(Sprite, "texture", {
       type: TextureAdapter,
       sortOrder: 10,
-      description:
-        "Path to the image texture used for this sprite. Can be dragged from the project panel or typed with 'res://<path>'.",
+      description: "Path to the image texture. Drag from project panel or type 'res://<path>'.",
+    });
+    this.defineValue(Sprite, "width", { description: "Width in local units." });
+    this.defineValue(Sprite, "height", { description: "Height in local units." });
+    this.defineValue(Sprite, "alpha", { description: "Opacity 0–1." });
+    this.defineValue(Sprite, "tint", { type: ColorAdapter, description: "Tint color (white = none)." });
+    this.defineValue(Sprite, "preserveAspectRatio", { description: "Keep original aspect ratio." });
+
+    this.on(EntitySpawned, () => {
+      const game = this.game;
+      if (!game.isClient()) return;
+      this.#meshHandle = game.renderer.createMesh(
+        this.ref,
+        this.#buildGeometry(),
+        this.#buildMaterial(),
+      );
+      this.#syncTransform();
     });
 
-    this.defineValue(Sprite, "width", {
-      description: "Logical width of the sprite (in local units).",
+    this.on(EntityDestroyed, () => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.destroyMesh(this.#meshHandle);
     });
 
-    this.defineValue(Sprite, "height", {
-      description: "Logical height of the sprite (in local units).",
-    });
-
-    this.defineValue(Sprite, "alpha", {
-      description: "Opacity from 0 (invisible) to 1 (fully visible).",
-    });
-
-    this.defineValue(Sprite, "tint", {
-      type: ColorAdapter,
-      description: "Tint color applied to the sprite (e.g., white = no tint).",
-    });
-
-    this.defineValue(Sprite, "preserveAspectRatio", {
-      description: "If true, scales the sprite to fit while maintaining original aspect ratio.",
-    });
-
-    if (this.game.isClient() && this.texture !== "") {
-      // PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
-    }
-
-    const updateSize = () => {
-      this.#updateSize();
-    };
-
-    this.on(EntityTransformUpdate, updateSize);
-
-    const widthValue = this.values.get("width");
-    const heightValue = this.values.get("height");
-    const preserveAspectRatioValue = this.values.get("preserveAspectRatio");
-
-    widthValue?.onChanged(updateSize);
-    heightValue?.onChanged(updateSize);
-    preserveAspectRatioValue?.onChanged(updateSize);
-
-    const textureValue = this.values.get("texture");
-    let lastTexture: string = "";
-    textureValue?.onChanged(() => {
-      if (this.texture === lastTexture) return;
-      lastTexture = this.texture;
-
-      const sprite = this.#sprite;
-      if (!sprite) return;
-
-      void this.#getTexture().then(texture => {
-        if (this.destroyed) return;
-        sprite.texture = texture;
-        updateSize(); // Update size after texture changes to handle aspect ratio correctly
-
-        this.fire(SpriteTextureChanged, this);
-        this.game.fire(SpriteTextureChanged, this);
-      });
-    });
-
-    // force update texture when enabled
     this.on(EntityEnableChanged, ({ enabled }) => {
-      if (!enabled) return;
-
-      if (this.texture === lastTexture) return;
-      lastTexture = this.texture;
-
-      const sprite = this.#sprite;
-      if (!sprite) return;
-
-      void this.#getTexture().then(texture => {
-        if (this.destroyed) return;
-        sprite.texture = texture;
-        updateSize(); // Update size after texture changes to handle aspect ratio correctly
-
-        this.fire(SpriteTextureChanged, this);
-        this.game.fire(SpriteTextureChanged, this);
-      });
-    });
-
-    const alphaValue = this.values.get("alpha");
-    alphaValue?.onChanged(() => {
-      if (!this.#sprite) return;
-      this.#sprite.alpha = this.alpha;
-    });
-
-    const tintValue = this.values.get("tint");
-    tintValue?.onChanged(() => {
-      if (!this.#sprite) return;
-      this.#sprite.tint = this.tint;
-    });
-
-    this.listen(this.game, CameraFilterModeChanged, () => {
-      const sprite = this.#sprite;
-      if (!sprite) return;
-
-      void this.#getTexture().then(texture => {
-        if (this.destroyed) return;
-        sprite.texture = texture;
-        updateSize(); // Update size after texture changes to handle aspect ratio correctly
-
-        this.fire(SpriteTextureChanged, this);
-        this.game.fire(SpriteTextureChanged, this);
-      });
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.setMeshVisible(this.#meshHandle, enabled);
     });
   }
 
-  async #getTexture(): Promise<PIXI.Texture> {
-    if (this.texture === "") return PIXI.Texture.WHITE;
-
-    const _texture = await PIXI.Assets.load(this.game.resolveResource(this.texture));
-    if (!(_texture instanceof PIXI.Texture)) {
-      throw new TypeError("texture is not a pixi texture");
-    }
-
-    const texture: PIXI.Texture<PIXI.TextureSource> = _texture;
-    const camera = Camera.getActive(this.game);
-    const scaleMode = camera?.scaleFilterMode ?? "nearest";
-
-    texture.source.scaleMode = scaleMode;
-    texture.source.update();
-    texture.update();
-
-    return texture;
+  #buildGeometry(): GeometryDesc {
+    return { type: "plane", width: this.width, height: this.height };
   }
 
-  #updateSize() {
-    if (!this.#sprite) return;
-    this.#sprite.scale.set(0);
-
-    const targetWidth = this.width * this.globalTransform.scale.x;
-    const targetHeight = this.height * this.globalTransform.scale.y;
-
-    if (this.preserveAspectRatio && this.#sprite.texture !== PIXI.Texture.WHITE) {
-      // Get original texture dimensions
-      const originalWidth = this.#sprite.texture.orig.width;
-      const originalHeight = this.#sprite.texture.orig.height;
-
-      // Calculate scale factors
-      const scaleX = targetWidth / originalWidth;
-      const scaleY = targetHeight / originalHeight;
-
-      // Use the smaller scale factor to maintain aspect ratio (letterboxing)
-      const scale = Math.min(Math.abs(scaleX), Math.abs(scaleY));
-
-      // Apply the scaled dimensions
-      this.#sprite.width = originalWidth * scale * Math.sign(targetWidth);
-      this.#sprite.height = originalHeight * scale * Math.sign(targetHeight);
-    } else {
-      // Original behavior - fill the entire target area
-      this.#sprite.width = targetWidth;
-      this.#sprite.height = targetHeight;
-    }
+  #buildMaterial(): MaterialDesc {
+    const resolvedTexture = this.texture
+      ? this.game.resolveResource(this.texture)
+      : undefined;
+    return {
+      type: "unlit",
+      texture: resolvedTexture,
+      color: this.tint,
+      opacity: this.alpha,
+      transparent: true,
+      alphaTest: resolvedTexture ? 0.01 : 0,
+      side: "double",
+    };
   }
 
-  async onInitialize() {
-    super.onInitialize();
-    if (!this.container) return;
+  #syncTransform(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    const t = this.globalTransform;
+    this.game.renderer.setMeshTransform(this.#meshHandle, t.position, t.rotation, t.scale);
+  }
 
-    this.#sprite = new PIXI.Sprite({
-      width: this.width * this.globalTransform.scale.x,
-      height: this.height * this.globalTransform.scale.y,
-      anchor: 0.5,
-      alpha: this.alpha,
-      tint: this.tint,
-    });
-
-    const texture = await this.#getTexture();
-    this.#sprite.texture = texture;
-
-    this.container.addChild(this.#sprite);
-
-    // Apply aspect ratio preservation if needed
-    if (this.preserveAspectRatio) {
-      this.#updateSize();
-    }
+  onFrame(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    this.#syncTransform();
+    this.game.renderer.updateMeshGeometry(this.#meshHandle, this.#buildGeometry());
+    this.game.renderer.updateMeshMaterial(this.#meshHandle, this.#buildMaterial());
 
     this.fire(SpriteTextureChanged, this);
-    this.game.fire(SpriteTextureChanged, this);
   }
 }

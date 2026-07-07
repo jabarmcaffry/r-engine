@@ -1,50 +1,39 @@
+/**
+ * AnimatedSprite — a flat plane that cycles through frames of a spritesheet.
+ * Replaces the PixiJS AnimatedSprite with a Three.js plane + UV frame animation.
+ *
+ * Spritesheet layout: frames are arranged left→right, top→bottom.
+ * frameDimensions.x/y = pixel size of each frame in the sheet.
+ */
 import {
-  Bounds,
-  Camera,
-  CameraFilterModeChanged,
-  ColorAdapter,
   Entity,
-  EntityContext,
+  EntitySpawned,
+  EntityDestroyed,
   EntityEnableChanged,
-  EntityTransformUpdate,
-  GameRender,
-  IBounds,
-  PixiEntity,
-  SpritesheetAdapter,
-  SpriteTextureChanged,
+  type EntityContext,
   TextureAdapter,
+  ColorAdapter,
+  SpritesheetAdapter,
   Vector2,
   Vector2Adapter,
+  type IBounds,
+  Bounds,
+  SpriteTextureChanged,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
+import type { MeshHandle, GeometryDesc, MaterialDesc } from "../../renderer/api.ts";
 
-// this shockingly fixes spritesheet bleeding
-PIXI.AbstractRenderer.defaultOptions.roundPixels = true;
-
-// todo: implement this using fancy new conditional fields.
-const SpriteSliceModes = ["Width and Height", "Rows and Columns"] as const;
-type SpriteSliceModes = (typeof SpriteSliceModes)[number];
-
-const texturesCache = new Map<string, PIXI.Texture[]>();
-
-export class AnimatedSprite extends PixiEntity {
+export class AnimatedSprite extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
   static readonly icon = "🖼️";
-  get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
-    return new Bounds(this.width, this.height);
-  }
 
   width: number = 1;
   height: number = 1;
-
-  jsonSpritesheet: string = "";
   spritesheet: string = "";
+  jsonSpritesheet: string = "";
   frameDimensions: Vector2 = new Vector2(128, 128);
-
   alpha: number = 1;
   tint: string = "white";
   speed: number = 0.1;
@@ -53,308 +42,170 @@ export class AnimatedSprite extends PixiEntity {
   endFrame: number = -1;
   totalFrames: number = 0;
 
-  #sprite: PIXI.AnimatedSprite | undefined;
-  get sprite(): PIXI.AnimatedSprite | undefined {
-    return this.#sprite;
-  }
+  #meshHandle: MeshHandle | undefined;
+  #currentFrame: number = 0;
+  #elapsed: number = 0;
+  /** Pixel size of the loaded spritesheet. Updated when the image loads. */
+  #sheetWidth: number = 0;
+  #sheetHeight: number = 0;
 
-  async #loadTextures(): Promise<PIXI.Texture[]> {
-    const camera = Camera.getActive(this.game);
-    const scaleMode = camera?.scaleFilterMode ?? "nearest";
-
-    if (this.jsonSpritesheet !== "") {
-      const cached = texturesCache.get(this.jsonSpritesheet);
-      if (cached) return cached;
-
-      const resource = this.game.resolveResource(this.jsonSpritesheet);
-      const spritesheet = await PIXI.Assets.load(resource);
-      if (!(spritesheet instanceof PIXI.Spritesheet)) {
-        throw new TypeError(`${this.id}.spritesheet is not a pixi spritesheet`);
-      }
-
-      const textures = Object.values(spritesheet.textures);
-      for (const texture of textures) {
-        texture.source.scaleMode = scaleMode;
-        texture.source.update();
-        texture.update();
-      }
-
-      texturesCache.set(this.jsonSpritesheet, textures);
-      return textures;
-    }
-
-    if (
-      this.spritesheet !== "" &&
-      this.frameDimensions.x !== 1 &&
-      this.frameDimensions.y !== 1
-    ) {
-      const cacheKey = `${this.spritesheet}:${this.frameDimensions.x}x${this.frameDimensions.y}`;
-      const cached = texturesCache.get(cacheKey);
-      if (cached) return cached;
-
-      const resource = this.game.resolveResource(this.spritesheet);
-      const _spritesheetTexture = await PIXI.Assets.load(resource);
-      if (!(_spritesheetTexture instanceof PIXI.Texture)) {
-        throw new TypeError(`${this.id}.spritesheet is not a pixi texture`);
-      }
-
-      const spritesheetTexture: PIXI.Texture<PIXI.TextureSource> = _spritesheetTexture;
-      spritesheetTexture.source.scaleMode = scaleMode;
-      spritesheetTexture.source.update();
-      spritesheetTexture.update();
-
-      const frameWidth = this.frameDimensions.x;
-      const frameHeight = this.frameDimensions.y;
-
-      const framesX = spritesheetTexture.width / frameWidth;
-      const framesY = spritesheetTexture.height / frameHeight;
-
-      const frames: PIXI.SpritesheetData["frames"] = {};
-      for (let y = 0; y < framesY; y++) {
-        for (let x = 0; x < framesX; x++) {
-          const idx = `${x}-${y}`;
-          frames[idx] = {
-            frame: { w: frameWidth, h: frameHeight, x: x * frameWidth, y: y * frameHeight },
-            sourceSize: { w: frameWidth, h: frameHeight },
-          };
-        }
-      }
-
-      const data: PIXI.SpritesheetData = {
-        frames,
-        meta: {
-          image: resource,
-          size: { w: spritesheetTexture.width, h: spritesheetTexture.height },
-          scale: 1,
-        },
-      };
-
-      const spritesheet = new PIXI.Spritesheet(spritesheetTexture, data);
-      await spritesheet.parse();
-
-      const textures = Object.values(spritesheet.textures);
-      if (textures.length > 0) {
-        texturesCache.set(cacheKey, textures);
-        return textures;
-      }
-
-      console.error(`${this.id}: spritesheet config had no textures`);
-    }
-
-    return [PIXI.Texture.WHITE];
-  }
-
-  // prevents earlier texture loads from taking precedence when values are quickly changed
-  #textureLoadCounter = 0;
-
-  async #textures(): Promise<PIXI.Texture[]> {
-    const currentCounter = ++this.#textureLoadCounter;
-    const textures = await this.#loadTextures();
-    if (currentCounter !== this.#textureLoadCounter) {
-      return [];
-    }
-    if (textures.length === 0) throw new Error("failed to load textures");
-
-    this.totalFrames = textures.length;
-    const frames = textures.length;
-    const start = Math.max(0, Math.min(this.startFrame, frames - 1));
-    let end = Math.max(start, Math.min(this.endFrame, frames - 1));
-    if (this.endFrame === -1) {
-      end = frames - 1;
-    }
-
-    return textures.slice(start, end + 1);
+  get bounds(): IBounds | undefined {
+    return new Bounds(this.width, this.height);
   }
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
     this.defineValue(AnimatedSprite, "spritesheet", {
-      type: TextureAdapter,
-      hidden: values => values.get("jsonSpritesheet")?.value !== "",
-      sortOrder: 100,
-      description:
-        "Spritesheet image file to slice manually into frames. Can be dragged from the project panel or typed with 'res://<path>'.",
-    });
-
-    this.defineValue(AnimatedSprite, "jsonSpritesheet", {
       type: SpritesheetAdapter,
-      hidden: values => values.get("spritesheet")?.value !== "",
-      sortOrder: 90,
-      description:
-        "Predefined JSON spritesheet with frame metadata. Can be dragged from the project panel or typed with 'res://<path>'",
+      sortOrder: 50,
+      description: "Spritesheet image path (res://).",
     });
-
+    this.defineValue(AnimatedSprite, "jsonSpritesheet", {
+      sortOrder: 49,
+      description: "Optional JSON atlas descriptor for the spritesheet.",
+    });
     this.defineValue(AnimatedSprite, "frameDimensions", {
       type: Vector2Adapter,
-      hidden: values => values.get("jsonSpritesheet")?.value !== "",
-      sortOrder: 80,
-      description: "Width and height of each frame when slicing from a raw spritesheet.",
+      sortOrder: 48,
+      description: "Pixel width/height of one frame in the spritesheet.",
     });
-
-    this.defineValue(AnimatedSprite, "startFrame", {
-      sortOrder: 70,
-      description: "Index of the first frame to play (inclusive).",
-    });
-
-    this.defineValue(AnimatedSprite, "endFrame", {
-      sortOrder: 60,
-      description: "Index of the last frame to play (inclusive). Use -1 to play until the end.",
-    });
-
-    this.defineValue(AnimatedSprite, "totalFrames", {
-      sortOrder: 65,
-      hidden: () => true,
-      description: "Total number of frames after slicing. Auto-calculated.",
-    });
-
     this.defineValue(AnimatedSprite, "speed", {
       sortOrder: 50,
-      description: "Playback speed of the animation. Higher = faster.",
+      description: "Frames per second (before speed multiplier).",
     });
-
-    this.defineValue(AnimatedSprite, "loop", {
-      sortOrder: 40,
-      description: "Whether the animation should loop continuously.",
-    });
-
-    this.defineValue(AnimatedSprite, "width", {
-      sortOrder: 30,
-      description: "Logical width of the sprite (in local units).",
-    });
-
-    this.defineValue(AnimatedSprite, "height", {
-      sortOrder: 20,
-      description: "Logical height of the sprite (in local units).",
-    });
-
-    this.defineValue(AnimatedSprite, "alpha", {
-      sortOrder: 10,
-      description: "Opacity from 0 (invisible) to 1 (fully visible).",
-    });
-
+    this.defineValue(AnimatedSprite, "loop", { sortOrder: 40, description: "Loop animation." });
+    this.defineValue(AnimatedSprite, "startFrame", { description: "First frame index (0-based)." });
+    this.defineValue(AnimatedSprite, "endFrame", { description: "Last frame index (-1 = all frames)." });
+    this.defineValue(AnimatedSprite, "totalFrames", { description: "Total frames (0 = auto-detect)." });
+    this.defineValue(AnimatedSprite, "width", { sortOrder: 30, description: "Width in local units." });
+    this.defineValue(AnimatedSprite, "height", { sortOrder: 20, description: "Height in local units." });
+    this.defineValue(AnimatedSprite, "alpha", { sortOrder: 10, description: "Opacity 0–1." });
     this.defineValue(AnimatedSprite, "tint", {
       type: ColorAdapter,
       sortOrder: 9,
-      description: "Tint color applied to the sprite (e.g., white = no tint).",
+      description: "Tint color.",
     });
 
-    // why was this disabled?
-    // if (this.game.isClient() && this.spritesheet !== "") {
-    //   PIXI.Assets.backgroundLoad(this.game.resolveResource(this.spritesheet));
-    // }
+    this.on(EntitySpawned, () => {
+      const game = this.game;
+      if (!game.isClient()) return;
+      this.#currentFrame = this.startFrame;
 
-    const updateTextures = () => {
-      const sprite = this.#sprite;
-      if (!sprite) return;
+      this.#meshHandle = game.renderer.createMesh(
+        this.ref,
+        this.#buildGeometry(),
+        this.#buildMaterial(),
+      );
+      this.#syncTransform();
 
-      void this.#textures().then(textures => {
-        if (this.destroyed) return;
-        if (textures.length > 0) {
-          sprite.textures = textures;
-          sprite.play();
-
-          this.fire(SpriteTextureChanged, this);
-          this.game.fire(SpriteTextureChanged, this);
-        }
-      });
-    };
-
-    const updateSize = () => {
-      if (!this.#sprite) return;
-      if (!this.#sprite.scale) return;
-      this.#sprite.scale.set(0);
-      this.#sprite.width = this.width * this.globalTransform.scale.x;
-      this.#sprite.height = this.height * this.globalTransform.scale.y;
-    };
-
-    this.on(EntityTransformUpdate, updateSize);
-    this.listen(this.game, GameRender, () => {
-      if (!this.#sprite || !this.game.isClient()) return;
-      if (this.enabled && !this.game.paused.value) {
-        // TODO: 3D migration — PixiJS ticker removed; advance animation via time.delta if needed
-        // this.#sprite.update(this.game.renderer.app.ticker);
+      // Preload texture to get sheet dimensions
+      if (this.spritesheet) {
+        const img = new Image();
+        img.onload = () => {
+          this.#sheetWidth = img.naturalWidth;
+          this.#sheetHeight = img.naturalHeight;
+        };
+        img.src = game.resolveResource(this.spritesheet);
       }
-
-      updateSize();
     });
 
-    const widthValue = this.values.get("width");
-    const heightValue = this.values.get("height");
-    widthValue?.onChanged(updateSize);
-    heightValue?.onChanged(updateSize);
-
-    const jsonSpritesheetValue = this.values.get("jsonSpritesheet");
-    const spritesheetValue = this.values.get("spritesheet");
-    jsonSpritesheetValue?.onChanged(updateTextures);
-    spritesheetValue?.onChanged(updateTextures);
-
-    const alphaValue = this.values.get("alpha");
-    alphaValue?.onChanged(() => {
-      if (!this.#sprite) return;
-      this.#sprite.alpha = this.alpha;
+    this.on(EntityDestroyed, () => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.destroyMesh(this.#meshHandle);
     });
 
-    const tintValue = this.values.get("tint");
-    tintValue?.onChanged(() => {
-      if (!this.#sprite) return;
-      this.#sprite.tint = this.tint;
-    });
-
-    this.values.get("speed")?.onChanged(() => {
-      if (!this.#sprite) return;
-      this.#sprite.animationSpeed = this.speed;
-    });
-
-    this.values.get("loop")?.onChanged(() => {
-      if (!this.#sprite) return;
-      this.#sprite.loop = this.loop;
-      this.#sprite.gotoAndPlay(0);
-    });
-
-    this.on(EntityEnableChanged, value => {
-      if (value) this.#sprite?.gotoAndPlay(0);
-    });
-
-    const startFrameValue = this.values.get("startFrame");
-    const endFrameValue = this.values.get("endFrame");
-    startFrameValue?.onChanged(updateTextures);
-    endFrameValue?.onChanged(updateTextures);
-
-    const frameDimensionsValue = this.values.get("frameDimensions");
-    frameDimensionsValue?.onChanged(() => {
-      updateTextures();
-    });
-
-    this.listen(this.game, CameraFilterModeChanged, () => {
-      updateTextures();
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.setMeshVisible(this.#meshHandle, enabled);
+      if (enabled) this.#currentFrame = this.startFrame;
     });
   }
 
-  async onInitialize() {
-    super.onInitialize();
-    if (!this.container) return;
+  #buildGeometry(): GeometryDesc {
+    return { type: "plane", width: this.width, height: this.height };
+  }
 
-    this.#sprite = new PIXI.AnimatedSprite({
-      autoUpdate: false,
-      textures: [PIXI.Texture.EMPTY],
-      width: this.width * this.globalTransform.scale.x,
-      height: this.height * this.globalTransform.scale.y,
-      anchor: 0.5,
-      alpha: this.alpha,
-      tint: this.tint,
-    });
+  #frameUV(): { uvRepeat: { x: number; y: number }; uvOffset: { x: number; y: number } } {
+    const fw = this.frameDimensions.x;
+    const fh = this.frameDimensions.y;
+    const sw = this.#sheetWidth || fw;
+    const sh = this.#sheetHeight || fh;
 
-    const textures = await this.#textures();
-    if (textures.length > 0) this.#sprite.textures = textures;
+    const cols = Math.max(1, Math.floor(sw / fw));
+    const rows = Math.max(1, Math.floor(sh / fh));
 
-    this.#sprite.animationSpeed = this.speed;
-    this.#sprite.loop = this.loop;
-    this.#sprite.play();
+    const frame = this.#currentFrame;
+    const col = frame % cols;
+    const row = Math.floor(frame / cols);
 
-    this.container.addChild(this.#sprite);
+    return {
+      uvRepeat: { x: 1 / cols, y: 1 / rows },
+      uvOffset: { x: col / cols, y: 1 - (row + 1) / rows },
+    };
+  }
+
+  #buildMaterial(): MaterialDesc {
+    const resolvedSheet = this.spritesheet
+      ? this.game.resolveResource(this.spritesheet)
+      : undefined;
+    const { uvRepeat, uvOffset } = this.#frameUV();
+    return {
+      type: "unlit",
+      texture: resolvedSheet,
+      color: this.tint,
+      opacity: this.alpha,
+      transparent: true,
+      alphaTest: resolvedSheet ? 0.01 : 0,
+      side: "double",
+      uvRepeat,
+      uvOffset,
+    };
+  }
+
+  #syncTransform(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    const t = this.globalTransform;
+    this.game.renderer.setMeshTransform(this.#meshHandle, t.position, t.rotation, t.scale);
+  }
+
+  onFrame(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    if (!this.game.paused.value) {
+      this.#advanceFrame();
+    }
+    this.#syncTransform();
+    this.game.renderer.updateMeshGeometry(this.#meshHandle, this.#buildGeometry());
+    this.game.renderer.updateMeshMaterial(this.#meshHandle, this.#buildMaterial());
 
     this.fire(SpriteTextureChanged, this);
-    this.game.fire(SpriteTextureChanged, this);
+  }
+
+  #advanceFrame(): void {
+    const fps = Math.max(0.001, this.speed * 24);
+    this.#elapsed += this.game.time.delta;
+    const frameDuration = 1000 / fps;
+
+    while (this.#elapsed >= frameDuration) {
+      this.#elapsed -= frameDuration;
+
+      const fw = this.frameDimensions.x;
+      const sw = this.#sheetWidth || fw;
+      const fh = this.frameDimensions.y;
+      const sh = this.#sheetHeight || fh;
+      const cols = Math.max(1, Math.floor(sw / fw));
+      const rows = Math.max(1, Math.floor(sh / fh));
+      const total = this.totalFrames > 0 ? this.totalFrames : cols * rows;
+      const lastFrame = this.endFrame >= 0 ? Math.min(this.endFrame, total - 1) : total - 1;
+
+      this.#currentFrame++;
+      if (this.#currentFrame > lastFrame) {
+        if (this.loop) {
+          this.#currentFrame = this.startFrame;
+        } else {
+          this.#currentFrame = lastFrame;
+        }
+      }
+    }
   }
 }

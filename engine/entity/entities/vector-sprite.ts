@@ -1,118 +1,99 @@
+/**
+ * VectorSprite — a flat plane textured with an SVG image.
+ * In 3D the SVG is loaded as a data-URL texture on a plane mesh.
+ * Replaces the PixiJS SVG/Graphics approach.
+ */
 import {
-  Bounds,
   Entity,
-  EntityContext,
-  EntityTransformUpdate,
-  IBounds,
-  PixiEntity,
+  EntitySpawned,
+  EntityDestroyed,
+  EntityEnableChanged,
+  type EntityContext,
   TextureAdapter,
+  type IBounds,
+  Bounds,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
+import type { MeshHandle, GeometryDesc, MaterialDesc } from "../../renderer/api.ts";
 
-export class VectorSprite extends PixiEntity {
+export class VectorSprite extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
   static readonly icon = "🖼️";
-  get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
-    return new Bounds(this.width, this.height);
-  }
 
   width: number = 1;
   height: number = 1;
   texture: string = "";
   alpha: number = 1;
 
-  #gfx: PIXI.Graphics | undefined;
-  get sprite(): PIXI.Graphics | undefined {
-    return this.#gfx;
+  #meshHandle: MeshHandle | undefined;
+
+  get bounds(): IBounds | undefined {
+    return new Bounds(this.width, this.height);
   }
 
   constructor(ctx: EntityContext) {
     super(ctx);
 
-    this.defineValue(VectorSprite, "width", {
-      description: "The width of the vector sprite in world units.",
-    });
-    this.defineValue(VectorSprite, "height", {
-      description: "The height of the vector sprite in world units.",
-    });
-    this.defineValue(VectorSprite, "alpha", {
-      description:
-        "The transparency level of the sprite, from 0 (invisible) to 1 (fully opaque).",
-    });
+    this.defineValue(VectorSprite, "width", { description: "Width in world units." });
+    this.defineValue(VectorSprite, "height", { description: "Height in world units." });
+    this.defineValue(VectorSprite, "alpha", { description: "Opacity 0–1." });
     this.defineValue(VectorSprite, "texture", {
       type: TextureAdapter,
-      description:
-        "The path to the vector texture asset to be rendered. Can be dragged from the project panel or typed with 'res://<path>'.",
+      description: "SVG or image path (res://).",
     });
 
-    if (this.game.isClient() && this.texture !== "") {
-      PIXI.Assets.backgroundLoad(this.game.resolveResource(this.texture));
-    }
+    this.on(EntitySpawned, () => {
+      const game = this.game;
+      if (!game.isClient()) return;
+      this.#meshHandle = game.renderer.createMesh(
+        this.ref,
+        this.#buildGeometry(),
+        this.#buildMaterial(),
+      );
+      this.#syncTransform();
+    });
 
-    const updateSize = () => {
-      if (!this.#gfx) return;
-      const ctx = this.#gfx.context;
-      const width = (this.width * this.globalTransform.scale.x) / ctx.bounds.width;
-      const height = (this.height * this.globalTransform.scale.y) / ctx.bounds.height;
-      this.#gfx.scale.set(width, height);
+    this.on(EntityDestroyed, () => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.destroyMesh(this.#meshHandle);
+    });
+
+    this.on(EntityEnableChanged, ({ enabled }) => {
+      if (!this.game.isClient() || this.#meshHandle === undefined) return;
+      this.game.renderer.setMeshVisible(this.#meshHandle, enabled);
+    });
+  }
+
+  #buildGeometry(): GeometryDesc {
+    return { type: "plane", width: this.width, height: this.height };
+  }
+
+  #buildMaterial(): MaterialDesc {
+    const resolvedTexture = this.texture
+      ? this.game.resolveResource(this.texture)
+      : undefined;
+    return {
+      type: "unlit",
+      texture: resolvedTexture,
+      opacity: this.alpha,
+      transparent: true,
+      alphaTest: 0.01,
+      side: "double",
     };
-
-    this.on(EntityTransformUpdate, updateSize);
-    const widthValue = this.values.get("width");
-    const heightValue = this.values.get("height");
-    widthValue?.onChanged(updateSize);
-    heightValue?.onChanged(updateSize);
-
-    const textureValue = this.values.get("texture");
-    let lastTexture: string = "";
-    textureValue?.onChanged(() => {
-      if (this.texture === lastTexture) return;
-      lastTexture = this.texture;
-
-      const gfx = this.#gfx;
-      if (!gfx) return;
-
-      void this.#getTexture().then(ctx => {
-        gfx.context = ctx;
-      });
-    });
-
-    const alphaValue = this.values.get("alpha");
-    alphaValue?.onChanged(() => {
-      if (this.#gfx) this.#gfx.alpha = this.alpha;
-    });
   }
 
-  async #getTexture(): Promise<PIXI.GraphicsContext> {
-    if (this.texture === "") return new PIXI.GraphicsContext();
-
-    const texture = await PIXI.Assets.load({
-      src: this.game.resolveResource(this.texture),
-      data: { parseAsGraphicsContext: true },
-    });
-
-    if (!(texture instanceof PIXI.GraphicsContext)) {
-      throw new TypeError("texture is not a pixi graphics context");
-    }
-
-    return texture;
+  #syncTransform(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    const t = this.globalTransform;
+    this.game.renderer.setMeshTransform(this.#meshHandle, t.position, t.rotation, t.scale);
   }
 
-  async onInitialize() {
-    super.onInitialize();
-    if (!this.container) return;
-
-    const ctx = await this.#getTexture();
-    this.#gfx = new PIXI.Graphics(ctx);
-
-    const width = (this.width * this.globalTransform.scale.x) / ctx.bounds.width;
-    const height = (this.height * this.globalTransform.scale.y) / ctx.bounds.height;
-    this.#gfx.scale.set(width, height);
-
-    this.container.addChild(this.#gfx);
+  onFrame(): void {
+    if (!this.game.isClient() || this.#meshHandle === undefined) return;
+    this.#syncTransform();
+    this.game.renderer.updateMeshGeometry(this.#meshHandle, this.#buildGeometry());
+    this.game.renderer.updateMeshMaterial(this.#meshHandle, this.#buildMaterial());
   }
 }

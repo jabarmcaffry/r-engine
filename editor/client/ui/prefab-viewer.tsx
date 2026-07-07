@@ -8,7 +8,6 @@ import {
   EntityRenamed,
   EntityReparented,
   getFacadeRoot,
-  PixiEntity,
   Vector2,
 } from "@rebur/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
@@ -357,7 +356,7 @@ export class PrefabViewer {
         }
       }
 
-      const canvas = this.game.renderer.app.canvas;
+      const canvas = this.game.renderer.canvas;
       const canvasRect = canvas.getBoundingClientRect();
       const canvasCoords = {
         x: event.clientX - canvasRect.x,
@@ -787,9 +786,8 @@ export class PrefabViewer {
   }
 
   #setEntityAlpha(entity: Entity, alpha: number) {
-    if (entity instanceof PixiEntity && entity.container) {
-      entity.container.alpha = alpha;
-    }
+    // In 3D, alpha changes are handled per-entity type (no global container alpha)
+    void entity; void alpha;
 
     for (const child of entity.children.values()) {
       this.#setEntityAlpha(child, alpha);

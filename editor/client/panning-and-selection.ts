@@ -12,7 +12,6 @@ import {
   Scroll,
   Vector2,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
 import { EditorFacadeTilemap } from "../common/facades/tilemap.ts";
@@ -44,13 +43,13 @@ export class CameraPanBehavior extends Behavior {
   #drag: Vector2 | undefined = undefined;
   #wasGizmo: boolean = false;
   #space = this.game.inputs.create("@editor/cameragrip", "Camera Grip", "Space");
-  #selectionBox: { start: Vector2; current: Vector2; gfx: PIXI.Graphics } | undefined;
-  #selectionHighlights: Map<Entity, PIXI.Graphics> = new Map();
+  #selectionBox: { start: Vector2; current: Vector2; startScreen: Vector2; currentScreen: Vector2; el: HTMLDivElement } | undefined;
+  #selectionHighlights: Set<Entity> = new Set();
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
 
-    const canvas = this.game.renderer.app.canvas;
+    const canvas = this.game.renderer.canvas;
     this.#hover = canvas.matches(":hover");
 
     this.listen(this.game.inputs, MouseDown, this.#onMouseDown.bind(this));
@@ -90,7 +89,7 @@ export class CameraPanBehavior extends Behavior {
     this.#drag = value;
 
     if (!this.game.isClient()) return;
-    const canvas = this.game.renderer.app.canvas;
+    const canvas = this.game.renderer.canvas;
 
     if (value === undefined) canvas.classList.remove("grabbing");
     else canvas.classList.add("grabbing");
@@ -130,7 +129,7 @@ export class CameraPanBehavior extends Behavior {
           .filter(entity => EditorMetadataEntity.getLockedBy(entity) === undefined);
 
         if (entities.length === 0) {
-          this.#startSelectionBox(event.cursor.world);
+          this.#startSelectionBox(event.cursor.world, event.cursor.screen);
         }
       }
     } else if (event.button === "middle") {
@@ -140,91 +139,76 @@ export class CameraPanBehavior extends Behavior {
 
   #lastClickTime = 0;
 
-  #startSelectionBox(worldPos: Vector2) {
+  #startSelectionBox(worldPos: Vector2, screenPos?: Vector2) {
     if (!this.game.isClient()) return;
 
     this.#clearAllHighlights();
 
-    const gfx = new PIXI.Graphics();
-    gfx.zIndex = 10000000000;
-    this.game.renderer.scene.addChild(gfx);
+    const canvas = this.game.renderer.canvas;
+    const container = canvas.parentElement ?? document.body;
+
+    const el = document.createElement("div");
+    el.style.cssText = "position:absolute;pointer-events:none;border:1px solid rgba(34,162,255,0.8);background:rgba(34,162,255,0.1);box-sizing:border-box;";
+    container.appendChild(el);
+
+    const sp = screenPos ?? worldPos;
 
     this.#selectionBox = {
       start: worldPos.clone(),
       current: worldPos.clone(),
-      gfx,
+      startScreen: sp.clone(),
+      currentScreen: sp.clone(),
+      el,
     };
   }
 
   #highlightEntity(entity: Entity) {
     if (!this.game.isClient()) return;
     if (this.#selectionHighlights.has(entity)) return;
+    if (!entity.bounds) return;
 
-    const bounds = entity.bounds;
-    if (!bounds) return;
-
-    const gfx = new PIXI.Graphics();
-    gfx.zIndex = 9999999999;
-    this.game.renderer.scene.addChild(gfx);
-
-    const entityPos = entity.globalTransform.position;
-    const entityScale = entity.globalTransform.scale;
-    const entityRotation = entity.globalTransform.rotation;
-    const halfWidth = (bounds.width * entityScale.x) / 2;
-    const halfHeight = (bounds.height * entityScale.y) / 2;
-
-    gfx.position = { x: entityPos.x, y: -entityPos.y };
-    gfx.rotation = -entityRotation;
-
-    gfx.context
-      .rect(
-        -halfWidth,
-        -halfHeight,
-        bounds.width * entityScale.x,
-        bounds.height * entityScale.y,
-      )
-      .stroke({ color: 0x22a2ff, width: 0.08, alpha: 0.9 });
-
-    this.#selectionHighlights.set(entity, gfx);
+    this.game.renderer.setEntityHighlight?.(entity.ref, true, 0x22a2ff);
+    this.#selectionHighlights.add(entity);
   }
 
   #unhighlightEntity(entity: Entity) {
     if (!this.game.isClient()) return;
-    const gfx = this.#selectionHighlights.get(entity);
-    if (gfx) {
-      gfx.destroy();
+    if (this.#selectionHighlights.has(entity)) {
+      this.game.renderer.setEntityHighlight?.(entity.ref, false);
       this.#selectionHighlights.delete(entity);
     }
   }
 
   #clearAllHighlights() {
     if (!this.game.isClient()) return;
-    for (const [_entity, gfx] of this.#selectionHighlights) {
-      gfx.destroy();
+    for (const entity of this.#selectionHighlights) {
+      this.game.renderer.setEntityHighlight?.(entity.ref, false);
     }
     this.#selectionHighlights.clear();
   }
 
-  #updateSelectionBox(worldPos: Vector2) {
+  #updateSelectionBox(worldPos: Vector2, screenPos?: Vector2) {
     if (!this.#selectionBox || !this.game.isClient()) return;
 
     this.#selectionBox.current = worldPos;
-    const { start, current, gfx } = this.#selectionBox;
+    if (screenPos) this.#selectionBox.currentScreen = screenPos;
+    const { startScreen, currentScreen, el } = this.#selectionBox;
+    const { start, current } = this.#selectionBox;
 
-    gfx.clear();
+    // Position the HTML overlay in screen space
+    const sx = Math.min(startScreen.x, currentScreen.x);
+    const sy = Math.min(startScreen.y, currentScreen.y);
+    const sw = Math.abs(currentScreen.x - startScreen.x);
+    const sh = Math.abs(currentScreen.y - startScreen.y);
+    el.style.left = `${sx}px`;
+    el.style.top = `${sy}px`;
+    el.style.width = `${sw}px`;
+    el.style.height = `${sh}px`;
 
     const minX = Math.min(start.x, current.x);
     const minY = Math.min(start.y, current.y);
     const maxX = Math.max(start.x, current.x);
     const maxY = Math.max(start.y, current.y);
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    gfx.context
-      .rect(minX, -maxY, width, height)
-      .fill({ color: 0x22a2ff, alpha: 0.1 })
-      .stroke({ color: 0x22a2ff, width: 0.05, alpha: 0.8 });
 
     const currentlyHighlighted = new Set<Entity>();
     const MIN_SELECTION_SIZE = 0.1;
@@ -250,7 +234,8 @@ export class CameraPanBehavior extends Behavior {
 
         const entityPos = entity.globalTransform.position;
         const entityScale = entity.globalTransform.scale;
-        const entityRotation = entity.globalTransform.rotation;
+        const quatRot = entity.globalTransform.rotation;
+        const entityRotation = quatRot.toEulerXYZ().y;
 
         let shouldHighlight = false;
 
@@ -309,7 +294,7 @@ export class CameraPanBehavior extends Behavior {
       }
     }
 
-    for (const [entity, _gfx] of this.#selectionHighlights) {
+    for (const entity of this.#selectionHighlights) {
       if (!currentlyHighlighted.has(entity)) {
         this.#unhighlightEntity(entity);
       }
@@ -350,7 +335,7 @@ export class CameraPanBehavior extends Behavior {
 
         const entityPos = entity.globalTransform.position;
         const entityScale = entity.globalTransform.scale;
-        const entityRotation = entity.globalTransform.rotation;
+        const entityRotation = entity.globalTransform.rotation.toEulerXYZ().y;
 
         if (Math.abs(entityRotation) < 0.001) {
           const halfWidth = (bounds.width * entityScale.x) / 2;
@@ -429,7 +414,7 @@ export class CameraPanBehavior extends Behavior {
       }
 
       const entityScale = entity.globalTransform.scale;
-      const entityRotation = entity.globalTransform.rotation;
+      const entityRotation = entity.globalTransform.rotation.toEulerXYZ().y;
 
       if (Math.abs(entityRotation) < 0.001) {
         const halfWidth = (bounds.width * entityScale.x) / 2;
@@ -515,7 +500,7 @@ export class CameraPanBehavior extends Behavior {
 
     selectedEntities = processedEntities;
 
-    this.#selectionBox.gfx.destroy();
+    this.#selectionBox.el.remove();
     this.#selectionBox = undefined;
     this.#clearAllHighlights();
 
@@ -713,7 +698,7 @@ export class CameraPanBehavior extends Behavior {
     if (!this.game.isClient()) return;
 
     if (this.#selectionBox && cursor.world) {
-      this.#updateSelectionBox(cursor.world);
+      this.#updateSelectionBox(cursor.world, cursor.screen);
       return;
     }
 
@@ -740,14 +725,14 @@ export class CameraPanBehavior extends Behavior {
 
     // Clean up selection box if mouse leaves canvas
     if (this.#selectionBox) {
-      this.#selectionBox.gfx.destroy();
+      this.#selectionBox.el.remove();
       this.#selectionBox = undefined;
       this.#clearAllHighlights();
     }
   }
 
   #onScroll({ delta, ev }: Scroll) {
-    if (this.game.isClient() && ev.target !== this.game.renderer.app.canvas) return;
+    if (this.game.isClient() && ev.target !== this.game.renderer.canvas) return;
 
     ev.preventDefault();
     ev.stopPropagation();
