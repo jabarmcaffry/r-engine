@@ -1,4 +1,4 @@
-# Rebur – Cross-Platform Multiplayer 2D Game Engine
+# Rebur – Cross-Platform Multiplayer 3D Game Engine
 
 
 https://github.com/user-attachments/assets/a8a539ea-c39b-462c-835a-d1c906b4507e

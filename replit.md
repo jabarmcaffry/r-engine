@@ -1,6 +1,6 @@
 # Rebur Engine
 
-A fork of [jabarmcaffry/rebur-engine](https://github.com/jabarmcaffry/rebur-engine) — a multiplayer 2D game engine and visual editor — adapted to run on Replit.
+A fork of [jabarmcaffry/rebur-engine](https://github.com/jabarmcaffry/rebur-engine) — a multiplayer 3D game engine and visual editor — adapted to run on Replit.
 
 ## Architecture
 

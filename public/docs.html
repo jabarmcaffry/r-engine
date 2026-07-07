@@ -204,7 +204,7 @@
 <!-- ══════════════════════════════════ INTRO ══════════════════════════════════ -->
 <div class="section active" id="intro">
   <h1>Rebur Engine Documentation</h1>
-  <p class="lead">Rebur is a multiplayer-first 2D game engine built on TypeScript. Create games where every player shares the same world, with state synchronized automatically over WebSockets in real time.</p>
+  <p class="lead">Rebur is a multiplayer-first 3D game engine built on TypeScript. Create games where every player shares the same world, with state synchronized automatically over WebSockets in real time.</p>
 
   <div class="callout callout-tip">
     <strong>💡 New here?</strong>
@@ -710,7 +710,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 <!-- ════════════════════════════════ TILEMAPS ═════════════════════════════════ -->
 <div class="section" id="tilemaps">
   <h1>Tilemaps</h1>
-  <p class="lead">Tilemaps let you paint 2D levels quickly using a tileset (a grid of sprites) or colored-square tiles. A Tilemap entity is a regular entity — move, scale, parent, and duplicate it like anything else.</p>
+  <p class="lead">Tilemaps let you paint levels quickly using a tileset (a grid of sprites) or colored-square tiles. A Tilemap entity is a regular entity — move, scale, parent, and duplicate it like anything else.</p>
 
   <h2>Quick Start</h2>
   <ol>
@@ -904,7 +904,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 <!-- ════════════════════════════════ PHYSICS ══════════════════════════════════ -->
 <div class="section" id="physics">
   <h1>Physics</h1>
-  <p class="lead">Rebur uses the <strong>Rapier2D</strong> physics engine for fast, deterministic simulation. Add physics to entities using Collider and Rigidbody entity types.</p>
+  <p class="lead">Rebur uses the <strong>Rapier3D</strong> physics engine for fast, deterministic simulation. Add physics to entities using Collider and Rigidbody entity types.</p>
 
   <h2>Colliders</h2>
   <p>Collider entities define the physical shape. They are static by default — great for walls, floors, and obstacles.</p>
@@ -1141,7 +1141,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
 
 <div class="section" id="bb-lighting">
   <h1>Building Block: Lighting</h1>
-  <p class="lead">Rebur supports 2D dynamic lighting via point lights. Add atmospheric depth to your game with colored, radius-controlled lights.</p>
+  <p class="lead">Rebur supports dynamic lighting via point lights. Add atmospheric depth to your game with colored, radius-controlled lights.</p>
 
   <h2>Adding a Light</h2>
   <ol>
@@ -1355,7 +1355,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <table>
     <tr><th>Import</th><th>What it provides</th></tr>
     <tr><td><code>"@rebur/engine"</code></td><td>All engine APIs: Behavior, entities, components, events.</td></tr>
-    <tr><td><code>"@rebur/vendor/rapier.ts"</code></td><td>Raw Rapier2D for advanced physics.</td></tr>
+    <tr><td><code>"@rebur/vendor/rapier.ts"</code></td><td>Raw Rapier3D for advanced physics.</td></tr>
     <tr><td><code>"npm:&lt;package&gt;"</code></td><td>Any npm package.</td></tr>
     <tr><td><code>"./MyOtherBehavior.ts"</code></td><td>Relative imports within your project.</td></tr>
   </table>
