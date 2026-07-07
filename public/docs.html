@@ -1521,7 +1521,8 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
     <tr><td><code>getKeyUp(code)</code></td><td>boolean</td><td>True only on the frame the key is released.</td></tr>
     <tr><td><code>getMouseButton(btn)</code></td><td>boolean</td><td>True while mouse button is held.</td></tr>
     <tr><td><code>getMouseButtonDown(btn)</code></td><td>boolean</td><td>True on the frame the mouse button is clicked.</td></tr>
-    <tr><td><code>mousePosition</code></td><td>Vector2</td><td>Mouse position in screen space.</td></tr>
+    <tr><td><code>cursor.screen</code></td><td>Vector2 | undefined</td><td>Mouse position in screen space (pixels).</td></tr>
+    <tr><td><code>cursor.world</code></td><td>Vec3 | undefined</td><td>Mouse position projected onto the world ground plane (y = 0).</td></tr>
   </table>
 
   <div class="callout callout-tip">

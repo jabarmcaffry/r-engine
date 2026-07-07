@@ -41,10 +41,13 @@ export class CameraPanBehavior extends Behavior {
   #camera = this.entity.cast(Camera);
   #hover = false;
   #drag: Vector2 | undefined = undefined;
+  #orbitDrag: Vector2 | undefined = undefined;
   #wasGizmo: boolean = false;
   #space = this.game.inputs.create("@editor/cameragrip", "Camera Grip", "Space");
   #selectionBox: { start: Vec3; current: Vec3; startScreen: Vector2; currentScreen: Vector2; el: HTMLDivElement } | undefined;
   #selectionHighlights: Set<Entity> = new Set();
+
+  static readonly #ORBIT_SENSITIVITY = 0.4; // degrees per pixel
 
   onInitialize(): void {
     if (!this.game.isClient()) return;
@@ -61,6 +64,9 @@ export class CameraPanBehavior extends Behavior {
 
     this.#camera.orbit = true;
     this.#camera.zoom = 0.3;
+
+    // Suppress browser context menu so right-click drag can orbit the viewport
+    canvas.addEventListener("contextmenu", (e: Event) => e.preventDefault());
 
     this.listen(this.#space, ActionChanged, ({ value }) => {
       if (value) canvas.classList.add("grab");
@@ -124,6 +130,8 @@ export class CameraPanBehavior extends Behavior {
       }
     } else if (event.button === "middle") {
       this.#setDrag(event.cursor.screen.clone());
+    } else if (event.button === "right") {
+      this.#orbitDrag = event.cursor.screen.clone();
     }
   }
 
@@ -517,6 +525,11 @@ export class CameraPanBehavior extends Behavior {
   #onMouseUp(event: MouseUp) {
     if (!this.game.isClient()) return;
 
+    if (event.button === "right" && this.#orbitDrag) {
+      this.#orbitDrag = undefined;
+      return;
+    }
+
     const wasMouseDownOverCanvas = this.#wasMouseDownOverCanvas;
     this.#wasMouseDownOverCanvas = false;
 
@@ -608,6 +621,19 @@ export class CameraPanBehavior extends Behavior {
   #onMouseMove({ cursor }: MouseMove) {
     if (!this.game.isClient()) return;
 
+    // Right-click orbit: rotate azimuth / elevation
+    if (this.#orbitDrag) {
+      const delta = this.#orbitDrag.sub(cursor.screen);
+      this.#orbitDrag = cursor.screen.clone();
+      this.#camera.orbitAzimuth =
+        (this.#camera.orbitAzimuth - delta.x * CameraPanBehavior.#ORBIT_SENSITIVITY) % 360;
+      this.#camera.orbitElevation = Math.max(
+        2,
+        Math.min(88, this.#camera.orbitElevation + delta.y * CameraPanBehavior.#ORBIT_SENSITIVITY),
+      );
+      return;
+    }
+
     if (this.#selectionBox && cursor.world) {
       this.#updateSelectionBox(cursor.world, cursor.screen);
       return;
@@ -632,6 +658,7 @@ export class CameraPanBehavior extends Behavior {
   #onMouseOut() {
     this.#hover = false;
     if (this.#drag) this.#setDrag(undefined);
+    if (this.#orbitDrag) this.#orbitDrag = undefined;
 
     // Clean up selection box if mouse leaves canvas
     if (this.#selectionBox) {

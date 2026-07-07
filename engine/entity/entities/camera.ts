@@ -53,6 +53,18 @@ export class Camera extends Entity {
    */
   focus: Vec3 = new Vec3(0, 0, 0);
 
+  /**
+   * Orbit-mode horizontal rotation in degrees (0 = camera behind the scene,
+   * looking along +Z toward -Z). Right-click drag in the editor changes this.
+   */
+  orbitAzimuth: number = 0;
+
+  /**
+   * Orbit-mode vertical angle in degrees. 0 = horizontal, 90 = directly
+   * above. Clamped to [2, 88] to prevent gimbal lock.
+   */
+  orbitElevation: number = 45;
+
   /** Base distance from focus point when zoom == 1. */
   static readonly BASE_DISTANCE = 20;
 
@@ -138,19 +150,30 @@ export class Camera extends Entity {
     }
   }
 
-  /** Orbit-mode pitch: 45° looking down-forward. */
-  static readonly #ORBIT_PITCH = Quat.fromAxisAngle({ x: 1, y: 0, z: 0 }, -Math.PI / 4);
-
   #onFrame(): void {
     const game = this.game;
     if (!game.isClient() || this.#cameraHandle === undefined) return;
 
     if (this.orbit) {
-      // Orbit the focus point from above/behind at 45°.
+      // Spherical orbit: azimuth (horizontal) + elevation (vertical).
+      const elDeg = Math.max(2, Math.min(88, this.orbitElevation));
+      const elRad = elDeg * (Math.PI / 180);
+      const azRad = this.orbitAzimuth * (Math.PI / 180);
       const distance = this.orbitDistance;
-      const offset = distance * Math.SQRT1_2; // sin/cos of 45°
-      const camPos = new Vec3(this.focus.x, this.focus.y + offset, this.focus.z + offset);
-      game.renderer.setCameraTransform(this.#cameraHandle, camPos, Camera.#ORBIT_PITCH);
+
+      const cosEl = Math.cos(elRad);
+      const camPos = new Vec3(
+        this.focus.x + distance * cosEl * Math.sin(azRad),
+        this.focus.y + distance * Math.sin(elRad),
+        this.focus.z + distance * cosEl * Math.cos(azRad),
+      );
+
+      // Compose: yaw around world Y, then pitch around local X.
+      const yawQ = Quat.fromAxisAngle({ x: 0, y: 1, z: 0 }, azRad);
+      const pitchQ = Quat.fromAxisAngle({ x: 1, y: 0, z: 0 }, -elRad);
+      const rotation = yawQ.multiply(pitchQ);
+
+      game.renderer.setCameraTransform(this.#cameraHandle, camPos, rotation);
     } else {
       const t = this.interpolated;
       game.renderer.setCameraTransform(this.#cameraHandle, t.position, t.rotation);

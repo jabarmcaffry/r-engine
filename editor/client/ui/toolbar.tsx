@@ -16,8 +16,10 @@ import {
   ChevronDown,
   Icon,
   icon,
+  Maximize2,
   Move,
   Move3D,
+  RotateCw,
   ZoomIn,
 } from "../_icons.tsx";
 import { stats } from "../_stats.ts";
@@ -27,6 +29,8 @@ import { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 export class Toolbar implements InspectorUIWidget {
   #editMode: boolean = false;
+  #currentGizmoMode: "translate" | "rotate" | "scale" | "combined" = "combined";
+  #modeButtons: HTMLElement | undefined;
 
   #toolbar: { main: HTMLElement; left: HTMLElement; center: HTMLElement; right: HTMLElement };
   #overlays: HTMLElement;
@@ -58,7 +62,7 @@ export class Toolbar implements InspectorUIWidget {
       if (globalThis.env.IS_DEV) this.#toolbar.right.append(this.#drawStatsButton());
       this.#toolbar.right.append(this.#drawRatioDropdown());
 
-      // Q — activate transform gizmo
+      // W/E/R — gizmo mode shortcuts; Q — legacy combined mode
       this.#keydownHandler = (event: KeyboardEvent) => {
         if (
           document.activeElement instanceof HTMLInputElement ||
@@ -68,15 +72,14 @@ export class Toolbar implements InspectorUIWidget {
           return;
         }
 
-        if (
-          event.key === "q" &&
-          !event.ctrlKey &&
-          !event.metaKey &&
-          !event.shiftKey &&
-          !event.altKey
-        ) {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+
+        if (event.key === "w") { event.preventDefault(); this.#setGizmoMode("translate"); }
+        else if (event.key === "e") { event.preventDefault(); this.#setGizmoMode("rotate"); }
+        else if (event.key === "r") { event.preventDefault(); this.#setGizmoMode("scale"); }
+        else if (event.key === "q") {
           event.preventDefault();
-          this.#ensureGizmo();
+          this.#setGizmoMode("translate");
         }
       };
     } else {
@@ -161,30 +164,60 @@ export class Toolbar implements InspectorUIWidget {
     }
   }
 
-  /** Spawn or re-activate the 3D transform gizmo. */
-  #ensureGizmo(): void {
-    if (!this.game.local.children.get(Gizmo.name)?.cast(Gizmo)) {
-      const g = this.game.local.spawn({ type: Gizmo, name: Gizmo.name });
-      g.mode = "combined";
+  /** Return or spawn the gizmo, setting its mode. */
+  #setGizmoMode(mode: "translate" | "rotate" | "scale" | "combined"): void {
+    let gizmo = this.game.local.children.get(Gizmo.name)?.cast(Gizmo);
+    if (!gizmo) {
+      gizmo = this.game.local.spawn({ type: Gizmo, name: Gizmo.name });
+    }
+    gizmo.mode = mode;
+    this.#currentGizmoMode = mode;
+    this.#refreshModeButtons();
+  }
+
+  #refreshModeButtons(): void {
+    if (!this.#modeButtons) return;
+    const mode = this.#currentGizmoMode;
+    for (const btn of Array.from(this.#modeButtons.querySelectorAll<HTMLButtonElement>("button[data-mode]"))) {
+      if (btn.dataset.mode === mode || (mode === "combined" && btn.dataset.mode === "translate")) {
+        btn.dataset.active = "";
+      } else {
+        delete btn.dataset.active;
+      }
     }
   }
 
   #drawGizmoButtons(): BaseElement {
-    const button = (
-      <button type="button" title="Edit Transform (Q)" data-active="">
-        <Icon icon={Move3D} />
-        Edit Transform
-      </button>
-    ) as HTMLButtonElement;
+    const mkBtn = (
+      label: string,
+      title: string,
+      iconEl: unknown,
+      mode: "translate" | "rotate" | "scale",
+    ) => {
+      const btn = (
+        <button type="button" title={title} data-mode={mode}>
+          <Icon icon={iconEl as string} />
+          {label}
+        </button>
+      ) as HTMLButtonElement;
+      btn.addEventListener("click", () => this.#setGizmoMode(mode));
+      return btn;
+    };
 
-    // Spawn the gizmo immediately so the viewport is interactive on load.
-    this.#ensureGizmo();
-
-    return (
+    const wrap = (
       <div id="gizmo-buttons">
-        {button}
+        {mkBtn("Move", "Move (W)", Move3D, "translate")}
+        {mkBtn("Rotate", "Rotate (E)", RotateCw, "rotate")}
+        {mkBtn("Scale", "Scale (R)", Maximize2, "scale")}
       </div>
-    );
+    ) as HTMLElement;
+
+    this.#modeButtons = wrap;
+
+    // Spawn gizmo immediately and activate translate mode
+    this.#setGizmoMode("translate");
+
+    return wrap;
   }
 
   #drawPhysicsDebugButton(): BaseElement {
