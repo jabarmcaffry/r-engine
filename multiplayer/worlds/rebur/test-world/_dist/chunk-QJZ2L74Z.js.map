@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/cleanup-on-leave.ts"],
-  "sourcesContent": ["import { Behavior, PlayerLeft } from \"@rebur/engine\";\n\nexport default class CleanupOnLeaveBehavior extends Behavior {\n  onInitialize(): void {\n    if (!this.game.isServer()) return;\n\n    this.game.on(PlayerLeft, ({ connection }) => {\n      if (connection.id !== this.entity.authority) return;\n      this.entity.destroy();\n    });\n  }\n}\n"],
-  "mappings": "wCAAA,OAAS,SAAU,eAAkB,gBAErC,IAAqB,uBAArB,cAAoD,QAAS,CAF7D,MAE6D,uCAC3D,cAAqB,CACd,KAAK,KAAK,SAAS,GAExB,KAAK,KAAK,GAAG,WAAY,CAAC,CAAE,UAAW,IAAM,CACvC,WAAW,KAAO,KAAK,OAAO,WAClC,KAAK,OAAO,QAAQ,CACtB,CAAC,CACH,CACF",
-  "names": []
-}

@@ -15,7 +15,6 @@ import {
 } from "@rebur/engine";
 import { element as elem, element } from "@rebur/ui";
 import { EmptyFacade } from "../../common/facades/empty.ts";
-import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import {
   EditorMetadataEntity,
   EditorRootFacadeEntity,
@@ -245,10 +244,6 @@ export class SceneGraph implements InspectorUIWidget {
       if (ui.selectedEntity.entities.length === 1) {
         target = ui.selectedEntity.entities[0];
       }
-
-      // ignore tilemaps
-      // breaks right-click to remove tile
-      if (target instanceof EditorFacadeTilemap) return;
 
       const modifierKey = getModifierKeySymbol();
       const contextMenuItems: ContextMenuItem[] = [];

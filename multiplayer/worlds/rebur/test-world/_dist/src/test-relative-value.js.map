@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/test-relative-value.ts"],
-  "sourcesContent": ["import { Behavior, Entity, RelativeEntity, EntityRef } from \"@rebur/engine\";\n\nexport default class Test extends Behavior {\n  byRel: Entity | undefined = undefined;\n  byRef: Entity | undefined = undefined;\n\n  override setup(): void {\n    this.defineValue(Test, \"byRel\", { type: RelativeEntity });\n    this.defineValue(Test, \"byRef\", { type: EntityRef });\n  }\n}\n"],
-  "mappings": "yCAAA,OAAS,SAAkB,eAAgB,cAAiB,gBAE5D,IAAqB,KAArB,MAAqB,cAAa,QAAS,CAF3C,MAE2C,qBACzC,MAA4B,OAC5B,MAA4B,OAEnB,OAAc,CACrB,KAAK,YAAY,MAAM,QAAS,CAAE,KAAM,cAAe,CAAC,EACxD,KAAK,YAAY,MAAM,QAAS,CAAE,KAAM,SAAU,CAAC,CACrD,CACF",
-  "names": []
-}

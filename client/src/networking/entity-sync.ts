@@ -1,5 +1,4 @@
 import {
-  BaseTilemap,
   Behavior,
   BehaviorConstructor,
   BehaviorDefinition,
@@ -16,9 +15,6 @@ import {
   GameStatus,
   GameStatusChange,
   InternalGameTick,
-  TilemapBatchUpdate,
-  TilemapClear,
-  TilemapUpdate,
 } from "@rebur/engine";
 import * as internal from "@rebur/engine/internal";
 import { ClientNetworkSetupRoutine } from "./net-connection.ts";
@@ -368,127 +364,4 @@ export const handleEntitySync: ClientNetworkSetupRoutine = (conn, game) => {
     }
   });
 
-  const tilemapIgnoreSet = new Set<BaseTilemap>();
-  const dirtyTilemaps = new Map<
-    BaseTilemap,
-    { x: number; y: number; type: "atlas" | "color"; value?: number }[]
-  >();
-  game.on(TilemapUpdate, signal => {
-    if (game.status !== GameStatus.Running) return;
-
-    const tilemap = signal.tilemap;
-    if (tilemapIgnoreSet.has(tilemap)) return;
-    if (!tilemap[internal.entityDoneSpawning]) return;
-    if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
-    const arr = dirtyTilemaps.get(tilemap) ?? [];
-    arr.push({
-      x: signal.x,
-      y: signal.y,
-      type: signal.info?.type ?? "atlas",
-      value: signal.info?.type === "atlas" ? signal.info.id : signal.info?.color,
-    });
-    dirtyTilemaps.set(tilemap, arr);
-  });
-
-  game.on(TilemapBatchUpdate, signal => {
-    if (game.status !== GameStatus.Running) return;
-
-    const tilemap = signal.tilemap;
-    if (!tilemap[internal.entityDoneSpawning]) return;
-    if (tilemapIgnoreSet.has(tilemap)) return;
-    if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
-
-    const arr = dirtyTilemaps.get(tilemap) ?? [];
-    for (let i = 0; i < signal.xs.length; i++) {
-      const x = signal.xs[i];
-      const y = signal.ys[i];
-      const id = signal.atlasIds[i];
-      arr.push({ x, y, type: "atlas", value: id });
-    }
-    dirtyTilemaps.set(tilemap, arr);
-  });
-
-  game.on(InternalGameTick, () => {
-    for (const [tilemap, updates] of dirtyTilemaps) {
-      if (updates.length > 256 && false) {
-        // TODO:
-        // find affected chunks??? maybe???
-        // serialize the whole tilemap and do the thing
-      } else {
-        conn.send({
-          t: "UpdateTilemap",
-          ref: tilemap.ref,
-          xs: updates.map(it => it.x),
-          ys: updates.map(it => it.y),
-          values: updates.map(it => it.value),
-          types: updates.map(it => it.type),
-        });
-      }
-
-      dirtyTilemaps.delete(tilemap);
-    }
-  });
-
-  const clearTilemapIgnoreSet = new Set<BaseTilemap>();
-  game.on(TilemapClear, signal => {
-    if (game.status !== GameStatus.Running) return;
-
-    const tilemap = signal.tilemap;
-    if (!tilemap[internal.entityDoneSpawning]) return;
-    if (clearTilemapIgnoreSet.has(tilemap)) return;
-    if (!(tilemap.root === game.world || tilemap.root === game.prefabs)) return;
-
-    conn.send({ t: "ClearTilemap", ref: tilemap.ref });
-  });
-
-  conn.registerPacketHandler("UpdateTilemap", packet => {
-    if (packet.from === conn.id) return;
-
-    const tilemap = game.entities.lookupByRef(packet.ref);
-    if (!tilemap) return;
-    if (!(tilemap instanceof BaseTilemap)) return;
-
-    tilemapIgnoreSet.add(tilemap);
-    for (let i = 0; i < packet.xs.length; i++) {
-      const type = packet.types[i];
-      const value = packet.values[i];
-      if (type === "atlas") {
-        tilemap.setTileInfo(
-          packet.xs[i],
-          packet.ys[i],
-          value !== undefined ? { type: "atlas", id: value } : undefined,
-        );
-      } else if (type === "color") {
-        tilemap.setTileInfo(
-          packet.xs[i],
-          packet.ys[i],
-          value !== undefined ? { type: "color", color: value } : undefined,
-        );
-      }
-    }
-    tilemapIgnoreSet.delete(tilemap);
-  });
-
-  conn.registerPacketHandler("DumpTilemap", packet => {
-    if (packet.from === conn.id) return;
-
-    const tilemap = game.entities.lookupByRef(packet.ref);
-    if (!tilemap) return;
-    if (!(tilemap instanceof BaseTilemap)) return;
-
-    const chunk = tilemap[internal.tilemapGetChunk](packet.type, packet.chunkX, packet.chunkY);
-    chunk.load(packet.data as Uint8Array);
-  });
-
-  conn.registerPacketHandler("ClearTilemap", packet => {
-    if (packet.from === conn.id) return;
-
-    const tilemap = game.entities.lookupByRef(packet.ref);
-    if (!tilemap) return;
-    if (!(tilemap instanceof BaseTilemap)) return;
-
-    clearTilemapIgnoreSet.add(tilemap);
-    tilemap.clearTiles();
-    clearTilemapIgnoreSet.delete(tilemap);
-  });
 };

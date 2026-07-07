@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/mark-static.ts"],
-  "sourcesContent": ["import { Behavior, PixiEntity } from \"@rebur/engine\";\n\nexport default class MarkStatic extends Behavior {\n  onInitialize(): void {\n    const queue = [...this.entity.children.values()];\n    while (queue.length > 0) {\n      const entity = queue.shift()!;\n      queue.push(...entity.children.values());\n      if (!(entity instanceof PixiEntity)) continue;\n\n      entity.static = true;\n    }\n  }\n}\n"],
-  "mappings": "yCAAA,OAAS,SAAU,eAAkB,gBAErC,IAAqB,WAArB,cAAwC,QAAS,CAFjD,MAEiD,2BAC/C,cAAqB,CACnB,IAAM,MAAQ,CAAC,GAAG,KAAK,OAAO,SAAS,OAAO,CAAC,EAC/C,KAAO,MAAM,OAAS,GAAG,CACvB,IAAM,OAAS,MAAM,MAAM,EAC3B,MAAM,KAAK,GAAG,OAAO,SAAS,OAAO,CAAC,EAChC,kBAAkB,aAExB,OAAO,OAAS,GAClB,CACF,CACF",
-  "names": []
-}

@@ -1,5 +1,5 @@
 import type { ITransform } from "@rebur/engine";
-import { BaseTilemap, ClientGame, EntityDefinition } from "@rebur/engine";
+import { ClientGame, EntityDefinition, Quat } from "@rebur/engine";
 import { EditorMetadataEntity } from "../common/mod.ts";
 
 class NotImplementedError extends Error {}
@@ -37,17 +37,6 @@ export type UndoRedoOperation =
       previous: boolean;
     }
   // | { t: "modify-behavior-value" }
-  | {
-      t: "modify-tilemap";
-      tilemapRef: string;
-      ops: {
-        t: "atlas" | "color";
-        x: number;
-        y: number;
-        id: number | undefined;
-        previous: number | undefined;
-      }[];
-    }
   | { t: "compound"; ops: Exclude<UndoRedoOperation, { t: "compound" }>[] };
 
 export class UndoRedoManager {
@@ -177,34 +166,6 @@ export class UndoRedoManager {
         break;
       }
 
-      case "modify-tilemap": {
-        const entity = this.#game.entities.lookupByRef(op.tilemapRef);
-        if (entity && entity instanceof BaseTilemap) {
-          const allAtlas = op.ops.every(x => x.t === "atlas");
-          const allColor = op.ops.every(x => x.t === "color");
-
-          if (allAtlas || allColor) {
-            const xs: number[] = [];
-            const ys: number[] = [];
-            const ids: (number | undefined)[] = [];
-            for (const { x, y, previous } of op.ops) {
-              xs.push(x);
-              ys.push(y);
-              ids.push(previous);
-            }
-
-            if (allAtlas) entity.setTiles(xs, ys, ids);
-            else if (allColor) entity.setColorTiles(xs, ys, ids);
-          } else {
-            for (const { x, y, previous, t } of op.ops) {
-              if (t === "atlas") entity.setTile(x, y, previous);
-              else if (t === "color") entity.setColor(x, y, previous);
-            }
-          }
-        }
-        break;
-      }
-
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`undo operation not implemented: ${t}`);
@@ -286,34 +247,6 @@ export class UndoRedoManager {
         break;
       }
 
-      case "modify-tilemap": {
-        const entity = this.#game.entities.lookupByRef(op.tilemapRef);
-        if (entity && entity instanceof BaseTilemap) {
-          const allAtlas = op.ops.every(x => x.t === "atlas");
-          const allColor = op.ops.every(x => x.t === "color");
-
-          if (allAtlas || allColor) {
-            const xs: number[] = [];
-            const ys: number[] = [];
-            const ids: (number | undefined)[] = [];
-            for (const { x, y, id } of op.ops) {
-              xs.push(x);
-              ys.push(y);
-              ids.push(id);
-            }
-
-            if (allAtlas) entity.setTiles(xs, ys, ids);
-            else if (allColor) entity.setColorTiles(xs, ys, ids);
-          } else {
-            for (const { x, y, id, t } of op.ops) {
-              if (t === "atlas") entity.setTile(x, y, id);
-              else if (t === "color") entity.setColor(x, y, id);
-            }
-          }
-        }
-        break;
-      }
-
       default: {
         const t = (op as unknown as UndoRedoOperation).t;
         throw new NotImplementedError(`redo operation not implemented: ${t}`);
@@ -323,13 +256,25 @@ export class UndoRedoManager {
 }
 
 function changeAtPath(object: any, path: string[], value: string) {
+  const val = parseFloat(value);
+
+  // Special case: 3D rotation component stored as Euler degrees → Quat
+  // path is ["rotation", "x"|"y"|"z"]
+  if (
+    path.length === 2 &&
+    path[0] === "rotation" &&
+    (path[1] === "x" || path[1] === "y" || path[1] === "z")
+  ) {
+    const radians = val * (Math.PI / 180);
+    const euler = object.rotation.toEulerXYZ() as { x: number; y: number; z: number };
+    (euler as Record<string, number>)[path[1]] = radians;
+    object.rotation = Quat.fromEulerXYZ(euler.x, euler.y, euler.z);
+    return;
+  }
+
   let current = object;
   for (let i = 0; i < path.length - 1; i++) {
     current = current[path[i]];
-  }
-  let val = parseFloat(value);
-  if (path[path.length - 1] === "rotation") {
-    val = val * (Math.PI / 180);
   }
   current[path[path.length - 1]] = val;
 }

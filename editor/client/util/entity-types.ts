@@ -14,24 +14,45 @@ export function getEntityTypes(): [type: EntityConstructor, namespace: string][]
   return [...reverseRegistry.values()].toSorted((a, b) => a[0].name.localeCompare(b[0].name));
 }
 
-// TODO: flesh out categories
 const categories = new Map<string, string[]>([
-  ["Sprites", ["@core/AnimatedSprite", "@core/Sprite", "@core/TilingSprite"]],
+  [
+    "3D Meshes",
+    [
+      "@core/Mesh",
+      "@core/ColoredSquare",
+      "@core/ColoredPolygon",
+      "@core/Sprite",
+      "@core/VectorSprite",
+    ],
+  ],
+  [
+    "Lighting",
+    [
+      "@core/AmbientLight",
+      "@core/DirectionalLight",
+      "@core/PointLight",
+      "@core/SpotLight",
+    ],
+  ],
   ["UI", ["@core/UILayer", "@core/UIPanel"]],
-  ["Graphics", ["@core/RawPixi", "@core/ColoredSquare", "@core/ColoredPolygon"]],
-  ["Advanced", ["@core/RenderContainer"]],
+  [
+    "Physics",
+    ["@core/Rigidbody", "@core/Collider", "@core/CharacterController"],
+  ],
+  [
+    "Advanced",
+    ["@core/RenderContainer", "@core/AnimatedSprite", "@core/TilingSprite", "@core/AudioSource"],
+  ],
   [
     "Hidden",
     [
-      "@core/RectCollider",
-      "@core/RawGraphics",
       "@core/SolidColor",
-      "@core/VectorSprite",
       "@core/Text",
       "@core/ClickableRect",
       "@core/ClickableCircle",
+      "@core/RichText",
     ],
-  ], // deprecated/hidden entites
+  ],
 ]);
 
 export function createEntityMenu(

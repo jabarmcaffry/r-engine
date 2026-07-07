@@ -8,6 +8,5 @@ import "./empty.ts";
 import "./rect-collider.ts";
 import "./render-container.ts";
 import "./rigidbody.ts";
-import "./tilemap.ts";
 
 export * from "./manager.ts";

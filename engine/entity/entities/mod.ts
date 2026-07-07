@@ -12,8 +12,6 @@ export * from "./colored-polygon.ts";
 export * from "./vector-sprite.ts";
 export * from "./rich-text.ts";
 export * from "./render-container.ts";
-export * from "./tilemap.ts";
-export * from "./tilemap-chunk.ts";
 
 // Lights
 export * from "./point-light.ts";

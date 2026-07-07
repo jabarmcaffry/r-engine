@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/bad-synced-value.ts"],
-  "sourcesContent": ["import { Behavior, value, Vector2 } from \"@rebur/engine\";\n\nexport default class BadSyncedValueBehavior extends Behavior {\n  @value()\n  test = Vector2.ZERO\n}\n"],
-  "mappings": "gIAAA,OAAS,SAAU,MAAO,YAAe,gBAAzC,uBAEqB,wBAArB,MAAqB,gCAA+B,YAClD,WAAC,MAAM,GAD2C,GAAS,CAA7D,kCAEE,0BAAO,kBAAP,aAAO,QAAQ,OAAf,iCACF,EAHA,2BAEE,iCADA,UADmB,yBAArB,0BAAqB,yBAAwC,yDAA7D,IAAqB,uBAArB",
-  "names": []
-}

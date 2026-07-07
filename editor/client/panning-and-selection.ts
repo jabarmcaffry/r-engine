@@ -14,7 +14,6 @@ import {
 } from "@rebur/engine";
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
-import { EditorFacadeTilemap } from "../common/facades/tilemap.ts";
 import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
 
@@ -77,12 +76,7 @@ export class CameraPanBehavior extends Behavior {
   }
 
   #ignoreTilemap(): boolean {
-    const entity = this.ui?.selectedEntity.entities[0];
-    if (!entity) return false;
-    if (!(entity instanceof EditorFacadeTilemap)) return false;
-
-    // TODO: need inspector ui root instead of document (prevent crosstalk between edit and play)
-    return document.querySelector("[data-tab-id=tilemap][data-active]") !== null;
+    return false;
   }
 
   #setDrag(value: Vector2 | undefined) {
@@ -611,14 +605,6 @@ export class CameraPanBehavior extends Behavior {
           }
           return 0;
         })
-        .toSorted((a, b) => {
-          // Move tilemaps to the bottom of the selection list
-          const aIsTilemap = a instanceof EditorFacadeTilemap;
-          const bIsTilemap = b instanceof EditorFacadeTilemap;
-          if (aIsTilemap && !bIsTilemap) return 1;
-          if (!aIsTilemap && bIsTilemap) return -1;
-          return 0;
-        });
 
       if (entities[0] && entities[0].parent instanceof EmptyFacade) {
         if (this.#lastParentPrepended !== entities[0].parent) {

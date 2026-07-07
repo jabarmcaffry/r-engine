@@ -1,5 +1,4 @@
 import {
-  AnimatedSprite,
   ClientGame,
   ColorAdapter,
   Entity,
@@ -9,15 +8,14 @@ import {
   EntityReparented,
   EntityTransformUpdate,
   JsonValue,
+  Quat,
   RenderContainer,
   SignalSubscription,
-  Vector2,
 } from "@rebur/engine";
 import * as internal from "@rebur/engine/internal";
 import type { SceneDescBehavior } from "@rebur/scene";
 import { BaseElement, element as elem } from "@rebur/ui";
 import * as z from "@rebur/vendor/zod.ts";
-import { EditorFacadeTilemap } from "../../common/facades/tilemap.ts";
 import { EditorMetadataEntity, Facades, PrefabRootFacade } from "../../common/mod.ts";
 import { icon, X } from "../_icons.tsx";
 import { DataDetails, DataTable } from "../components/mod.ts";
@@ -334,16 +332,8 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry(
-        "posX",
-        "Position X",
-        "Local X coordinates relative to the parent.",
-        transformXField,
-      );
-      transformFieldsToRegisterWithUndoRedo.push({
-        field: transformXField,
-        path: ["position", "x"],
-      });
+      txfmTable.addEntry("posX", "Position X", "Local X position.", transformXField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: transformXField, path: ["position", "x"] });
 
       const [transformYField, refreshY] = createInputField({
         get: () => entity.transform.position.y,
@@ -351,28 +341,53 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry(
-        "posY",
-        "Position Y",
-        "Local Y coordinates relative to the parent.",
-        transformYField,
-      );
-      transformFieldsToRegisterWithUndoRedo.push({
-        field: transformYField,
-        path: ["position", "y"],
-      });
+      txfmTable.addEntry("posY", "Position Y", "Local Y position.", transformYField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: transformYField, path: ["position", "y"] });
 
-      const [transformRotation, refreshRotation] = createInputField({
-        get: () => entity.transform.rotation,
-        set: r => (entity.transform.rotation = r),
+      const [transformZPosField, refreshZPos] = createInputField({
+        get: () => entity.transform.position.z,
+        set: z => (entity.transform.position.z = z),
+        convert: numeric.parse,
+        convertBack: n => n.toFixed(4),
+      });
+      txfmTable.addEntry("posZ", "Position Z", "Local Z position.", transformZPosField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: transformZPosField, path: ["position", "z"] });
+
+      const [rotXField, refreshRotX] = createInputField({
+        get: () => entity.transform.rotation.toEulerXYZ().x,
+        set: rx => {
+          const e = entity.transform.rotation.toEulerXYZ();
+          entity.transform.rotation = Quat.fromEulerXYZ(rx, e.y, e.z);
+        },
         convert: numeric.transform(v => (v * Math.PI) / 180).parse,
         convertBack: v => ((v * 180) / Math.PI).toFixed(1),
       });
-      txfmTable.addEntry("rot", "Rotation", "Local rotation in degrees.", transformRotation);
-      transformFieldsToRegisterWithUndoRedo.push({
-        field: transformRotation,
-        path: ["rotation"],
+      txfmTable.addEntry("rotX", "Rotation X", "Local X rotation in degrees.", rotXField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: rotXField, path: ["rotation", "x"] });
+
+      const [rotYField, refreshRotY] = createInputField({
+        get: () => entity.transform.rotation.toEulerXYZ().y,
+        set: ry => {
+          const e = entity.transform.rotation.toEulerXYZ();
+          entity.transform.rotation = Quat.fromEulerXYZ(e.x, ry, e.z);
+        },
+        convert: numeric.transform(v => (v * Math.PI) / 180).parse,
+        convertBack: v => ((v * 180) / Math.PI).toFixed(1),
       });
+      txfmTable.addEntry("rotY", "Rotation Y", "Local Y rotation in degrees.", rotYField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: rotYField, path: ["rotation", "y"] });
+
+      const [rotZField, refreshRotZ] = createInputField({
+        get: () => entity.transform.rotation.toEulerXYZ().z,
+        set: rz => {
+          const e = entity.transform.rotation.toEulerXYZ();
+          entity.transform.rotation = Quat.fromEulerXYZ(e.x, e.y, rz);
+        },
+        convert: numeric.transform(v => (v * Math.PI) / 180).parse,
+        convertBack: v => ((v * 180) / Math.PI).toFixed(1),
+      });
+      txfmTable.addEntry("rotZ", "Rotation Z", "Local Z rotation in degrees.", rotZField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: rotZField, path: ["rotation", "z"] });
 
       const [scaleXField, refreshScaleX] = createInputField({
         get: () => entity.transform.scale.x,
@@ -380,7 +395,7 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry("scaleX", "Scale X", "Local X scale factors.", scaleXField);
+      txfmTable.addEntry("scaleX", "Scale X", "Local X scale.", scaleXField);
       transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
 
       const [scaleYField, refreshScaleY] = createInputField({
@@ -389,31 +404,23 @@ export class Properties implements InspectorUIWidget {
         convert: numeric.parse,
         convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry("scaleY", "Scale Y", "Local Y scale factors.", scaleYField);
+      txfmTable.addEntry("scaleY", "Scale Y", "Local Y scale.", scaleYField);
       transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
 
-      const [zIndexField, refreshZIndex] = createInputField({
-        get: () => entity.transform.z,
-        set: z => (entity.transform.z = z),
-        convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
-        convertBack: n => n.toFixed(0),
+      const [scaleZField, refreshScaleZ] = createInputField({
+        get: () => entity.transform.scale.z,
+        set: z => (entity.transform.scale.z = z),
+        convert: numeric.parse,
+        convertBack: n => n.toFixed(4),
       });
-      txfmTable.addEntry(
-        "z",
-        "Z Index",
-        "Local draw-order; higher values render above lower ones.",
-        zIndexField,
-      );
-      transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
+      txfmTable.addEntry("scaleZ", "Scale Z", "Local Z scale.", scaleZField);
+      transformFieldsToRegisterWithUndoRedo.push({ field: scaleZField, path: ["scale", "z"] });
 
       autoCleanup(
         entity.on(EntityTransformUpdate, () => {
-          refreshX();
-          refreshY();
-          refreshRotation();
-          refreshScaleX();
-          refreshScaleY();
-          refreshZIndex();
+          refreshX(); refreshY(); refreshZPos();
+          refreshRotX(); refreshRotY(); refreshRotZ();
+          refreshScaleX(); refreshScaleY(); refreshScaleZ();
         }),
       );
 
@@ -434,64 +441,42 @@ export class Properties implements InspectorUIWidget {
       const globalTransformTable = new DataTable();
       globalTransformSection.append(globalTransformTable);
 
-      const globalPosXField = elem("code", {}, [entity.pos.x.toFixed(2)]);
-      globalTransformTable.addEntry(
-        "global-pos-x",
-        "Position X",
-        "World-space X coordinates.",
-        globalPosXField,
-      );
+      const fmt3 = (n: number) => n.toFixed(3);
+      const fmtEuler = (q: { toEulerXYZ(): { x: number; y: number; z: number } }, axis: "x" | "y" | "z") =>
+        ((q.toEulerXYZ()[axis] * 180) / Math.PI).toFixed(1) + "°";
 
-      const globalPosYField = elem("code", {}, [entity.pos.y.toFixed(2)]);
-      globalTransformTable.addEntry(
-        "global-pos-y",
-        "Position Y",
-        "World-space Y coordinates.",
-        globalPosYField,
-      );
+      const globalPosXField = elem("code", {}, [fmt3(entity.pos.x)]);
+      globalTransformTable.addEntry("global-pos-x", "Position X", "World X.", globalPosXField);
+      const globalPosYField = elem("code", {}, [fmt3(entity.pos.y)]);
+      globalTransformTable.addEntry("global-pos-y", "Position Y", "World Y.", globalPosYField);
+      const globalPosZField = elem("code", {}, [fmt3(entity.pos.z)]);
+      globalTransformTable.addEntry("global-pos-z", "Position Z", "World Z.", globalPosZField);
 
-      const globalRotationField = elem("code", {}, [
-        entity.globalTransform.rotation.toFixed(2),
-      ]);
-      globalTransformTable.addEntry(
-        "global-rot",
-        "Rotation",
-        "World-space rotation in degrees.",
-        globalRotationField,
-      );
+      const globalRotXField = elem("code", {}, [fmtEuler(entity.globalTransform.rotation, "x")]);
+      globalTransformTable.addEntry("global-rot-x", "Rotation X", "World X rotation.", globalRotXField);
+      const globalRotYField = elem("code", {}, [fmtEuler(entity.globalTransform.rotation, "y")]);
+      globalTransformTable.addEntry("global-rot-y", "Rotation Y", "World Y rotation.", globalRotYField);
+      const globalRotZField = elem("code", {}, [fmtEuler(entity.globalTransform.rotation, "z")]);
+      globalTransformTable.addEntry("global-rot-z", "Rotation Z", "World Z rotation.", globalRotZField);
 
-      const globalScaleXField = elem("code", {}, [entity.globalTransform.scale.x.toFixed(2)]);
-      globalTransformTable.addEntry(
-        "global-scale-x",
-        "Scale X",
-        "World-space X scale factors.",
-        globalScaleXField,
-      );
-
-      const globalScaleYField = elem("code", {}, [entity.globalTransform.scale.y.toFixed(2)]);
-      globalTransformTable.addEntry(
-        "global-scale-y",
-        "Scale Y",
-        "World-space Y scale factors.",
-        globalScaleYField,
-      );
-
-      const globalZField = elem("code", {}, [entity.z.toFixed(0)]);
-      globalTransformTable.addEntry(
-        "global-z",
-        "Z Index",
-        "World-space draw-order.",
-        globalZField,
-      );
+      const globalScaleXField = elem("code", {}, [fmt3(entity.globalTransform.scale.x)]);
+      globalTransformTable.addEntry("global-scale-x", "Scale X", "World X scale.", globalScaleXField);
+      const globalScaleYField = elem("code", {}, [fmt3(entity.globalTransform.scale.y)]);
+      globalTransformTable.addEntry("global-scale-y", "Scale Y", "World Y scale.", globalScaleYField);
+      const globalScaleZField = elem("code", {}, [fmt3(entity.globalTransform.scale.z)]);
+      globalTransformTable.addEntry("global-scale-z", "Scale Z", "World Z scale.", globalScaleZField);
 
       autoCleanup(
         entity.on(EntityTransformUpdate, () => {
-          globalPosXField.textContent = entity.pos.x.toFixed(2);
-          globalPosYField.textContent = entity.pos.y.toFixed(2);
-          globalRotationField.textContent = entity.globalTransform.rotation.toFixed(2);
-          globalScaleXField.textContent = entity.globalTransform.scale.x.toFixed(2);
-          globalScaleYField.textContent = entity.globalTransform.scale.y.toFixed(2);
-          globalZField.textContent = entity.z.toFixed(0);
+          globalPosXField.textContent = fmt3(entity.pos.x);
+          globalPosYField.textContent = fmt3(entity.pos.y);
+          globalPosZField.textContent = fmt3(entity.pos.z);
+          globalRotXField.textContent = fmtEuler(entity.globalTransform.rotation, "x");
+          globalRotYField.textContent = fmtEuler(entity.globalTransform.rotation, "y");
+          globalRotZField.textContent = fmtEuler(entity.globalTransform.rotation, "z");
+          globalScaleXField.textContent = fmt3(entity.globalTransform.scale.x);
+          globalScaleYField.textContent = fmt3(entity.globalTransform.scale.y);
+          globalScaleZField.textContent = fmt3(entity.globalTransform.scale.z);
         }),
       );
 
@@ -567,49 +552,6 @@ export class Properties implements InspectorUIWidget {
       valuesTable.addEntry(`value:${key}`, key, value.description, valueField);
       value.onChanged(refreshValue);
       this.entityPropertyTeardown.push(() => value.removeChangeListener(refreshValue));
-    }
-
-    // TODO: Move this into AnimatedSprite once we have a way to define button actions in the entities.
-    if (entity instanceof AnimatedSprite) {
-      const button = elem("button", { type: "button" }, ["View Sheet Guide"]);
-
-      button.addEventListener("click", () => {
-        const spritesheet = entity.values.get("spritesheet")?.value;
-        const frameCount = entity.values.get("frameDimensions")?.value as Vector2 | undefined;
-        const framesX = frameCount?.x;
-        const framesY = frameCount?.y;
-
-        const spritesheetJSON = entity.values.get("jsonSpritesheet")?.value;
-        if (
-          typeof spritesheet === "string" &&
-          spritesheet !== "" &&
-          framesX !== 1 &&
-          framesY !== 1
-        ) {
-          const url = this.game.resolveResource(spritesheet);
-          const popupUrl = `/spriteguide.html?spritesheetUrl=${url}&frameX=${framesX}&frameY=${framesY}`;
-          window.open(popupUrl, "_blank", "popup");
-        } else if (typeof spritesheetJSON === "string" && spritesheetJSON !== "") {
-          const url = this.game.resolveResource(spritesheetJSON);
-          const popupUrl = `/spriteguide.html?spritesheetJson=${url}`;
-          window.open(popupUrl, "_blank", "popup");
-        } else {
-          alert("Please set spritesheet (and frameWidth + frameHeight) or spritesheetJSON.");
-        }
-      });
-
-      valuesTable.addEntry("spritesheetguide", "Guide", "", button);
-    }
-
-    if (entity instanceof EditorFacadeTilemap) {
-      const button = elem("button", { type: "button" }, ["Clear All Tiles"]);
-
-      button.addEventListener("click", () => {
-        const action = confirm("Are you sure?\nThis cannot be undone.");
-        if (action) entity.clearTiles();
-      });
-
-      valuesTable.addEntry("clear", "tiles", "Clear all tiles for this entity", button);
     }
 
     if (entity instanceof RenderContainer) {
@@ -801,25 +743,78 @@ export class Properties implements InspectorUIWidget {
       path: ["position", "y"],
     });
 
-    const [transformRotation, refreshRotation] = createInputField({
+    const [transformZPosField, refreshZPos] = createInputField({
       get: () => {
-        const val = getValue(e => e.transform.rotation);
+        const val = getValue(e => e.transform.position.z);
         return val === "multiple" ? NaN : val;
       },
-      set: r => {
+      set: z => {
         for (const entity of entities) {
-          if (!entity.protected) entity.transform.rotation = r;
+          if (!entity.protected) entity.transform.position.z = z;
+        }
+      },
+      convert: numeric.parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
+    });
+    txfmTable.addEntry("posZ", "Position Z", "Local Z position.", transformZPosField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: transformZPosField, path: ["position", "z"] });
+
+    const [rotXField, refreshRotX] = createInputField({
+      get: () => {
+        const euler = getValue(e => e.transform.rotation.toEulerXYZ().x);
+        return euler === "multiple" ? NaN : euler;
+      },
+      set: rx => {
+        for (const entity of entities) {
+          if (!entity.protected) {
+            const e = entity.transform.rotation.toEulerXYZ();
+            entity.transform.rotation = Quat.fromEulerXYZ(rx, e.y, e.z);
+          }
         }
       },
       convert: numeric.transform(v => (v * Math.PI) / 180).parse,
-      convertBack: v =>
-        Number.isNaN(v) ? "Multiple values" : ((v * 180) / Math.PI).toFixed(1),
+      convertBack: v => Number.isNaN(v) ? "Multiple values" : ((v * 180) / Math.PI).toFixed(1),
     });
-    txfmTable.addEntry("rot", "Rotation", "Local rotation in degrees", transformRotation);
-    transformFieldsToRegisterWithUndoRedo.push({
-      field: transformRotation,
-      path: ["rotation"],
+    txfmTable.addEntry("rotX", "Rotation X", "Local X rotation in degrees", rotXField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: rotXField, path: ["rotation", "x"] });
+
+    const [rotYField, refreshRotY] = createInputField({
+      get: () => {
+        const euler = getValue(e => e.transform.rotation.toEulerXYZ().y);
+        return euler === "multiple" ? NaN : euler;
+      },
+      set: ry => {
+        for (const entity of entities) {
+          if (!entity.protected) {
+            const e = entity.transform.rotation.toEulerXYZ();
+            entity.transform.rotation = Quat.fromEulerXYZ(e.x, ry, e.z);
+          }
+        }
+      },
+      convert: numeric.transform(v => (v * Math.PI) / 180).parse,
+      convertBack: v => Number.isNaN(v) ? "Multiple values" : ((v * 180) / Math.PI).toFixed(1),
     });
+    txfmTable.addEntry("rotY", "Rotation Y", "Local Y rotation in degrees", rotYField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: rotYField, path: ["rotation", "y"] });
+
+    const [rotZField, refreshRotZ] = createInputField({
+      get: () => {
+        const euler = getValue(e => e.transform.rotation.toEulerXYZ().z);
+        return euler === "multiple" ? NaN : euler;
+      },
+      set: rz => {
+        for (const entity of entities) {
+          if (!entity.protected) {
+            const e = entity.transform.rotation.toEulerXYZ();
+            entity.transform.rotation = Quat.fromEulerXYZ(e.x, e.y, rz);
+          }
+        }
+      },
+      convert: numeric.transform(v => (v * Math.PI) / 180).parse,
+      convertBack: v => Number.isNaN(v) ? "Multiple values" : ((v * 180) / Math.PI).toFixed(1),
+    });
+    txfmTable.addEntry("rotZ", "Rotation Z", "Local Z rotation in degrees", rotZField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: rotZField, path: ["rotation", "z"] });
 
     const [scaleXField, refreshScaleX] = createInputField({
       get: () => {
@@ -834,7 +829,7 @@ export class Properties implements InspectorUIWidget {
       convert: numeric.parse,
       convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
     });
-    txfmTable.addEntry("scaleX", "Scale X", "Local X scale factors", scaleXField);
+    txfmTable.addEntry("scaleX", "Scale X", "Local X scale", scaleXField);
     transformFieldsToRegisterWithUndoRedo.push({ field: scaleXField, path: ["scale", "x"] });
 
     const [scaleYField, refreshScaleY] = createInputField({
@@ -850,39 +845,31 @@ export class Properties implements InspectorUIWidget {
       convert: numeric.parse,
       convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
     });
-    txfmTable.addEntry("scaleY", "Scale Y", "Local Y scale factors", scaleYField);
+    txfmTable.addEntry("scaleY", "Scale Y", "Local Y scale", scaleYField);
     transformFieldsToRegisterWithUndoRedo.push({ field: scaleYField, path: ["scale", "y"] });
 
-    const [zIndexField, refreshZIndex] = createInputField({
+    const [scaleZField, refreshScaleZ] = createInputField({
       get: () => {
-        const val = getValue(e => e.transform.z);
+        const val = getValue(e => e.transform.scale.z);
         return val === "multiple" ? NaN : val;
       },
       set: z => {
         for (const entity of entities) {
-          if (!entity.protected) entity.transform.z = z;
+          if (!entity.protected) entity.transform.scale.z = z;
         }
       },
-      convert: numeric.refine(Number.isSafeInteger, "Number must be an integer!").parse,
-      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(0)),
+      convert: numeric.parse,
+      convertBack: n => (Number.isNaN(n) ? "Multiple values" : n.toFixed(4)),
     });
-    txfmTable.addEntry(
-      "z",
-      "Z Index",
-      "Local draw-order; higher values render above lower ones",
-      zIndexField,
-    );
-    transformFieldsToRegisterWithUndoRedo.push({ field: zIndexField, path: ["z"] });
+    txfmTable.addEntry("scaleZ", "Scale Z", "Local Z scale", scaleZField);
+    transformFieldsToRegisterWithUndoRedo.push({ field: scaleZField, path: ["scale", "z"] });
 
     for (const entity of entities) {
       autoCleanup(
         entity.on(EntityTransformUpdate, () => {
-          refreshX();
-          refreshY();
-          refreshRotation();
-          refreshScaleX();
-          refreshScaleY();
-          refreshZIndex();
+          refreshX(); refreshY(); refreshZPos();
+          refreshRotX(); refreshRotY(); refreshRotZ();
+          refreshScaleX(); refreshScaleY(); refreshScaleZ();
         }),
       );
     }

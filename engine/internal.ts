@@ -79,14 +79,10 @@ export const syncedObjectContainerObjectsField = Symbol.for(
 export const syncedObjectContainerReadyField = Symbol.for(
   "rebur.internal.syncedObjectContainerReadyField",
 );
-export const tilemapGetChunk = Symbol.for("rebur.internal.tilemapGetChunk");
-export const tilemapGetChunkById = Symbol.for("rebur.internal.tilemapGetChunkById");
-export const tilemapChunkMap = Symbol.for("rebur.internal.tilemapChunkMap");
 export const preloadInfo = Symbol.for("rebur.internal.preloadInfo");
 export const emitCharacterControllerCollisions = Symbol.for(
   "rebur.internal.emitCharacterControllerCollisions",
 );
 export const httpAPIHandle = Symbol.for("rebur.internal.httpAPIHandle");
 
-export { TilemapChunk } from "./entity/entities/tilemap-chunk.ts";
 export { preload } from "./preload.ts";

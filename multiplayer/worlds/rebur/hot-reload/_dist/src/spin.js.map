@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/spin.ts"],
-  "sourcesContent": ["import { Behavior } from \"@rebur/engine\";\n\nconst SPEED = 1;\n\nexport default class SpinBehavior extends Behavior {\n  override onTick(): void {\n    if (!this.game.isServer()) return;\n\n    const tau = 2 * Math.PI;\n    this.entity.globalTransform.rotation -= SPEED * tau * (this.game.time.delta / 1000.0);\n  }\n}\n"],
-  "mappings": "yCAAA,OAAS,aAAgB,gBAEzB,IAAM,MAAQ,EAEO,aAArB,cAA0C,QAAS,CAJnD,MAImD,6BACxC,QAAe,CACtB,GAAI,CAAC,KAAK,KAAK,SAAS,EAAG,OAE3B,IAAM,IAAM,EAAI,KAAK,GACrB,KAAK,OAAO,gBAAgB,UAAY,MAAQ,KAAO,KAAK,KAAK,KAAK,MAAQ,IAChF,CACF",
-  "names": []
-}

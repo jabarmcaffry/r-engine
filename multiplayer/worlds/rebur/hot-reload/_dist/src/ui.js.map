@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/ui.tsx"],
-  "sourcesContent": ["import { UIBehavior } from \"@rebur/engine\";\nimport { BaseElement } from \"@rebur/ui\";\n\nexport default class Ui extends UIBehavior {\n  protected render(): BaseElement {\n    return <div>hello world</div>;\n  }\n}\n"],
-  "mappings": "yCAAA,OAAS,eAAkB,gBAKhB,uCAFX,IAAqB,GAArB,cAAgC,UAAW,CAH3C,MAG2C,mBAC/B,QAAsB,CAC9B,OAAO,IAAC,OAAI,uBAAW,CACzB,CACF",
-  "names": []
-}

@@ -1,5 +1,4 @@
 import {
-  BaseTilemap,
   ConnectionId,
   PlayerJoined,
   PlayerLeft,
@@ -36,31 +35,17 @@ export const handlePlayerJoinExchange: ServerNetworkSetupRoutine = (net, game) =
 
       const worldEntities = [];
       for (const child of game.world.children.values()) {
-        const isTilemap = child instanceof BaseTilemap;
         worldEntities.push(
           serializeEntityDefinition(
             game,
             child[internal.entityGenerateDefinition]({
               withRefs: true,
               forNetwork: true,
-              withData: !isTilemap,
+              withData: true,
             }),
             game.world.ref,
           ),
         );
-
-        if (isTilemap) {
-          for (const chunk of child[internal.tilemapChunkMap].values()) {
-            auxPackets.push({
-              t: "DumpTilemap",
-              ref: child.ref,
-              chunkX: chunk.x,
-              chunkY: chunk.y,
-              type: chunk.type,
-              data: chunk.save(),
-            });
-          }
-        }
       }
 
       const prefabEntities = [];

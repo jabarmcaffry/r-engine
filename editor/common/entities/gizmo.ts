@@ -1,22 +1,11 @@
 import type { EntityContext, Transform } from "@rebur/engine";
 import {
   Camera,
-  Clickable,
   Entity,
   EntityDestroyed,
   GameRender,
-  MouseDown,
-  pointLocalToWorld,
-  pointWorldToLocal,
-  Root,
-  Vector2,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
-import { EmptyFacade } from "../facades/empty.ts";
-import { EditorFacadeTilemap } from "../facades/tilemap.ts";
-import { EditorMetadataEntity } from "../metadata.ts";
-import { EditorFacadeCamera, EditorRootFacadeEntity } from "../mod.ts";
-import { BoxResizeGizmo } from "./box-resize.ts";
+import { Vec3 } from "@rebur/engine";
 
 // #region Signals
 export class GizmoUpdateStart {
@@ -51,6 +40,65 @@ export class GizmoUpdateEnd {
 }
 // #endregion
 
+// How many world units the axis arms extend
+const HANDLE_LEN = 2.0;
+// Pixel radius for hit-testing handles
+const HANDLE_HIT_RADIUS = 16;
+
+/** Helper: 2-D pixel distance between two screen points */
+function dist2d(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/** Normalize a 2-D screen vector, returns {x:0,y:0} on zero-length */
+function norm2d(v: { x: number; y: number }): { x: number; y: number } {
+  const l = Math.sqrt(v.x * v.x + v.y * v.y);
+  if (l < 1e-6) return { x: 0, y: 0 };
+  return { x: v.x / l, y: v.y / l };
+}
+
+/**
+ * Draw an arrowhead at `tip` pointing away from `base`.
+ */
+function drawArrow(
+  ctx2d: CanvasRenderingContext2D,
+  base: { x: number; y: number },
+  tip: { x: number; y: number },
+  color: string,
+  lineWidth = 2,
+  arrowSize = 10,
+) {
+  const dir = norm2d({ x: tip.x - base.x, y: tip.y - base.y });
+  const perp = { x: -dir.y, y: dir.x };
+
+  ctx2d.beginPath();
+  ctx2d.moveTo(base.x, base.y);
+  ctx2d.lineTo(tip.x, tip.y);
+  ctx2d.strokeStyle = color;
+  ctx2d.lineWidth = lineWidth;
+  ctx2d.stroke();
+
+  // Arrowhead triangle
+  ctx2d.beginPath();
+  ctx2d.moveTo(tip.x, tip.y);
+  ctx2d.lineTo(
+    tip.x - dir.x * arrowSize + perp.x * (arrowSize * 0.4),
+    tip.y - dir.y * arrowSize + perp.y * (arrowSize * 0.4),
+  );
+  ctx2d.lineTo(
+    tip.x - dir.x * arrowSize - perp.x * (arrowSize * 0.4),
+    tip.y - dir.y * arrowSize - perp.y * (arrowSize * 0.4),
+  );
+  ctx2d.closePath();
+  ctx2d.fillStyle = color;
+  ctx2d.fill();
+}
+
 export class Gizmo extends Entity {
   static {
     Entity.registerType(this, "@editor");
@@ -59,719 +107,343 @@ export class Gizmo extends Entity {
   static readonly icon = "➡️";
   readonly bounds: undefined;
 
-  // #region Graphics
-  static #X_COLOR = "red";
-  static #Y_COLOR = "green";
-  static #Z_COLOR = "blue";
-  static #NEUTRAL_COLOR = "gray";
+  // ---- Overlay canvas -------------------------------------------------------
+  #overlay: HTMLCanvasElement | undefined;
+  #ctx2d: CanvasRenderingContext2D | undefined;
+  #resizeObserver: ResizeObserver | undefined;
+
+  // ---- Targets (set externally) ---------------------------------------------
+  /** Primary target entity */
+  #target: Entity | undefined;
+  /** Additional targets (multi-select) */
+  #auxTargets: Entity[] = [];
 
-  static #ARROW_W = 0.1;
-  static #ARROW_H = 0.15;
-  static #SCALE_S = 0.15;
-
-  static #blankCtx = new PIXI.GraphicsContext();
-
-  static #combinedCtx = new PIXI.GraphicsContext()
-    // Lines
-    .moveTo(0, 0)
-    .lineTo(0.7, 0)
-    .stroke({ color: Gizmo.#X_COLOR, width: 0.02 })
-    .moveTo(0, 0)
-    .lineTo(0, -0.7)
-    .stroke({ color: Gizmo.#Y_COLOR, width: 0.02 })
-    // Scale handles
-    .rect(0.7, -Gizmo.#SCALE_S / 2, Gizmo.#SCALE_S, Gizmo.#SCALE_S)
-    .fill(Gizmo.#X_COLOR)
-    .stroke({ color: "black", width: 0.01 }) // red square
-    .rect(-Gizmo.#SCALE_S / 2, -0.7 - Gizmo.#SCALE_S, Gizmo.#SCALE_S, Gizmo.#SCALE_S)
-    .fill(Gizmo.#Y_COLOR)
-    .stroke({ color: "black", width: 0.01 }) // green square
-    // Move handles
-    .poly([1.1, Gizmo.#ARROW_W / 2, 1.1, -Gizmo.#ARROW_W / 2, 1.1 + Gizmo.#ARROW_H, 0])
-    .fill(Gizmo.#X_COLOR)
-    .stroke({ color: "black", width: 0.01 }) // red arrow
-    .poly([Gizmo.#ARROW_W / 2, -1.1, -Gizmo.#ARROW_W / 2, -1.1, 0, -1.1 - Gizmo.#ARROW_H])
-    .fill(Gizmo.#Y_COLOR)
-    .stroke({ color: "black", width: 0.01 }) // green arrow
-    // Center square
-    .moveTo(0, 0)
-    .rect(-0.25, -0.25, 0.5, 0.5)
-    .fill({ alpha: 0.4, color: Gizmo.#Z_COLOR })
-    .stroke({ alpha: 0.8, color: Gizmo.#Z_COLOR, width: 0.02 })
-    .stroke({ color: "white", width: 0.01 })
-    // Rotation circle
-    .scale(0.1)
-    .circle(0, 0, 10)
-    .stroke({ color: Gizmo.#NEUTRAL_COLOR, width: 0.02 });
-
-  #gfx: PIXI.Graphics | undefined;
-
-  #snapLinesGfx: PIXI.Graphics | undefined;
-
-  #lastPaintingState = false;
-
-  get #ctx() {
-    if (!this.#target) return Gizmo.#blankCtx;
-    if (this.#target[0] instanceof EditorFacadeTilemap && this.#target[0].shouldPaint()) {
-      return Gizmo.#blankCtx;
-    }
-    if (this.mode === "combined") return Gizmo.#combinedCtx;
-    throw new Error("invalid mode");
-  }
-  // #endregion
-
-  // #region Mode
-  #mode: "combined" = "combined";
-  get mode() {
-    return this.#mode;
-  }
-  set mode(value) {
-    this.#mode = value;
-    if (this.#gfx) this.#gfx.context = this.#ctx;
-    this.#updateHandles();
-  }
-  // #endregion
-
-  // #region Handles
-  #updateHandles() {
-    const isPainting =
-      this.#target?.[0] instanceof EditorFacadeTilemap && this.#target[0].shouldPaint();
-
-    if (isPainting) {
-      this.children.forEach(c => (c.enabled = false));
-      return;
-    } else {
-      this.children.forEach(c => (c.enabled = true));
-    }
-
-    if (!this.#target) {
-      this.children.forEach(c => c.destroy());
-      return;
-    }
-
-    if (this.children.size === 0 && this.mode === "combined") {
-      this.#combinedHandles();
-    } else if (this.mode !== "combined") {
-      throw new Error("invalid mode");
-    }
-  }
-
-  #combinedHandles() {
-    const translateHandleSize = Math.max(Gizmo.#ARROW_W, Gizmo.#ARROW_H);
-    const translateClickSize = translateHandleSize * 1.333;
-
-    const translateX = this.spawn({
-      type: Clickable,
-      name: "TranslateX",
-      transform: { position: { x: 1.1 + translateHandleSize / 2, y: 0 } },
-      values: { shape: "Rectangle", width: translateClickSize, height: translateClickSize },
-    });
-
-    const translateY = this.spawn({
-      type: Clickable,
-      name: "TranslateY",
-      transform: { position: { x: 0, y: 1.1 + translateHandleSize / 2 } },
-      values: { shape: "Rectangle", width: translateClickSize, height: translateClickSize },
-    });
-
-    const translateBoth = this.spawn({
-      type: Clickable,
-      name: "TranslateBoth",
-      transform: { position: { x: 0, y: 0 } },
-      values: { shape: "Rectangle", width: 0.5, height: 0.5 },
-    });
-
-    const rotate = this.spawn({
-      type: Clickable,
-      name: "Rotate",
-      values: { shape: "Circle", radius: 1.05, innerRadius: 0.95 },
-    });
-
-    const scaleHandleSize = Gizmo.#SCALE_S;
-    const scaleClickSize = scaleHandleSize * 1.333;
-
-    const scaleX = this.spawn({
-      type: Clickable,
-      name: "ScaleX",
-      transform: { position: { x: 0.7 + scaleHandleSize / 2, y: 0 } },
-      values: { shape: "Rectangle", width: scaleClickSize, height: scaleClickSize },
-    });
-
-    const scaleY = this.spawn({
-      type: Clickable,
-      name: "ScaleY",
-      transform: { position: { x: 0, y: 0.7 + scaleHandleSize / 2 } },
-      values: { shape: "Rectangle", width: scaleClickSize, height: scaleClickSize },
-    });
-
-    const translateOnMouseDown =
-      (axis: "x" | "y" | "both") =>
-      ({ button, cursor: { world } }: MouseDown) => {
-        if (!this.#target) return;
-        if (button !== "left") return;
-
-        const offset = world.sub(this.globalTransform.position);
-
-        const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
-        const entities = entityArray.map(entity => ({
-          entity,
-          transform: entity.globalTransform.clone(),
-        }));
-
-        const originals = new Map(
-          entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
-        );
-
-        this.#action = { type: "translate", axis, offset, originals };
-        this.fire(GizmoUpdateStart, "translate", entities);
-      };
-
-    translateX.on(MouseDown, translateOnMouseDown("x"));
-    translateY.on(MouseDown, translateOnMouseDown("y"));
-    translateBoth.on(MouseDown, translateOnMouseDown("both"));
-
-    rotate.on(MouseDown, ({ button, cursor: { world } }) => {
-      if (!this.#target) return;
-      if (button !== "left") return;
-
-      const pos = world.sub(this.globalTransform.position);
-      const rot = Math.atan2(pos.x, pos.y);
-
-      const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
-      const entities = entityArray.map(entity => ({
-        entity,
-        transform: entity.globalTransform.clone(),
-      }));
-
-      const originals = new Map(
-        entityArray.map(entity => [entity, entity.globalTransform.clone()] as const),
-      );
-
-      this.#action = {
-        type: "rotate",
-        offset: rot + this.globalTransform.rotation,
-        originals,
-        origin: this.#calculateAvgPosition(),
-      };
-      this.fire(GizmoUpdateStart, "rotate", entities);
-    });
-
-    const scaleOnMouseDown =
-      (axis: "x" | "y" | "both") =>
-      ({ button, cursor: { world } }: MouseDown) => {
-        if (!this.#target) return;
-        if (button !== "left") return;
-
-        const offset = world.sub(this.globalTransform.position);
-
-        // TODO: uhhhh why is this referencing zoom
-        // const original = (this.#target[0] instanceof Camera || this.#target[0] instanceof EditorFacadeCamera)
-        //   ? Vector2.splat(1 / this.#target[0].zoom)
-        //   : this.#target[0].globalTransform.scale.clone();
-
-        const entityArray = [this.#target[0], ...this.#auxTargets.keys()];
-        const entities = entityArray.map(entity => ({
-          entity,
-          transform: entity.globalTransform.clone(),
-        }));
-
-        const originals = new Map(
-          entityArray.map(entity => {
-            const transform = entity.globalTransform.clone();
-            if (entity instanceof Camera || entity instanceof EditorFacadeCamera) {
-              transform.scale = Vector2.splat(1 / entity.zoom);
-            }
-
-            return [entity, transform] as const;
-          }),
-        );
-
-        this.#action = {
-          type: "scale",
-          axis,
-          offset,
-          originals,
-          origin: this.#calculateAvgPosition(),
-        };
-        this.fire(GizmoUpdateStart, "scale", entities);
-      };
-
-    scaleX.on(MouseDown, scaleOnMouseDown("x"));
-    scaleY.on(MouseDown, scaleOnMouseDown("y"));
-  }
-  // #endregion
-
-  // #region Action / Signals
-  #action:
-    | {
-        type: "translate";
-        axis: "x" | "y" | "both";
-        offset: Vector2;
-        originals: Map<Entity, Transform>;
-      }
-    | { type: "rotate"; offset: number; originals: Map<Entity, Transform>; origin: Vector2 }
-    | {
-        type: "scale";
-        axis: "x" | "y" | "both";
-        offset: Vector2;
-        originals: Map<Entity, Transform>;
-        origin: Vector2;
-      }
-    | undefined;
-
-  #onMouseMove = (event: PointerEvent) => {
-    this.#snapLinesGfx!.clear();
-    if (!this.#target) return;
-    if (!this.#action) return;
-
-    const cursor = this.inputs.cursor;
-    if (!cursor.world) return;
-
-    if (this.#action.type === "translate") {
-      const pos = cursor.world.sub(this.#action.offset);
-
-      const local = pointWorldToLocal(this.globalTransform, pos);
-      if (this.#action.axis === "x") local.y = 0;
-      if (this.#action.axis === "y") local.x = 0;
-      const world = pointLocalToWorld(this.globalTransform, local);
-
-      if (event.shiftKey) {
-        const snapThreshold = 0.1;
-
-        const allSelectedEntities = [this.#target[0], ...this.#auxTargets.keys()];
-
-        const originalPositions = new Map(
-          allSelectedEntities.map(entity => [entity, entity.globalTransform.position.clone()]),
-        );
-
-        // Temporarily move all entities to tentative position
-        this.#target[0].globalTransform.position = world.add(this.#target[1]);
-        for (const [entity, offset] of this.#auxTargets) {
-          entity.globalTransform.position = world.add(offset);
-        }
-
-        let targetCorners = Gizmo.getTransformedCorners(this.#target[0]);
-        let targetBounds = Gizmo.computeGlobalBounds(this.#target[0]);
-
-        if (allSelectedEntities.length > 1) {
-          // aabb if we have multiselect
-          targetBounds = Gizmo.computeAABBForEntities(allSelectedEntities);
-          targetCorners = Gizmo.getAABBCorners(targetBounds);
-        }
-
-        const targetCenter = {
-          x: (targetBounds.minX + targetBounds.maxX) / 2,
-          y: (targetBounds.minY + targetBounds.maxY) / 2,
-        };
-
-        for (const [entity, originalPos] of originalPositions) {
-          entity.globalTransform.position = originalPos;
-        }
-
-        let snapX: number | undefined;
-        let snapY: number | undefined;
-        let bestSnapDistanceX = snapThreshold;
-        let bestSnapDistanceY = snapThreshold;
-        let bestXSnapInfo:
-          | { line: number; minY: number; maxY: number; color: number }
-          | undefined;
-        let bestYSnapInfo:
-          | { line: number; minX: number; maxX: number; color: number }
-          | undefined;
-
-        for (const e of this.game.entities) {
-          if (allSelectedEntities.includes(e)) continue;
-          if (allSelectedEntities.some(selected => e.parent === selected)) continue;
-          if (!e.enabled) continue;
-          if (e instanceof Root) continue;
-          if (e instanceof Gizmo || e.parent instanceof Gizmo) continue;
-          if (
-            e instanceof BoxResizeGizmo ||
-            e.parent instanceof BoxResizeGizmo ||
-            e.parent?.parent instanceof BoxResizeGizmo
-          )
-            continue;
-          if (e instanceof Camera || e instanceof EditorFacadeCamera) continue;
-          if (e instanceof EditorRootFacadeEntity) continue;
-          if (e instanceof EditorMetadataEntity) continue;
-          if (e instanceof EmptyFacade) continue;
-          if (e.ref === "EDIT_ROOT") continue;
-
-          const entityBounds = Gizmo.computeGlobalBounds(e);
-          const entityCorners = Gizmo.getTransformedCorners(e);
-          const entityCenter = {
-            x: (entityBounds.minX + entityBounds.maxX) / 2,
-            y: (entityBounds.minY + entityBounds.maxY) / 2,
-          };
-
-          // Corner-to-corner snapping (like Figma)
-          for (const targetCorner of targetCorners) {
-            for (const entityCorner of entityCorners) {
-              const dx = entityCorner.x - targetCorner.x;
-              const dy = entityCorner.y - targetCorner.y;
-
-              // Check X alignment
-              if (Math.abs(dx) < bestSnapDistanceX && dx !== 0) {
-                snapX = world.x + dx;
-                bestSnapDistanceX = Math.abs(dx);
-
-                const minY = Math.min(
-                  targetBounds.minY,
-                  targetBounds.maxY,
-                  entityBounds.minY,
-                  entityBounds.maxY,
-                );
-                const maxY = Math.max(
-                  targetBounds.minY,
-                  targetBounds.maxY,
-                  entityBounds.minY,
-                  entityBounds.maxY,
-                );
-
-                bestXSnapInfo = { line: entityCorner.x, minY, maxY, color: 0xff6b9d };
-              }
-
-              // Check Y alignment
-              if (Math.abs(dy) < bestSnapDistanceY && dy !== 0) {
-                snapY = world.y + dy;
-                bestSnapDistanceY = Math.abs(dy);
-
-                const minX = Math.min(
-                  targetBounds.minX,
-                  targetBounds.maxX,
-                  entityBounds.minX,
-                  entityBounds.maxX,
-                );
-                const maxX = Math.max(
-                  targetBounds.minX,
-                  targetBounds.maxX,
-                  entityBounds.minX,
-                  entityBounds.maxX,
-                );
-
-                bestYSnapInfo = { line: entityCorner.y, minX, maxX, color: 0xff6b9d };
-              }
-            }
-          }
-
-          // Corner-to-center snapping
-          for (const targetCorner of targetCorners) {
-            const dx = entityCenter.x - targetCorner.x;
-            const dy = entityCenter.y - targetCorner.y;
-
-            // Check X alignment
-            if (Math.abs(dx) < bestSnapDistanceX && dx !== 0) {
-              snapX = world.x + dx;
-              bestSnapDistanceX = Math.abs(dx);
-
-              const minY = Math.min(entityBounds.minY, targetBounds.minY);
-              const maxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              bestXSnapInfo = { line: entityCenter.x, minY, maxY, color: 0xffb366 };
-            }
-
-            // Check Y alignment
-            if (Math.abs(dy) < bestSnapDistanceY && dy !== 0) {
-              snapY = world.y + dy;
-              bestSnapDistanceY = Math.abs(dy);
-
-              const minX = Math.min(entityBounds.minX, targetBounds.minX);
-              const maxX = Math.max(entityBounds.maxX, targetBounds.maxX);
-
-              bestYSnapInfo = { line: entityCenter.y, minX, maxX, color: 0xffb366 };
-            }
-          }
-
-          // Center-to-corner snapping
-          for (const entityCorner of entityCorners) {
-            const dx = entityCorner.x - targetCenter.x;
-            const dy = entityCorner.y - targetCenter.y;
-
-            // Check X alignment
-            if (Math.abs(dx) < bestSnapDistanceX && dx !== 0) {
-              snapX = world.x + dx;
-              bestSnapDistanceX = Math.abs(dx);
-
-              const minY = Math.min(entityBounds.minY, targetBounds.minY);
-              const maxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              bestXSnapInfo = { line: entityCorner.x, minY, maxY, color: 0x66d9ff };
-            }
-
-            // Check Y alignment
-            if (Math.abs(dy) < bestSnapDistanceY && dy !== 0) {
-              snapY = world.y + dy;
-              bestSnapDistanceY = Math.abs(dy);
-
-              const minX = Math.min(entityBounds.minX, targetBounds.minX);
-              const maxX = Math.max(entityBounds.maxX, targetBounds.maxX);
-
-              bestYSnapInfo = { line: entityCorner.y, minX, maxX, color: 0x66d9ff };
-            }
-          }
-
-          // Edge-to-edge snapping (existing behavior, but cleaner)
-          const edgeAlignments = [
-            // Horizontal alignments
-            { delta: entityBounds.minX - targetBounds.minX, line: entityBounds.minX }, // left-to-left
-            { delta: entityBounds.maxX - targetBounds.maxX, line: entityBounds.maxX }, // right-to-right
-            { delta: entityBounds.minX - targetBounds.maxX, line: entityBounds.minX }, // right-to-left
-            { delta: entityBounds.maxX - targetBounds.minX, line: entityBounds.maxX }, // left-to-right
-          ];
-
-          for (const alignment of edgeAlignments) {
-            if (Math.abs(alignment.delta) < bestSnapDistanceX && alignment.delta !== 0) {
-              snapX = world.x + alignment.delta;
-              bestSnapDistanceX = Math.abs(alignment.delta);
-
-              const minY = Math.min(entityBounds.minY, targetBounds.minY);
-              const maxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-              bestXSnapInfo = { line: alignment.line, minY, maxY, color: 0xabddff };
-            }
-          }
-
-          const verticalAlignments = [
-            // Vertical alignments
-            { delta: entityBounds.minY - targetBounds.minY, line: entityBounds.minY }, // top-to-top
-            { delta: entityBounds.maxY - targetBounds.maxY, line: entityBounds.maxY }, // bottom-to-bottom
-            { delta: entityBounds.minY - targetBounds.maxY, line: entityBounds.minY }, // bottom-to-top
-            { delta: entityBounds.maxY - targetBounds.minY, line: entityBounds.maxY }, // top-to-bottom
-          ];
-
-          for (const alignment of verticalAlignments) {
-            if (Math.abs(alignment.delta) < bestSnapDistanceY && alignment.delta !== 0) {
-              snapY = world.y + alignment.delta;
-              bestSnapDistanceY = Math.abs(alignment.delta);
-
-              const minX = Math.min(entityBounds.minX, targetBounds.minX);
-              const maxX = Math.max(entityBounds.maxX, targetBounds.maxX);
-
-              bestYSnapInfo = { line: alignment.line, minX, maxX, color: 0xabddff };
-            }
-          }
-
-          // Center-to-center snapping
-          const dxCenter = entityCenter.x - targetCenter.x;
-          const dyCenter = entityCenter.y - targetCenter.y;
-
-          if (Math.abs(dxCenter) < bestSnapDistanceX && dxCenter !== 0) {
-            snapX = world.x + dxCenter;
-            bestSnapDistanceX = Math.abs(dxCenter);
-
-            const minY = Math.min(entityBounds.minY, targetBounds.minY);
-            const maxY = Math.max(entityBounds.maxY, targetBounds.maxY);
-
-            bestXSnapInfo = { line: entityCenter.x, minY, maxY, color: 0x9d6bff };
-          }
-
-          if (Math.abs(dyCenter) < bestSnapDistanceY && dyCenter !== 0) {
-            snapY = world.y + dyCenter;
-            bestSnapDistanceY = Math.abs(dyCenter);
-
-            const minX = Math.min(entityBounds.minX, targetBounds.minX);
-            const maxX = Math.max(entityBounds.maxX, targetBounds.maxX);
-
-            bestYSnapInfo = { line: entityCenter.y, minX, maxX, color: 0x9d6bff };
-          }
-        }
-
-        // Draw only the best snap candidates when moving on both axes
-        if (this.#action.axis === "both") {
-          if (bestXSnapInfo) {
-            this.#snapLinesGfx!.context.moveTo(bestXSnapInfo.line, -bestXSnapInfo.minY)
-              .lineTo(bestXSnapInfo.line, -bestXSnapInfo.maxY)
-              .stroke({ color: bestXSnapInfo.color, width: 0.03, pixelLine: true });
-          }
-          if (bestYSnapInfo) {
-            this.#snapLinesGfx!.context.moveTo(bestYSnapInfo.minX, -bestYSnapInfo.line)
-              .lineTo(bestYSnapInfo.maxX, -bestYSnapInfo.line)
-              .stroke({ color: bestYSnapInfo.color, width: 0.03, pixelLine: true });
-          }
-        }
-
-        // Apply snap adjustments only when moving on both axes
-        if (snapX !== undefined && this.#action.axis === "both") world.x = snapX;
-        if (snapY !== undefined && this.#action.axis === "both") world.y = snapY;
-      }
-
-      this.#target[0].globalTransform.position = world.add(this.#target[1]);
-      for (const [entity, offset] of this.#auxTargets) {
-        entity.globalTransform.position = world.add(offset);
-      }
-
-      const entities = [this.#target[0], ...this.#auxTargets.keys()].map(entity => ({
-        entity,
-        transform: entity.globalTransform.clone(),
-      }));
-
-      this.fire(GizmoUpdateMove, "translate", entities);
-    } else if (this.#action.type === "rotate") {
-      const pos = cursor.world.sub(this.globalTransform.position);
-      const rot = Math.atan2(pos.x, pos.y);
-
-      const rotation = -rot + this.#action.offset;
-
-      if (this.#auxTargets.size) {
-        const deltaRot = rotation - this.#target[0].globalTransform.rotation;
-
-        const entities = [this.#target[0], ...this.#auxTargets.keys()];
-        for (const entity of entities) {
-          entity.globalTransform.position = Vector2.rotateAbout(
-            entity.pos,
-            deltaRot,
-            this.#action.origin,
-          );
-          entity.globalTransform.rotation += deltaRot;
-        }
-
-        this.#updateTargetOffsets();
-      } else {
-        this.#target[0].globalTransform.rotation = rotation;
-      }
-
-      // ugliest syntax ever award 2025
-      const entities = (
-        this.#auxTargets.size
-          ? [this.#target[0], ...this.#auxTargets.keys()]
-          : [this.#target[0]]
-      ).map(entity => ({
-        entity,
-        transform: entity.globalTransform.clone(),
-      }));
-
-      this.fire(GizmoUpdateMove, "rotate", entities);
-    } else if (this.#action.type === "scale") {
-      const originalDistance = this.#action.offset.magnitude();
-      const offset = cursor.world.sub(this.globalTransform.position);
-      const offsetDistance = offset.magnitude();
-
-      const mul = Vector2.splat(offsetDistance / originalDistance);
-      if (this.#action.axis === "x") mul.y = 1;
-      if (this.#action.axis === "y") mul.x = 1;
-
-      if (this.#auxTargets.size) {
-        const entities = [this.#target[0], ...this.#auxTargets.keys()];
-        for (const entity of entities) {
-          // explode out from center
-          const orig = this.#action.originals.get(entity)!;
-          const delta = orig.position.sub(this.#action.origin);
-
-          entity.globalTransform.position = this.#action.origin.add(delta.mul(mul));
-
-          const scale = orig.scale.mul(mul);
-          if (entity instanceof Camera || entity instanceof EditorFacadeCamera) {
-            entity.zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
-          } else {
-            entity.globalTransform.scale = scale;
-          }
-        }
-
-        this.#updateTargetOffsets();
-      } else {
-        const scale = this.#action.originals.get(this.#target[0])!.scale.mul(mul);
-
-        if (
-          this.#target[0] instanceof Camera ||
-          this.#target[0] instanceof EditorFacadeCamera
-        ) {
-          this.#target[0].zoom = 1 / (this.#action.axis === "y" ? scale.y : scale.x);
-        } else {
-          this.#target[0].globalTransform.scale = scale;
-        }
-      }
-
-      // make sure to extend this array for multiselect
-      this.fire(GizmoUpdateMove, "scale", [
-        { entity: this.#target[0], transform: this.#target[0].globalTransform.clone() },
-      ]);
-    }
-  };
-
-  #onMouseUp = (_: PointerEvent) => {
-    if (!this.#action) return;
-    if (!this.#target) {
-      console.warn("mouse released without target, events will not fire");
-      this.#action = undefined;
-      return;
-    }
-
-    const entities = [this.#target[0], ...this.#auxTargets.keys()].map(entity => ({
-      entity,
-      transform: entity.globalTransform.clone(),
-      previous: this.#action?.originals.get(entity)!,
-    }));
-
-    const signal = [GizmoUpdateEnd, this.#action.type, entities] as const;
-    this.fire(...signal);
-    this.game.fire(...signal);
-
-    this.#action = undefined;
-  };
-  // #endregion
-
-  #target: [Entity, Vector2] | undefined;
   get target(): Entity | undefined {
-    return this.#target?.[0];
+    return this.#target;
   }
   set target(value: Entity | undefined) {
-    if (this.#target) this.#target[0].unregister(EntityDestroyed, this.#onTargetDestroyed);
-
-    this.#target = value ? [value, Vector2.ZERO] : undefined;
-    this.#updateTargetOffsets();
-    if (this.#gfx) this.#gfx.context = this.#ctx;
-    this.#updateHandles();
-    if (this.#target) this.#target[0].on(EntityDestroyed, this.#onTargetDestroyed);
+    if (this.#target) {
+      this.#target.unregister(EntityDestroyed, this.#onTargetDestroyed);
+    }
+    this.#target = value;
+    if (this.#target) {
+      this.#target.on(EntityDestroyed, this.#onTargetDestroyed);
+    }
   }
 
   #onTargetDestroyed = () => {
     this.target = undefined;
+    this.#auxTargets = [];
   };
 
-  #auxTargets = new Map<Entity, Vector2>();
   get auxTargets(): Entity[] {
-    return [...this.#auxTargets.keys()];
+    return [...this.#auxTargets];
   }
-  set auxTargets(value) {
-    this.#auxTargets.clear();
-
-    const sorted = value.toSorted((a, b) => a.depth - b.depth);
-    for (const entity of sorted) this.#auxTargets.set(entity, Vector2.ZERO);
-    this.#updateTargetOffsets();
+  set auxTargets(value: Entity[]) {
+    this.#auxTargets = [...value];
   }
 
-  #calculateAvgPosition(): Vector2 {
-    if (this.#target === undefined) throw new Error("invalid average access");
-
-    const allEntities = [this.#target[0], ...this.auxTargets];
-    const sum = new Vector2(0, 0);
-
-    for (const entity of allEntities) {
-      sum.x += entity.globalTransform.position.x;
-      sum.y += entity.globalTransform.position.y;
-    }
-
-    return new Vector2(sum.x / allEntities.length, sum.y / allEntities.length);
+  /** All selected entities (primary + aux), sorted shallowest first */
+  #allTargets(): Entity[] {
+    if (!this.#target) return [];
+    return [this.#target, ...this.#auxTargets];
   }
 
-  #updateTargetOffsets() {
-    // zero the offsets when target is undefined
-    if (this.#target === undefined) {
-      for (const vector of this.#auxTargets.values()) {
-        vector.assign(Vector2.ZERO);
+  // ---- Mode (translate | rotate | scale | combined) -------------------------
+  /** Which gizmo operations are enabled. Currently only translate is implemented. */
+  #mode: "translate" | "rotate" | "scale" | "combined" = "combined";
+
+  get mode(): "translate" | "rotate" | "scale" | "combined" {
+    return this.#mode;
+  }
+  set mode(value: "translate" | "rotate" | "scale" | "combined") {
+    this.#mode = value;
+  }
+
+  // ---- Drag state -----------------------------------------------------------
+  #action:
+    | {
+        type: "translate";
+        axis: "x" | "y" | "z" | "free";
+        /** Start mouse position in canvas pixels */
+        startMouse: { x: number; y: number };
+        /** Per-entity original world positions */
+        originals: Map<Entity, { x: number; y: number; z: number }>;
+        /** Per-entity original transforms (for signal) */
+        originalTransforms: Map<Entity, Transform>;
+        /** Projected screen positions at drag start (for axis direction) */
+        center: { x: number; y: number };
+        xTip: { x: number; y: number };
+        yTip: { x: number; y: number };
+        zTip: { x: number; y: number };
       }
+    | undefined;
 
+  // ---- Pointer handlers (bound to overlay) ----------------------------------
+  #onPointerDown = (e: PointerEvent) => {
+    if (e.button !== 0) return;
+    const entities = this.#allTargets();
+    if (entities.length === 0) return;
+
+    // Compute projected positions for the primary entity
+    const primaryPos = this.#target!.globalTransform.position;
+    const center = this.game.renderer.worldToScreen(primaryPos);
+    if (!center) return;
+
+    const xTip = this.game.renderer.worldToScreen({
+      x: primaryPos.x + HANDLE_LEN,
+      y: primaryPos.y,
+      z: primaryPos.z,
+    });
+    const yTip = this.game.renderer.worldToScreen({
+      x: primaryPos.x,
+      y: primaryPos.y + HANDLE_LEN,
+      z: primaryPos.z,
+    });
+    const zTip = this.game.renderer.worldToScreen({
+      x: primaryPos.x,
+      y: primaryPos.y,
+      z: primaryPos.z + HANDLE_LEN,
+    });
+
+    if (!xTip || !yTip || !zTip) return;
+
+    const mouse = { x: e.offsetX, y: e.offsetY };
+
+    // Determine which handle was hit
+    let axis: "x" | "y" | "z" | "free" | undefined;
+    let bestDist = HANDLE_HIT_RADIUS;
+
+    const dx = dist2d(mouse, xTip);
+    const dy = dist2d(mouse, yTip);
+    const dz = dist2d(mouse, zTip);
+    const dc = dist2d(mouse, center);
+
+    if (dx < bestDist) { bestDist = dx; axis = "x"; }
+    if (dy < bestDist) { bestDist = dy; axis = "y"; }
+    if (dz < bestDist) { bestDist = dz; axis = "z"; }
+    if (dc < bestDist) { axis = "free"; }
+
+    if (axis === undefined) {
+      // No handle hit — pass event through to the element below the overlay
+      this.#overlay!.style.pointerEvents = "none";
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      if (el) {
+        el.dispatchEvent(new PointerEvent("pointerdown", {
+          bubbles: true,
+          cancelable: true,
+          pointerId: e.pointerId,
+          pointerType: e.pointerType,
+          clientX: e.clientX,
+          clientY: e.clientY,
+          offsetX: e.offsetX,
+          offsetY: e.offsetY,
+          screenX: e.screenX,
+          screenY: e.screenY,
+          button: e.button,
+          buttons: e.buttons,
+          ctrlKey: e.ctrlKey,
+          shiftKey: e.shiftKey,
+          altKey: e.altKey,
+          metaKey: e.metaKey,
+        }));
+      }
+      this.#overlay!.style.pointerEvents = "auto";
       return;
     }
 
-    const pos = this.#calculateAvgPosition();
-    this.#target[1].assign(this.#target[0].pos.sub(pos));
+    // Record originals
+    const originals = new Map<Entity, { x: number; y: number; z: number }>();
+    const originalTransforms = new Map<Entity, Transform>();
+    for (const entity of entities) {
+      const p = entity.globalTransform.position;
+      originals.set(entity, { x: p.x, y: p.y, z: p.z });
+      originalTransforms.set(entity, entity.globalTransform.clone());
+    }
 
-    for (const [entity, offset] of this.#auxTargets) {
-      offset.assign(entity.pos.sub(pos));
+    this.#action = {
+      type: "translate",
+      axis,
+      startMouse: mouse,
+      originals,
+      originalTransforms,
+      center,
+      xTip,
+      yTip,
+      zTip,
+    };
+
+    this.#overlay!.setPointerCapture(e.pointerId);
+
+    const entityList = entities.map(entity => ({
+      entity,
+      transform: originalTransforms.get(entity)!,
+    }));
+    this.fire(GizmoUpdateStart, "translate", entityList);
+    this.game.fire(new GizmoUpdateStart("translate", entityList));
+  };
+
+  #onPointerMove = (e: PointerEvent) => {
+    if (!this.#action) return;
+    const entities = this.#allTargets();
+    if (entities.length === 0) return;
+
+    const mouse = { x: e.offsetX, y: e.offsetY };
+    const dx = mouse.x - this.#action.startMouse.x;
+    const dy = mouse.y - this.#action.startMouse.y;
+
+    const { center, xTip, yTip, zTip } = this.#action;
+
+    // Compute pixels-per-world-unit for each axis
+    const xPixelLen = dist2d(center, xTip);
+    const yPixelLen = dist2d(center, yTip);
+    const zPixelLen = dist2d(center, zTip);
+
+    const xWorldPerPixel = xPixelLen > 1e-6 ? HANDLE_LEN / xPixelLen : 0;
+    const yWorldPerPixel = yPixelLen > 1e-6 ? HANDLE_LEN / yPixelLen : 0;
+    const zWorldPerPixel = zPixelLen > 1e-6 ? HANDLE_LEN / zPixelLen : 0;
+
+    // Screen direction of each axis
+    const xDir = norm2d({ x: xTip.x - center.x, y: xTip.y - center.y });
+    const yDir = norm2d({ x: yTip.x - center.x, y: yTip.y - center.y });
+    const zDir = norm2d({ x: zTip.x - center.x, y: zTip.y - center.y });
+
+    const dragVec = { x: dx, y: dy };
+
+    // Project drag onto screen axis direction, then convert to world units
+    let worldDx = 0;
+    let worldDy = 0;
+    let worldDz = 0;
+
+    if (this.#action.axis === "x") {
+      const proj = dragVec.x * xDir.x + dragVec.y * xDir.y;
+      worldDx = proj * xWorldPerPixel;
+    } else if (this.#action.axis === "y") {
+      const proj = dragVec.x * yDir.x + dragVec.y * yDir.y;
+      worldDy = proj * yWorldPerPixel;
+    } else if (this.#action.axis === "z") {
+      const proj = dragVec.x * zDir.x + dragVec.y * zDir.y;
+      worldDz = proj * zWorldPerPixel;
+    } else {
+      // free: X drag moves world X, Y drag moves world Z (Y-up convention)
+      // Use the projected magnitudes for scale, but free movement
+      const scale = (xWorldPerPixel + zWorldPerPixel) * 0.5 || 0.01;
+      worldDx = dx * scale;
+      worldDz = dy * scale; // screen Y → world Z
+    }
+
+    for (const entity of entities) {
+      const orig = this.#action.originals.get(entity)!;
+      entity.transform.position = new Vec3(
+        orig.x + worldDx,
+        orig.y + worldDy,
+        orig.z + worldDz,
+      );
+    }
+
+    const entityList = entities.map(entity => ({
+      entity,
+      transform: entity.globalTransform.clone(),
+    }));
+    this.fire(GizmoUpdateMove, "translate", entityList);
+    this.game.fire(new GizmoUpdateMove("translate", entityList));
+  };
+
+  #onPointerUp = (e: PointerEvent) => {
+    if (!this.#action) return;
+    const entities = this.#allTargets();
+
+    const entityList = entities.map(entity => ({
+      entity,
+      transform: entity.globalTransform.clone(),
+      previous: this.#action!.originalTransforms.get(entity)!,
+    }));
+
+    this.fire(GizmoUpdateEnd, "translate", entityList);
+    this.game.fire(new GizmoUpdateEnd("translate", entityList));
+
+    this.#overlay!.releasePointerCapture(e.pointerId);
+    this.#action = undefined;
+  };
+
+  // ---- Rendering ------------------------------------------------------------
+  #drawGizmo() {
+    if (!this.#ctx2d || !this.#overlay) return;
+    const canvas = this.#overlay;
+    const ctx = this.#ctx2d;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const entities = this.#allTargets();
+    if (entities.length === 0) return;
+
+    // Use the primary entity's position for the gizmo origin
+    const primaryPos = this.#target!.globalTransform.position;
+
+    const center = this.game.renderer.worldToScreen(primaryPos);
+    if (!center) return;
+
+    const xTip = this.game.renderer.worldToScreen({
+      x: primaryPos.x + HANDLE_LEN,
+      y: primaryPos.y,
+      z: primaryPos.z,
+    });
+    const yTip = this.game.renderer.worldToScreen({
+      x: primaryPos.x,
+      y: primaryPos.y + HANDLE_LEN,
+      z: primaryPos.z,
+    });
+    const zTip = this.game.renderer.worldToScreen({
+      x: primaryPos.x,
+      y: primaryPos.y,
+      z: primaryPos.z + HANDLE_LEN,
+    });
+
+    if (!xTip || !yTip || !zTip) return;
+
+    // Draw X (red), Y (green), Z (blue) axis arrows
+    drawArrow(ctx, center, xTip, "#ff4444", 2, 10);
+    drawArrow(ctx, center, yTip, "#44ff44", 2, 10);
+    drawArrow(ctx, center, zTip, "#4488ff", 2, 10);
+
+    // Draw center circle
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.fill();
+    ctx.strokeStyle = "#888";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // If dragging, highlight the active axis
+    if (this.#action) {
+      const axisColors: Record<string, string> = {
+        x: "#ffaa00",
+        y: "#ffaa00",
+        z: "#ffaa00",
+        free: "#ffdd00",
+      };
+      const highlightColor = axisColors[this.#action.axis] ?? "#ffaa00";
+
+      let tipPt: { x: number; y: number } | undefined;
+      if (this.#action.axis === "x") tipPt = xTip;
+      else if (this.#action.axis === "y") tipPt = yTip;
+      else if (this.#action.axis === "z") tipPt = zTip;
+
+      if (tipPt) {
+        ctx.beginPath();
+        ctx.moveTo(center.x, center.y);
+        ctx.lineTo(tipPt.x, tipPt.y);
+        ctx.strokeStyle = highlightColor;
+        ctx.lineWidth = 4;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
     }
   }
 
+  // ---- Lifecycle ------------------------------------------------------------
   constructor(ctx: EntityContext) {
     super(ctx);
 
@@ -781,44 +453,21 @@ export class Gizmo extends Entity {
     }
 
     this.listen(this.game, GameRender, () => {
-      if (!this.#gfx) return;
-
-      const currentPaintingState =
-        this.#target?.[0] instanceof EditorFacadeTilemap && this.#target[0].shouldPaint();
-      if (currentPaintingState !== this.#lastPaintingState) {
-        this.#gfx.context = this.#ctx;
-        this.#lastPaintingState = currentPaintingState;
-        this.#updateHandles();
-      }
-
-      if (this.#target) {
-        const averagePosition = this.#calculateAvgPosition();
-        this.globalTransform.position = averagePosition;
-        this.globalTransform.rotation = this.#target[0].globalTransform.rotation;
-      }
-
-      const pos = this.globalTransform.position;
-      const rotation = this.globalTransform.rotation;
-
-      this.#gfx.position = { x: pos.x, y: -pos.y };
-      this.#gfx.rotation = -rotation;
-
-      const camera = Camera.getActive(this.game);
-      if (camera) {
-        this.#gfx.scale = camera.smoothed.scale;
-        this.globalTransform.scale = camera.smoothed.scale;
-      } else {
-        this.#gfx.scale = 1;
-      }
+      this.#drawGizmo();
     });
 
     this.on(EntityDestroyed, () => {
-      this.#gfx?.destroy();
-
-      if (this.game.isClient()) {
-        const canvas = this.game.renderer.app.canvas;
-        canvas.removeEventListener("pointermove", this.#onMouseMove);
-        canvas.removeEventListener("pointerup", this.#onMouseUp);
+      if (this.#resizeObserver) {
+        this.#resizeObserver.disconnect();
+        this.#resizeObserver = undefined;
+      }
+      if (this.#overlay) {
+        this.#overlay.removeEventListener("pointerdown", this.#onPointerDown);
+        this.#overlay.removeEventListener("pointermove", this.#onPointerMove);
+        this.#overlay.removeEventListener("pointerup", this.#onPointerUp);
+        this.#overlay.remove();
+        this.#overlay = undefined;
+        this.#ctx2d = undefined;
       }
     });
   }
@@ -826,120 +475,48 @@ export class Gizmo extends Entity {
   onInitialize() {
     if (!this.game.isClient()) return;
 
-    this.#gfx = new PIXI.Graphics(this.#ctx);
-    this.#gfx.zIndex = 9999999999;
-    this.game.renderer.scene.addChild(this.#gfx);
+    const rendererCanvas = this.game.renderer.canvas;
+    const parent = rendererCanvas.parentElement ?? document.body;
 
-    this.#snapLinesGfx = new PIXI.Graphics();
-    this.#snapLinesGfx.zIndex = 9999999999;
-    this.game.renderer.scene.addChild(this.#snapLinesGfx);
+    // Create overlay canvas
+    const overlay = document.createElement("canvas");
+    overlay.style.position = "absolute";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.pointerEvents = "auto";
+    overlay.style.zIndex = "9999";
 
-    this.#updateHandles();
-
-    const canvas = this.game.renderer.app.canvas;
-    canvas.addEventListener("pointermove", this.#onMouseMove);
-    canvas.addEventListener("pointerup", this.#onMouseUp);
-  }
-
-  static computeGlobalBounds(entity: Entity) {
-    // Assume entity.bounds returns {x:1,y:1}
-    // Compute half-size
-    const half = {
-      x: 0.5 * entity.globalTransform.scale.x,
-      y: 0.5 * entity.globalTransform.scale.y,
+    // Match renderer canvas position/size
+    const syncSize = () => {
+      const rect = rendererCanvas.getBoundingClientRect();
+      const parentRect = parent.getBoundingClientRect();
+      overlay.width = rect.width;
+      overlay.height = rect.height;
+      overlay.style.top = `${rect.top - parentRect.top}px`;
+      overlay.style.left = `${rect.left - parentRect.left}px`;
+      overlay.style.width = `${rect.width}px`;
+      overlay.style.height = `${rect.height}px`;
     };
 
-    // For a centered 1x1 box, corners in local space:
-    // top-right:    ( half.x,  half.y)
-    // top-left:     (-half.x,  half.y)
-    // bottom-left:  (-half.x, -half.y)
-    // bottom-right: ( half.x, -half.y)
-    const corners = [
-      new Vector2(half.x, half.y),
-      new Vector2(-half.x, half.y),
-      new Vector2(-half.x, -half.y),
-      new Vector2(half.x, -half.y),
-    ];
-
-    const pos = entity.globalTransform.position;
-    const rot = entity.globalTransform.rotation;
-    const sin = Math.sin(rot);
-    const cos = Math.cos(rot);
-
-    // Rotate & translate each corner
-    for (const c of corners) {
-      const x = c.x * cos - c.y * sin;
-      const y = c.x * sin + c.y * cos;
-      c.x = x + pos.x;
-      c.y = y + pos.y;
+    // Set parent to position:relative if it isn't already
+    const parentStyle = window.getComputedStyle(parent);
+    if (parentStyle.position === "static") {
+      (parent as HTMLElement).style.position = "relative";
     }
 
-    // Determine min and max edges
-    let minX = Infinity,
-      maxX = -Infinity;
-    let minY = Infinity,
-      maxY = -Infinity;
-    for (const c of corners) {
-      if (c.x < minX) minX = c.x;
-      if (c.x > maxX) maxX = c.x;
-      if (c.y < minY) minY = c.y;
-      if (c.y > maxY) maxY = c.y;
-    }
+    parent.appendChild(overlay);
+    syncSize();
 
-    return { minX, maxX, minY, maxY };
-  }
+    this.#overlay = overlay;
+    this.#ctx2d = overlay.getContext("2d")!;
 
-  static getTransformedCorners(entity: Entity) {
-    // Get the actual transformed corners (not just bounding box)
-    const half = {
-      x: 0.5 * entity.globalTransform.scale.x,
-      y: 0.5 * entity.globalTransform.scale.y,
-    };
+    // Keep overlay sized to match renderer canvas
+    this.#resizeObserver = new ResizeObserver(() => syncSize());
+    this.#resizeObserver.observe(rendererCanvas);
+    this.#resizeObserver.observe(parent);
 
-    // Corners in local space
-    const localCorners = [
-      new Vector2(half.x, half.y), // top-right
-      new Vector2(-half.x, half.y), // top-left
-      new Vector2(-half.x, -half.y), // bottom-left
-      new Vector2(half.x, -half.y), // bottom-right
-    ];
-
-    const pos = entity.globalTransform.position;
-    const rot = entity.globalTransform.rotation;
-    const sin = Math.sin(rot);
-    const cos = Math.cos(rot);
-
-    // Transform corners to world space
-    return localCorners.map(corner => {
-      const x = corner.x * cos - corner.y * sin + pos.x;
-      const y = corner.x * sin + corner.y * cos + pos.y;
-      return { x, y };
-    });
-  }
-
-  static computeAABBForEntities(entities: Entity[]) {
-    let minX = Infinity,
-      maxX = -Infinity;
-    let minY = Infinity,
-      maxY = -Infinity;
-
-    for (const entity of entities) {
-      const bounds = Gizmo.computeGlobalBounds(entity);
-      minX = Math.min(minX, bounds.minX);
-      maxX = Math.max(maxX, bounds.maxX);
-      minY = Math.min(minY, bounds.minY);
-      maxY = Math.max(maxY, bounds.maxY);
-    }
-
-    return { minX, maxX, minY, maxY };
-  }
-
-  static getAABBCorners(bounds: { minX: number; maxX: number; minY: number; maxY: number }) {
-    return [
-      { x: bounds.maxX, y: bounds.maxY }, // top-right
-      { x: bounds.minX, y: bounds.maxY }, // top-left
-      { x: bounds.minX, y: bounds.minY }, // bottom-left
-      { x: bounds.maxX, y: bounds.minY }, // bottom-right
-    ];
+    overlay.addEventListener("pointerdown", this.#onPointerDown);
+    overlay.addEventListener("pointermove", this.#onPointerMove);
+    overlay.addEventListener("pointerup", this.#onPointerUp);
   }
 }
