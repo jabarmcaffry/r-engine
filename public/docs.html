@@ -194,7 +194,8 @@
     <a href="#ing-raycast" onclick="show('ing-raycast')">Ray Casting</a>
     <a href="#ing-spawning" onclick="show('ing-spawning')">Spawning Entities</a>
     <a href="#ing-ui" onclick="show('ing-ui')">User Interfaces</a>
-    <a href="#ing-vector2" onclick="show('ing-vector2')">Vector2 API</a>
+    <a href="#ing-vec3" onclick="show('ing-vec3')">Vec3 API</a>
+    <a href="#ing-quat" onclick="show('ing-quat')">Quaternion (Quat) API</a>
   </nav>
 </aside>
 
@@ -236,8 +237,9 @@
 
   <h3>Navigation Shortcuts</h3>
   <ul>
-    <li><kbd>Scroll</kbd> — zoom in/out</li>
-    <li><kbd>Middle Click</kbd> drag — pan the view</li>
+    <li><kbd>Scroll</kbd> — zoom (orbit distance)</li>
+    <li><kbd>Middle Click</kbd> drag — pan the view (shifts orbit focus)</li>
+    <li><kbd>Right Click</kbd> drag — orbit the camera around the focus point</li>
     <li><kbd>Left Click</kbd> — select entity</li>
     <li><kbd>Ctrl+S</kbd> — save</li>
     <li><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd> — undo / redo</li>
@@ -381,18 +383,19 @@
   <p class="lead">Entities are the fundamental building blocks of a Rebur game. They form a parent/child hierarchy and can have Behaviors and Components attached to them.</p>
 
   <h2>Spawning Entities at Runtime</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Mesh</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">Spawner</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
     <span class="kw">if</span> (!<span class="kw">this</span>.game.<span class="fn">isServer</span>()) <span class="kw">return</span>; <span class="cm">// only spawn on server</span>
 
+    <span class="kw">const</span> { x, y, z } = <span class="kw">this</span>.entity.transform.position;
     <span class="kw">const</span> bullet = <span class="kw">this</span>.game.world.<span class="fn">spawn</span>({
-      type: <span class="ty">Sprite</span>,
+      type: <span class="ty">Mesh</span>,
       name: <span class="st">"Bullet"</span>,
       transform: {
-        position: { x: <span class="kw">this</span>.entity.transform.position.x, y: <span class="kw">this</span>.entity.transform.position.y },
-        scale: { x: <span class="nu">0.5</span>, y: <span class="nu">0.5</span> },
+        position: { x, y, z },
+        scale: { x: <span class="nu">0.2</span>, y: <span class="nu">0.2</span>, z: <span class="nu">0.2</span> },
       },
       behaviors: [{ type: BulletBehavior }],
     });
@@ -421,20 +424,24 @@ someOtherEntity.<span class="fn">destroy</span>();</pre>
   </div>
 
   <h2>Entity Transform</h2>
-<pre><span class="kw">const</span> t = <span class="kw">this</span>.entity.transform;
+<pre><span class="kw">import</span> { <span class="ty">Quat</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<span class="kw">const</span> t = <span class="kw">this</span>.entity.transform;
 
-<span class="cm">// Position (world space, in metres)</span>
+<span class="cm">// Position (Vec3, world space, in metres)</span>
 t.position.x = <span class="nu">5</span>;
-t.position.assign({ x: <span class="nu">0</span>, y: <span class="nu">0</span> });
+t.position.y = <span class="nu">2</span>;
+t.position.z = -<span class="nu">3</span>;
 
-<span class="cm">// Rotation (radians)</span>
-t.rotation += <span class="nu">0.01</span>;
+<span class="cm">// Rotation (Quat — use fromEulerXYZ for Euler angles in radians)</span>
+t.rotation = <span class="ty">Quat</span>.<span class="fn">fromEulerXYZ</span>(<span class="nu">0</span>, Math.PI / <span class="nu">2</span>, <span class="nu">0</span>); <span class="cm">// 90° yaw</span>
 
-<span class="cm">// Scale</span>
-t.scale.assign({ x: <span class="nu">2</span>, y: <span class="nu">2</span> });
+<span class="cm">// Scale (Vec3)</span>
+t.scale.x = <span class="nu">2</span>;
+t.scale.y = <span class="nu">2</span>;
+t.scale.z = <span class="nu">2</span>;
 
 <span class="cm">// Global vs local</span>
-t.position       <span class="cm">// world-space position</span>
+t.position        <span class="cm">// local-space position (Vec3)</span>
 t.globalTransform <span class="cm">// fully computed world transform</span></pre>
 
   <h2>Cloning from Prefabs</h2>
@@ -479,13 +486,14 @@ t.globalTransform <span class="cm">// fully computed world transform</span></pre
 
   <h2>Getting Other Behaviors</h2>
 <pre><span class="cm">// Get a behavior from this entity</span>
+<span class="kw">import</span> { <span class="ty">Rigidbody</span>, <span class="ty">Vec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">const</span> rb = <span class="kw">this</span>.entity.<span class="fn">getBehavior</span>(<span class="ty">Rigidbody</span>);
-<span class="kw">if</span> (rb) rb.velocity.assign({ x: <span class="nu">5</span>, y: <span class="nu">0</span> });
+<span class="kw">if</span> (rb) rb.linearVelocity = <span class="kw">new</span> <span class="ty">Vec3</span>(<span class="nu">5</span>, <span class="nu">0</span>, <span class="nu">0</span>);
 
 <span class="cm">// Cast an entity to access its component type</span>
-<span class="kw">import</span> { <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
-<span class="kw">const</span> sprite = <span class="kw">this</span>.entity._.SpriteChild.<span class="fn">cast</span>(<span class="ty">Sprite</span>);
-sprite.color = <span class="st">"#ff0000"</span>;</pre>
+<span class="kw">import</span> { <span class="ty">Mesh</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<span class="kw">const</span> mesh = <span class="kw">this</span>.entity._.MeshChild.<span class="fn">cast</span>(<span class="ty">Mesh</span>);
+mesh.color = <span class="st">"#ff0000"</span>;</pre>
 
   <h2>Platform-Specific Hooks</h2>
   <div class="callout callout-note">
@@ -570,7 +578,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
     <tr><th>Adapter</th><th>Purpose / UI</th><th>Example</th></tr>
     <tr><td><code>EntityRef</code></td><td>Drag-drop any scene entity</td><td><code>@syncedValue(EntityRef) target?: Entity</code></td></tr>
     <tr><td><code>RelativeEntity</code></td><td>Prefab-safe child/sibling ref</td><td><code>@syncedValue(RelativeEntity) child?: Entity</code></td></tr>
-    <tr><td><code>Vector2Adapter</code></td><td>Two number inputs (X &amp; Y)</td><td><code>@syncedValue(Vector2Adapter) dir = new Vector2(1, 0)</code></td></tr>
+    <tr><td><code>Vec3Adapter</code></td><td>Three number inputs (X, Y &amp; Z)</td><td><code>@syncedValue(Vec3Adapter) dir = new Vec3(1, 0, 0)</code></td></tr>
     <tr><td><code>ColorAdapter</code></td><td>Hex color picker</td><td><code>@syncedValue(ColorAdapter) tint = "#ff00ff"</code></td></tr>
     <tr><td><code>TextureAdapter</code></td><td>Texture path + preview</td><td><code>@syncedValue(TextureAdapter) tex = "res://img.png"</code></td></tr>
     <tr><td><code>SpritesheetAdapter</code></td><td>JSON spritesheet picker</td><td><code>@syncedValue(SpritesheetAdapter) sheet = "res://hero.json"</code></td></tr>
@@ -618,13 +626,15 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 <!-- ════════════════════════════════ CAMERA ═══════════════════════════════════ -->
 <div class="section" id="camera">
   <h1>Camera</h1>
-  <p class="lead">The Camera entity controls what each player sees. A white box in the editor shows the "guaranteed-visible" area — everything inside is on-screen regardless of monitor aspect ratio.</p>
+  <p class="lead">The Camera entity is a 3D perspective camera. Place it in the <code>local</code> root so each player has an independent view. In <strong>transform mode</strong> (default for games), the camera renders from its own entity transform — parent it to a character rig, or move and rotate it in a Behavior to control the view.</p>
 
-  <h2>Following the Player</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Camera</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+  <h2>Third-Person Follow Camera</h2>
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CameraFollow</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() smoothing = <span class="nu">0.1</span>;
+  <span class="cn">@syncedValue</span>() heightOffset = <span class="nu">5</span>;
+  <span class="cn">@syncedValue</span>() depthOffset = <span class="nu">10</span>;
 
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
     <span class="kw">const</span> player = <span class="kw">this</span>.game.world._.Player;
@@ -632,11 +642,18 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 
     <span class="kw">const</span> target = player.transform.position;
     <span class="kw">const</span> cam = <span class="kw">this</span>.entity.transform.position;
+    <span class="kw">const</span> s = <span class="kw">this</span>.smoothing;
 
-    <span class="cm">// Smooth follow</span>
-    cam.<span class="fn">assign</span>(<span class="ty">Vector2</span>.<span class="fn">lerp</span>(cam, target, <span class="kw">this</span>.smoothing));
+    <span class="cm">// Smooth follow — interpolate each axis independently</span>
+    cam.x += (target.x              - cam.x) * s;
+    cam.y += (target.y + <span class="kw">this</span>.heightOffset - cam.y) * s;
+    cam.z += (target.z + <span class="kw">this</span>.depthOffset  - cam.z) * s;
   }
 }</pre>
+
+  <div class="callout callout-tip">
+    <strong>💡 Instant attach</strong> — For a simple follow cam with no scripting, parent the Camera entity directly to the player entity in the scene graph. It will move with the player automatically.
+  </div>
 
   <h2>Switching Between Cameras</h2>
 <pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Camera</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
@@ -646,8 +663,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
     <span class="kw">const</span> camA = <span class="kw">this</span>.game.local._.CameraA.<span class="fn">cast</span>(<span class="ty">Camera</span>);
     <span class="kw">const</span> camB = <span class="kw">this</span>.game.local._.CameraB.<span class="fn">cast</span>(<span class="ty">Camera</span>);
 
-    <span class="cm">// Start with CameraA</span>
-    camA.active = <span class="kw">true</span>;
+    camA.<span class="fn">activate</span>(); <span class="cm">// sets active = true and registers with renderer</span>
     camB.active = <span class="kw">false</span>;
   }
 }</pre>
@@ -656,12 +672,15 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <table>
     <tr><th>Property</th><th>Description</th></tr>
     <tr><td><code>camera.active</code></td><td>Whether this camera drives the viewport.</td></tr>
-    <tr><td><code>camera.zoom</code></td><td>Zoom multiplier (1 = default, 2 = zoomed in 2×).</td></tr>
-    <tr><td><code>camera.smoothZoom</code></td><td>Animated zoom towards <code>targetZoom</code>.</td></tr>
+    <tr><td><code>camera.fov</code></td><td>Vertical field of view in degrees (default 75). Lower = zoomed in, higher = wide-angle.</td></tr>
+    <tr><td><code>camera.near</code></td><td>Near clipping plane distance (default 0.1 m).</td></tr>
+    <tr><td><code>camera.far</code></td><td>Far clipping plane distance (default 1000 m).</td></tr>
+    <tr><td><code>camera.orbit</code></td><td>Orbit mode — camera orbits a <code>focus</code> point at a zoom distance. Used by the editor viewport; set to <code>false</code> for game cameras.</td></tr>
+    <tr><td><code>camera.activate()</code></td><td>Set this camera as the active viewport camera.</td></tr>
   </table>
 
   <div class="callout callout-note">
-    <strong>📍 Camera lives in <code>local</code></strong> — Each client controls its own camera. Place your Camera entity under the <code>local</code> root so each player has an independent view.
+    <strong>📍 Camera lives in <code>local</code></strong> — Each client controls its own camera. Place your Camera entity under the <code>local</code> root so each player has an independent view. For first-person, parent the Camera to the player at eye height. For third-person, use a follow behavior with a position offset.
   </div>
 </div>
 
@@ -910,14 +929,14 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <p>Collider entities define the physical shape. They are static by default — great for walls, floors, and obstacles.</p>
   <ul>
     <li>Right-click in Scene Graph → <strong>New Entity → Collider</strong></li>
-    <li>Choose shape (box, circle, capsule) in the Inspector</li>
+    <li>Choose shape (box, sphere, capsule) in the Inspector</li>
     <li>Adjust size, offset, and physics material</li>
   </ul>
 
   <h2>Rigidbodies</h2>
   <p>A Rigidbody entity needs at least one Collider child to define its shape. Rigidbodies are simulated dynamically.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Rigidbody</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Rigidbody</span>, <span class="ty">Vec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PhysicsPlayer</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="kw">private</span> rb!: <span class="ty">Rigidbody</span>;
@@ -928,8 +947,9 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
     <span class="kw">const</span> input = <span class="kw">this</span>.inputs;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>)) <span class="kw">this</span>.rb.velocity.x = -<span class="nu">5</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>)) <span class="kw">this</span>.rb.velocity.x = <span class="nu">5</span>;
+    <span class="kw">const</span> vel = <span class="kw">this</span>.rb.linearVelocity;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>)) <span class="kw">this</span>.rb.linearVelocity = <span class="kw">new</span> <span class="ty">Vec3</span>(-<span class="nu">5</span>, vel.y, vel.z);
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>)) <span class="kw">this</span>.rb.linearVelocity = <span class="kw">new</span> <span class="ty">Vec3</span>( <span class="nu">5</span>, vel.y, vel.z);
   }
 }</pre>
 
@@ -947,7 +967,7 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
 
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
     <span class="kw">const</span> dt = <span class="kw">this</span>.time.delta;
-    <span class="kw">this</span>.cc.<span class="fn">move</span>({ x: <span class="nu">3</span> * dt, y: <span class="nu">0</span> }); <span class="cm">// move right, physics handles collisions</span>
+    <span class="kw">this</span>.cc.<span class="fn">move</span>(<span class="kw">new</span> <span class="ty">Vec3</span>(<span class="nu">3</span> * dt, <span class="nu">0</span>, <span class="nu">0</span>)); <span class="cm">// move right, physics handles collisions</span>
   }
 }</pre>
 
@@ -967,11 +987,16 @@ sprite.color = <span class="st">"#ff0000"</span>;</pre>
   <h2>Ray Casting</h2>
 <pre><span class="kw">import</span> RAPIER <span class="kw">from</span> <span class="st">"@rebur/vendor/rapier.ts"</span>;
 
-<span class="kw">const</span> ray = <span class="kw">new</span> RAPIER.<span class="ty">Ray</span>({ x: <span class="nu">0</span>, y: <span class="nu">0</span> }, { x: <span class="nu">0</span>, y: <span class="nu">1</span> }); <span class="cm">// upward ray</span>
+<span class="cm">// Cast a ray upward from this entity's position</span>
+<span class="kw">const</span> pos = <span class="kw">this</span>.entity.transform.position;
+<span class="kw">const</span> ray = <span class="kw">new</span> RAPIER.<span class="ty">Ray</span>(
+  { x: pos.x, y: pos.y, z: pos.z },   <span class="cm">// origin</span>
+  { x: <span class="nu">0</span>, y: <span class="nu">1</span>, z: <span class="nu">0</span> }               <span class="cm">// direction (upward)</span>
+);
 <span class="kw">const</span> hit = <span class="kw">this</span>.game.physics.world.<span class="fn">castRay</span>(ray, <span class="nu">4.0</span>, <span class="kw">true</span>);
 <span class="kw">if</span> (hit) {
   <span class="kw">const</span> entity = <span class="kw">this</span>.game.entities.<span class="fn">lookupByRef</span>(hit.collider.userData.entityRef);
-  console.<span class="fn">log</span>(<span class="st">"Hit:"</span>, entity?.name);
+  console.<span class="fn">log</span>(<span class="st">"Hit:"</span>, entity?.name, <span class="st">"at distance"</span>, hit.timeOfImpact);
 }</pre>
 </div>
 
@@ -1188,7 +1213,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   </ol>
 
   <h2>PlatformMovement Behavior</h2>
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">PlatformMovement</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() speed = <span class="nu">5</span>;
@@ -1207,16 +1232,18 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
     <span class="kw">const</span> dt = <span class="kw">this</span>.time.delta;
     <span class="kw">const</span> input = <span class="kw">this</span>.inputs;
 
-    <span class="kw">let</span> vx = <span class="nu">0</span>;
+    <span class="kw">let</span> vx = <span class="nu">0</span>, vz = <span class="nu">0</span>;
     <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowLeft"</span>))  vx = -<span class="kw">this</span>.speed;
     <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowRight"</span>)) vx =  <span class="kw">this</span>.speed;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyW"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowUp"</span>))   vz = -<span class="kw">this</span>.speed;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyS"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowDown"</span>))  vz =  <span class="kw">this</span>.speed;
 
     <span class="kw">this</span>.velocityY += <span class="kw">this</span>.gravity * dt;
     <span class="kw">if</span> (<span class="kw">this</span>.cc.isOnGround &amp;&amp; input.<span class="fn">getKeyDown</span>(<span class="st">"Space"</span>)) {
       <span class="kw">this</span>.velocityY = -<span class="kw">this</span>.jumpForce;
     }
 
-    <span class="kw">this</span>.cc.<span class="fn">move</span>({ x: vx * dt, y: <span class="kw">this</span>.velocityY * dt });
+    <span class="kw">this</span>.cc.<span class="fn">move</span>(<span class="kw">new</span> <span class="ty">Vec3</span>(vx * dt, -<span class="kw">this</span>.velocityY * dt, vz * dt));
   }
 }</pre>
 </div>
@@ -1233,7 +1260,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
     <li>Set <code>speed</code> in the Inspector.</li>
   </ol>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">TopDownMovement</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() speed = <span class="nu">5</span>;
@@ -1247,15 +1274,16 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
     <span class="kw">if</span> (!<span class="kw">this</span>.game.<span class="fn">isServer</span>()) <span class="kw">return</span>;
     <span class="kw">const</span> dt = <span class="kw">this</span>.time.delta;
     <span class="kw">const</span> input = <span class="kw">this</span>.inputs;
-    <span class="kw">const</span> dir = <span class="kw">new</span> <span class="ty">Vector2</span>(<span class="nu">0</span>, <span class="nu">0</span>);
+    <span class="kw">let</span> vx = <span class="nu">0</span>, vz = <span class="nu">0</span>;
 
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowLeft"</span>))  dir.x -= <span class="nu">1</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowRight"</span>)) dir.x += <span class="nu">1</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyW"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowUp"</span>))   dir.y -= <span class="nu">1</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyS"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowDown"</span>))  dir.y += <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowLeft"</span>))  vx -= <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowRight"</span>)) vx += <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyW"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowUp"</span>))   vz -= <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyS"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowDown"</span>))  vz += <span class="nu">1</span>;
 
-    <span class="kw">if</span> (dir.<span class="fn">magnitude</span>() > <span class="nu">0</span>) dir.<span class="fn">normalize</span>();
-    <span class="kw">this</span>.cc.<span class="fn">move</span>(dir.<span class="fn">mul</span>(<span class="kw">this</span>.speed * dt));
+    <span class="kw">const</span> dir = <span class="kw">new</span> <span class="ty">Vec3</span>(vx, <span class="nu">0</span>, vz);
+    <span class="kw">const</span> len = dir.<span class="fn">length</span>();
+    <span class="kw">if</span> (len > <span class="nu">0</span>) <span class="kw">this</span>.cc.<span class="fn">move</span>(dir.<span class="fn">scale</span>(<span class="kw">this</span>.speed * dt / len));
   }
 }</pre>
 </div>
@@ -1401,7 +1429,7 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <h1>Ingredient: Character Controller</h1>
   <p class="lead">A complete movement controller using <code>CharacterController</code> with WASD/arrow key input, normalization for diagonal movement, and delta-time scaling.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">CharacterController</span>, <span class="ty">Vec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">CharacterMovement</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() speed = <span class="nu">5</span>;
@@ -1414,17 +1442,17 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
     <span class="kw">if</span> (!<span class="kw">this</span>.game.<span class="fn">isServer</span>()) <span class="kw">return</span>;
     <span class="kw">const</span> input = <span class="kw">this</span>.inputs;
-    <span class="kw">const</span> move = <span class="kw">new</span> <span class="ty">Vector2</span>(<span class="nu">0</span>, <span class="nu">0</span>);
+    <span class="kw">let</span> vx = <span class="nu">0</span>, vz = <span class="nu">0</span>;
 
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowLeft"</span>))  move.x -= <span class="nu">1</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowRight"</span>)) move.x += <span class="nu">1</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyW"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowUp"</span>))   move.y -= <span class="nu">1</span>;
-    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyS"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowDown"</span>))  move.y += <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyA"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowLeft"</span>))  vx -= <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyD"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowRight"</span>)) vx += <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyW"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowUp"</span>))   vz -= <span class="nu">1</span>;
+    <span class="kw">if</span> (input.<span class="fn">getKey</span>(<span class="st">"KeyS"</span>) || input.<span class="fn">getKey</span>(<span class="st">"ArrowDown"</span>))  vz += <span class="nu">1</span>;
 
     <span class="cm">// Normalize so diagonals aren't faster</span>
-    <span class="kw">if</span> (move.<span class="fn">magnitude</span>() > <span class="nu">0</span>) move.<span class="fn">normalize</span>();
-
-    <span class="kw">this</span>.cc.<span class="fn">move</span>(move.<span class="fn">mul</span>(<span class="kw">this</span>.speed * <span class="kw">this</span>.time.delta));
+    <span class="kw">const</span> dir = <span class="kw">new</span> <span class="ty">Vec3</span>(vx, <span class="nu">0</span>, vz);
+    <span class="kw">const</span> len = dir.<span class="fn">length</span>();
+    <span class="kw">if</span> (len > <span class="nu">0</span>) <span class="kw">this</span>.cc.<span class="fn">move</span>(dir.<span class="fn">scale</span>(<span class="kw">this</span>.speed * <span class="kw">this</span>.time.delta / len));
   }
 }</pre>
 </div>
@@ -1454,8 +1482,8 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
     <tr><th>Property</th><th>Type</th><th>Description</th></tr>
     <tr><td><code>e.started</code></td><td>boolean</td><td><code>true</code> = collision began, <code>false</code> = collision ended.</td></tr>
     <tr><td><code>e.other</code></td><td>Entity</td><td>The other entity involved in the collision.</td></tr>
-    <tr><td><code>e.contactPoint</code></td><td>Vector2</td><td>World-space point where collision occurred.</td></tr>
-    <tr><td><code>e.normal</code></td><td>Vector2</td><td>Collision surface normal.</td></tr>
+    <tr><td><code>e.contactPoint</code></td><td>Vec3</td><td>World-space point where collision occurred.</td></tr>
+    <tr><td><code>e.normal</code></td><td>Vec3</td><td>Collision surface normal.</td></tr>
   </table>
 </div>
 
@@ -1514,36 +1542,50 @@ button { background: #4299e1; color: white; border: none; padding: 0.5rem 1rem; 
 <!-- ════════════════════ INGREDIENT: HANDLING TRANSFORMS ═════════════════════ -->
 <div class="section" id="ing-transforms">
   <h1>Ingredient: Handling Transforms</h1>
-  <p class="lead">Read and write entity position, rotation, and scale through <code>entity.transform</code>.</p>
+  <p class="lead">Read and write entity position, rotation, and scale through <code>entity.transform</code>. All values are in 3D world space.</p>
 
-<pre><span class="kw">const</span> t = <span class="kw">this</span>.entity.transform;
+<pre><span class="kw">import</span> { <span class="ty">Quat</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<span class="kw">const</span> t = <span class="kw">this</span>.entity.transform;
 
-<span class="cm">// ── Position (world space, in metres) ──</span>
+<span class="cm">// ── Position (Vec3, world space, in metres) ──</span>
 t.position.x = <span class="nu">5</span>;
-t.position.assign({ x: <span class="nu">0</span>, y: <span class="nu">10</span> });
-console.<span class="fn">log</span>(t.position.x, t.position.y);
+t.position.y = <span class="nu">2</span>;
+t.position.z = -<span class="nu">3</span>;
 
-<span class="cm">// ── Rotation (radians, clockwise) ──</span>
-t.rotation += <span class="nu">0.01</span>;           <span class="cm">// rotate slowly</span>
-t.rotation = Math.PI / <span class="nu">2</span>;    <span class="cm">// face right (90°)</span>
+<span class="cm">// ── Rotation (Quat) ──</span>
+<span class="cm">// 90° yaw (turn left)</span>
+t.rotation = <span class="ty">Quat</span>.<span class="fn">fromEulerXYZ</span>(<span class="nu">0</span>, Math.PI / <span class="nu">2</span>, <span class="nu">0</span>);
 
-<span class="cm">// ── Scale ──</span>
-t.scale.assign({ x: <span class="nu">2</span>, y: <span class="nu">2</span> }); <span class="cm">// double size</span>
-t.scale.x = -<span class="nu">1</span>;               <span class="cm">// flip horizontally</span>
-
-<span class="cm">// ── Move towards a target (lerp) ──</span>
+<span class="cm">// Spin continuously around Y-axis each tick</span>
 <span class="fn">onTick</span>(): <span class="ty">void</span> {
-  <span class="kw">const</span> target = <span class="kw">this</span>.game.world._.Player.transform.position;
-  <span class="kw">const</span> current = <span class="kw">this</span>.entity.transform.position;
-  current.<span class="fn">assign</span>(<span class="ty">Vector2</span>.<span class="fn">lerp</span>(current, target, <span class="nu">0.05</span>));
-}</pre>
+  <span class="kw">const</span> spin = <span class="ty">Quat</span>.<span class="fn">fromAxisAngle</span>({ x: <span class="nu">0</span>, y: <span class="nu">1</span>, z: <span class="nu">0</span> }, <span class="kw">this</span>.time.delta * <span class="nu">2</span>);
+  t.rotation = spin.<span class="fn">multiply</span>(t.rotation);
+}
 
-  <h2>Facing a Target</h2>
+<span class="cm">// ── Scale (Vec3) ──</span>
+t.scale.x = <span class="nu">2</span>;
+t.scale.y = <span class="nu">2</span>;
+t.scale.z = <span class="nu">2</span>;</pre>
+
+  <h2>Move Towards a Target (lerp)</h2>
 <pre><span class="fn">onTick</span>(): <span class="ty">void</span> {
   <span class="kw">const</span> target = <span class="kw">this</span>.game.world._.Player.transform.position;
-  <span class="kw">const</span> myPos = <span class="kw">this</span>.entity.transform.position;
-  <span class="kw">this</span>.entity.transform.rotation = myPos.<span class="fn">lookAt</span>(target);
+  <span class="kw">const</span> pos = <span class="kw">this</span>.entity.transform.position;
+  <span class="kw">const</span> s = <span class="nu">0.05</span>; <span class="cm">// smoothing factor</span>
+  pos.x += (target.x - pos.x) * s;
+  pos.y += (target.y - pos.y) * s;
+  pos.z += (target.z - pos.z) * s;
 }</pre>
+
+  <h2>Transform Properties</h2>
+  <table>
+    <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>transform.position</code></td><td>Vec3</td><td>Local-space position in metres.</td></tr>
+    <tr><td><code>transform.rotation</code></td><td>Quat</td><td>Orientation as a quaternion.</td></tr>
+    <tr><td><code>transform.scale</code></td><td>Vec3</td><td>Per-axis scale multiplier.</td></tr>
+    <tr><td><code>transform.globalTransform</code></td><td>Transform</td><td>Fully computed world transform (accounts for parents).</td></tr>
+    <tr><td><code>entity.interpolated</code></td><td>Transform</td><td>Smoothed client-side transform for rendering.</td></tr>
+  </table>
 </div>
 
 <!-- ══════════════════════ INGREDIENT: HANDLING VALUES ════════════════════════ -->
@@ -1551,14 +1593,14 @@ t.scale.x = -<span class="nu">1</span>;               <span class="cm">// flip h
   <h1>Ingredient: Handling Values</h1>
   <p class="lead">Use <code>@syncedValue()</code> to create properties that appear in the Inspector, sync over the network, and can be observed for changes.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">ColorAdapter</span>, <span class="ty">Vector2Adapter</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">syncedValue</span>, <span class="ty">ColorAdapter</span>, <span class="ty">Vec3Adapter</span>, <span class="ty">Vec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="kw">export default class</span> <span class="ty">ValuesDemo</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="cn">@syncedValue</span>() health = <span class="nu">100</span>;           <span class="cm">// number field</span>
   <span class="cn">@syncedValue</span>() name = <span class="st">"Player"</span>;        <span class="cm">// text field</span>
   <span class="cn">@syncedValue</span>() visible = <span class="kw">true</span>;         <span class="cm">// checkbox</span>
   <span class="cn">@syncedValue</span>(<span class="ty">ColorAdapter</span>) color = <span class="st">"#ff0000"</span>; <span class="cm">// color picker</span>
-  <span class="cn">@syncedValue</span>(<span class="ty">Vector2Adapter</span>) offset = { x: <span class="nu">0</span>, y: <span class="nu">0</span> }; <span class="cm">// x/y fields</span>
+  <span class="cn">@syncedValue</span>(<span class="ty">Vec3Adapter</span>) offset = <span class="kw">new</span> <span class="ty">Vec3</span>(); <span class="cm">// x/y/z fields</span>
 
   <span class="fn">onInitialize</span>(): <span class="ty">void</span> {
     <span class="cm">// React to changes</span>
@@ -1689,7 +1731,7 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
 <span class="kw">export default class</span> <span class="ty">RaycastExample</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
   <span class="fn">onTick</span>(): <span class="ty">void</span> {
     <span class="kw">const</span> origin = <span class="kw">this</span>.entity.transform.position;
-    <span class="kw">const</span> direction = { x: <span class="nu">0</span>, y: <span class="nu">1</span> }; <span class="cm">// cast downward</span>
+    <span class="kw">const</span> direction = { x: <span class="nu">0</span>, y: -<span class="nu">1</span>, z: <span class="nu">0</span> }; <span class="cm">// cast downward (negative Y in 3D)</span>
 
     <span class="kw">const</span> ray = <span class="kw">new</span> RAPIER.<span class="ty">Ray</span>(origin, direction);
     <span class="kw">const</span> maxDistance = <span class="nu">4.0</span>;
@@ -1719,7 +1761,7 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
   <h1>Ingredient: Spawning Entities</h1>
   <p class="lead">Spawn new entities into the world at runtime from behaviors, with any components and behaviors you need.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Sprite</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Behavior</span>, <span class="ty">Mesh</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 <span class="kw">import</span> BulletBehavior <span class="kw">from</span> <span class="st">"./BulletBehavior.ts"</span>;
 
 <span class="kw">export default class</span> <span class="ty">WeaponBehavior</span> <span class="kw">extends</span> <span class="ty">Behavior</span> {
@@ -1731,14 +1773,14 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
   }
 
   <span class="kw">private</span> <span class="fn">fireBullet</span>(): <span class="ty">void</span> {
-    <span class="kw">const</span> pos = <span class="kw">this</span>.entity.transform.position;
+    <span class="kw">const</span> { x, y, z } = <span class="kw">this</span>.entity.transform.position;
 
     <span class="kw">const</span> bullet = <span class="kw">this</span>.game.world.<span class="fn">spawn</span>({
-      type: <span class="ty">Sprite</span>,
+      type: <span class="ty">Mesh</span>,
       name: <span class="st">"Bullet"</span>,
       transform: {
-        position: { x: pos.x, y: pos.y },
-        scale: { x: <span class="nu">0.3</span>, y: <span class="nu">0.3</span> },
+        position: { x, y, z },
+        scale: { x: <span class="nu">0.3</span>, y: <span class="nu">0.3</span>, z: <span class="nu">0.3</span> },
       },
       behaviors: [{ type: <span class="ty">BulletBehavior</span> }],
     });
@@ -1748,7 +1790,8 @@ sq.color = <span class="st">"#ff0000"</span>;</pre>
   <h2>Spawning from a Prefab</h2>
 <pre><span class="cm">// Clone a prefab into the world root</span>
 <span class="kw">const</span> enemy = <span class="kw">this</span>.game.prefabs._.EnemyPrefab.<span class="fn">cloneInto</span>(<span class="kw">this</span>.game.world);
-enemy.transform.position.<span class="fn">assign</span>({ x: <span class="nu">10</span>, y: <span class="nu">5</span> });</pre>
+enemy.transform.position.x = <span class="nu">10</span>;
+enemy.transform.position.z = <span class="nu">5</span>;</pre>
 </div>
 
 <!-- ══════════════════════ INGREDIENT: USER INTERFACES ════════════════════════ -->
@@ -1798,76 +1841,89 @@ enemy.transform.position.<span class="fn">assign</span>({ x: <span class="nu">10
 }</pre>
 </div>
 
-<!-- ══════════════════════════ INGREDIENT: VECTOR2 API ════════════════════════ -->
-<div class="section" id="ing-vector2">
-  <h1>Ingredient: Vector2 API</h1>
-  <p class="lead">The <code>Vector2</code> class is used throughout the engine for positions, directions, velocities, and sizes.</p>
+<!-- ══════════════════════════ INGREDIENT: VEC3 API ═══════════════════════════ -->
+<div class="section" id="ing-vec3">
+  <h1>Ingredient: Vec3 API</h1>
+  <p class="lead">The <code>Vec3</code> class is used throughout the engine for 3D positions, directions, velocities, and forces.</p>
 
-<pre><span class="kw">import</span> { <span class="ty">Vector2</span>, <span class="ty">IVector2</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+<pre><span class="kw">import</span> { <span class="ty">Vec3</span>, <span class="ty">IVec3</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
 
 <span class="cm">// Create vectors</span>
-<span class="kw">const</span> a = <span class="kw">new</span> <span class="ty">Vector2</span>(<span class="nu">3</span>, <span class="nu">4</span>);
-<span class="kw">const</span> b = <span class="ty">Vector2</span>.ONE;      <span class="cm">// (1, 1)</span>
-<span class="kw">const</span> c = <span class="ty">Vector2</span>.ZERO;     <span class="cm">// (0, 0)</span>
+<span class="kw">const</span> a = <span class="kw">new</span> <span class="ty">Vec3</span>(<span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">0</span>);
+<span class="kw">const</span> b = <span class="kw">new</span> <span class="ty">Vec3</span>(<span class="nu">1</span>, <span class="nu">1</span>, <span class="nu">1</span>);
+<span class="kw">const</span> zero = <span class="kw">new</span> <span class="ty">Vec3</span>(); <span class="cm">// (0, 0, 0)</span>
 
-<span class="cm">// Arithmetic (instance methods)</span>
-<span class="kw">const</span> sum  = a.<span class="fn">add</span>(b);      <span class="cm">// (4, 5)</span>
-<span class="kw">const</span> diff = a.<span class="fn">sub</span>(b);      <span class="cm">// (2, 3)</span>
-<span class="kw">const</span> scaled = a.<span class="fn">mul</span>(<span class="nu">2</span>);   <span class="cm">// (6, 8)</span>
+<span class="cm">// Arithmetic (return new Vec3)</span>
+<span class="kw">const</span> sum    = a.<span class="fn">add</span>(b);      <span class="cm">// (4, 5, 1)</span>
+<span class="kw">const</span> diff   = a.<span class="fn">sub</span>(b);      <span class="cm">// (2, 3, -1)</span>
+<span class="kw">const</span> scaled = a.<span class="fn">scale</span>(<span class="nu">2</span>);   <span class="cm">// (6, 8, 0)</span>
 
-<span class="cm">// Magnitude & normalization</span>
-<span class="kw">const</span> len  = a.<span class="fn">magnitude</span>();         <span class="cm">// 5</span>
-<span class="kw">const</span> unit = a.<span class="fn">normalize</span>();          <span class="cm">// (0.6, 0.8)</span>
+<span class="cm">// Magnitude &amp; normalization</span>
+<span class="kw">const</span> len  = a.<span class="fn">length</span>();       <span class="cm">// 5</span>
+<span class="kw">const</span> unit = a.<span class="fn">normalized</span>(); <span class="cm">// unit vector</span>
 
-<span class="cm">// Distance</span>
-<span class="kw">const</span> dist = a.<span class="fn">distance</span>(b);
+<span class="cm">// Dot &amp; cross product</span>
+<span class="kw">const</span> dp = a.<span class="fn">dot</span>(b);
+<span class="kw">const</span> cp = a.<span class="fn">cross</span>(b); <span class="cm">// perpendicular vector</span>
 
 <span class="cm">// Interpolation</span>
-<span class="kw">const</span> mid  = <span class="ty">Vector2</span>.<span class="fn">lerp</span>(a, b, <span class="nu">0.5</span>);
-<span class="kw">const</span> smooth = <span class="ty">Vector2</span>.<span class="fn">smoothLerp</span>(current, target, decay, dt);
+<span class="kw">const</span> mid = a.<span class="fn">lerp</span>(b, <span class="nu">0.5</span>);</pre>
 
-<span class="cm">// Rotation</span>
-<span class="kw">const</span> rotated = a.<span class="fn">rotate</span>(Math.PI / <span class="nu">2</span>); <span class="cm">// rotate 90°</span>
-
-<span class="cm">// Angle to target</span>
-<span class="kw">const</span> angle = a.<span class="fn">lookAt</span>(b); <span class="cm">// radians</span></pre>
-
-  <h2>Static Constants</h2>
-  <table>
-    <tr><th>Constant</th><th>Value</th></tr>
-    <tr><td><code>Vector2.ZERO</code></td><td>(0, 0)</td></tr>
-    <tr><td><code>Vector2.ONE</code></td><td>(1, 1)</td></tr>
-    <tr><td><code>Vector2.NEG_ONE</code></td><td>(-1, -1)</td></tr>
-    <tr><td><code>Vector2.X</code></td><td>(1, 0)</td></tr>
-    <tr><td><code>Vector2.Y</code></td><td>(0, 1)</td></tr>
-    <tr><td><code>Vector2.NEG_X</code></td><td>(-1, 0)</td></tr>
-    <tr><td><code>Vector2.NEG_Y</code></td><td>(0, -1)</td></tr>
-  </table>
-
-  <h2>Full API Reference</h2>
+  <h2>API Reference</h2>
   <table>
     <tr><th>Method</th><th>Description</th></tr>
-    <tr><td><code>add(v)</code></td><td>Add two vectors</td></tr>
-    <tr><td><code>sub(v)</code></td><td>Subtract vector</td></tr>
-    <tr><td><code>mul(v | n)</code></td><td>Multiply by vector or scalar</td></tr>
-    <tr><td><code>div(v | n)</code></td><td>Divide by vector or scalar</td></tr>
-    <tr><td><code>magnitude()</code></td><td>Length of vector</td></tr>
-    <tr><td><code>magnitudeSquared()</code></td><td>Squared length (faster, no sqrt)</td></tr>
-    <tr><td><code>normalize()</code></td><td>Convert to unit vector</td></tr>
-    <tr><td><code>distance(v)</code></td><td>Distance between two points</td></tr>
-    <tr><td><code>distanceSquared(v)</code></td><td>Squared distance (faster)</td></tr>
-    <tr><td><code>lookAt(target)</code></td><td>Angle in radians to target</td></tr>
-    <tr><td><code>rotate(angle)</code></td><td>Rotate by angle in radians</td></tr>
-    <tr><td><code>rotateAbout(angle, point)</code></td><td>Rotate around a point</td></tr>
-    <tr><td><code>dot(v)</code></td><td>Dot product</td></tr>
-    <tr><td><code>lerp(a, b, t)</code></td><td>Linear interpolation (static)</td></tr>
-    <tr><td><code>smoothLerp(curr, tgt, decay, dt)</code></td><td>Smooth exponential lerp (static)</td></tr>
-    <tr><td><code>abs()</code></td><td>Absolute value of each component</td></tr>
-    <tr><td><code>neg()</code></td><td>Negate both components</td></tr>
-    <tr><td><code>assign(partial)</code></td><td>Update x/y in-place</td></tr>
-    <tr><td><code>clone()</code></td><td>Create a copy</td></tr>
-    <tr><td><code>eq(v)</code></td><td>Check equality</td></tr>
+    <tr><td><code>add(v)</code></td><td>Add two vectors, returns new Vec3.</td></tr>
+    <tr><td><code>sub(v)</code></td><td>Subtract vector, returns new Vec3.</td></tr>
+    <tr><td><code>scale(n)</code></td><td>Multiply all components by scalar.</td></tr>
+    <tr><td><code>dot(v)</code></td><td>Dot product (scalar).</td></tr>
+    <tr><td><code>cross(v)</code></td><td>Cross product — perpendicular Vec3.</td></tr>
+    <tr><td><code>length()</code></td><td>Magnitude (length) of the vector.</td></tr>
+    <tr><td><code>normalized()</code></td><td>Unit vector (length 1), does not mutate.</td></tr>
+    <tr><td><code>lerp(v, t)</code></td><td>Linear interpolation by factor t (0–1).</td></tr>
   </table>
+</div>
+
+<!-- ═══════════════════════ INGREDIENT: QUATERNION API ═══════════════════════ -->
+<div class="section" id="ing-quat">
+  <h1>Ingredient: Quaternion (Quat) API</h1>
+  <p class="lead">Quaternions represent 3D rotations without gimbal lock. Use <code>Quat</code> for any entity rotation in Rebur.</p>
+
+<pre><span class="kw">import</span> { <span class="ty">Quat</span> } <span class="kw">from</span> <span class="st">"@rebur/engine"</span>;
+
+<span class="cm">// From Euler angles (radians: X pitch, Y yaw, Z roll)</span>
+<span class="kw">const</span> q = <span class="ty">Quat</span>.<span class="fn">fromEulerXYZ</span>(Math.PI / <span class="nu">4</span>, <span class="nu">0</span>, <span class="nu">0</span>); <span class="cm">// 45° pitch</span>
+
+<span class="cm">// From axis + angle</span>
+<span class="kw">const</span> yaw = <span class="ty">Quat</span>.<span class="fn">fromAxisAngle</span>({ x: <span class="nu">0</span>, y: <span class="nu">1</span>, z: <span class="nu">0</span> }, Math.PI / <span class="nu">2</span>);
+
+<span class="cm">// Compose rotations (apply r2 after r1)</span>
+<span class="kw">const</span> combined = r1.<span class="fn">multiply</span>(r2);
+
+<span class="cm">// Smooth rotation (slerp)</span>
+<span class="kw">const</span> mid = q1.<span class="fn">slerp</span>(q2, <span class="nu">0.1</span>); <span class="cm">// 10% of the way from q1 to q2</span>
+
+<span class="cm">// Rotate a direction vector</span>
+<span class="kw">const</span> forward = q.<span class="fn">rotateVec3</span>({ x: <span class="nu">0</span>, y: <span class="nu">0</span>, z: -<span class="nu">1</span> }); <span class="cm">// camera forward</span>
+
+<span class="cm">// Spin entity around Y-axis each tick</span>
+<span class="fn">onTick</span>(): <span class="ty">void</span> {
+  <span class="kw">const</span> spin = <span class="ty">Quat</span>.<span class="fn">fromAxisAngle</span>({ x: <span class="nu">0</span>, y: <span class="nu">1</span>, z: <span class="nu">0</span> }, <span class="kw">this</span>.time.delta * <span class="nu">2</span>);
+  <span class="kw">this</span>.entity.transform.rotation = spin.<span class="fn">multiply</span>(<span class="kw">this</span>.entity.transform.rotation);
+}</pre>
+
+  <h2>API Reference</h2>
+  <table>
+    <tr><th>Method / Factory</th><th>Description</th></tr>
+    <tr><td><code>Quat.fromEulerXYZ(x, y, z)</code></td><td>Create from Euler angles in radians (pitch, yaw, roll).</td></tr>
+    <tr><td><code>Quat.fromAxisAngle(axis, angle)</code></td><td>Create from an axis (Vec3 or IVec3) and angle in radians.</td></tr>
+    <tr><td><code>multiply(q)</code></td><td>Compose two rotations — apply <code>q</code> after <code>this</code>.</td></tr>
+    <tr><td><code>slerp(q, t)</code></td><td>Spherical interpolation — smooth rotation blending.</td></tr>
+    <tr><td><code>rotateVec3(v)</code></td><td>Apply this rotation to a direction vector.</td></tr>
+  </table>
+
+  <div class="callout callout-tip">
+    <strong>💡 Think in Euler, store as Quat</strong> — Use <code>fromEulerXYZ</code> to author rotations in degrees converted to radians, then assign to <code>entity.transform.rotation</code>. Never add raw numbers directly to quaternion component fields.
+  </div>
 </div>
 
 </main>

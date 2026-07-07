@@ -4,23 +4,18 @@ import {
   EditorChangeRequiresRestart,
   EditorChangeRestartCleared,
   InternalGameTick,
-  IVector2,
-  MouseMove,
   PhysicsDebug,
-  Vector2,
 } from "@rebur/engine";
 import type { BaseElement } from "@rebur/ui";
 import { element as elem } from "@rebur/ui";
-import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
+import { Gizmo } from "../../common/entities/mod.ts";
 import {
   AlertCircle,
   Box,
-  BoxSelect,
   ChartLine,
   ChevronDown,
   Icon,
   icon,
-  MousePointer2,
   Move,
   Move3D,
   ZoomIn,
@@ -36,7 +31,6 @@ export class Toolbar implements InspectorUIWidget {
   #toolbar: { main: HTMLElement; left: HTMLElement; center: HTMLElement; right: HTMLElement };
   #overlays: HTMLElement;
   #cursorOverlayEl: BaseElement;
-  #setActiveTool?: (tool: "combined" | "dimensions", force?: boolean) => void;
   #keydownHandler?: (event: KeyboardEvent) => void;
 
   constructor(
@@ -63,6 +57,8 @@ export class Toolbar implements InspectorUIWidget {
       this.#overlays.append(this.#drawCursorOverlay());
       if (globalThis.env.IS_DEV) this.#toolbar.right.append(this.#drawStatsButton());
       this.#toolbar.right.append(this.#drawRatioDropdown());
+
+      // Q — activate transform gizmo
       this.#keydownHandler = (event: KeyboardEvent) => {
         if (
           document.activeElement instanceof HTMLInputElement ||
@@ -80,16 +76,7 @@ export class Toolbar implements InspectorUIWidget {
           !event.altKey
         ) {
           event.preventDefault();
-          this.#setActiveTool?.("combined");
-        } else if (
-          event.key === "w" &&
-          !event.ctrlKey &&
-          !event.metaKey &&
-          !event.shiftKey &&
-          !event.altKey
-        ) {
-          event.preventDefault();
-          this.#setActiveTool?.("dimensions");
+          this.#ensureGizmo();
         }
       };
     } else {
@@ -174,85 +161,28 @@ export class Toolbar implements InspectorUIWidget {
     }
   }
 
-  #drawGizmoButtons(): BaseElement {
-    const Button = ({
-      icon,
-      label,
-      title,
-    }: {
-      readonly icon: string;
-      readonly label: string;
-      readonly title: string;
-    }): BaseElement => (
-      <button type="button" title={title}>
-        <Icon icon={icon} />
-        {label}
-      </button>
-    );
-
-    const combined = (
-      <Button icon={Move3D} label="Edit Transform" title="Edit Transform (Q)" />
-    ) as HTMLButtonElement;
-    // "Edit Dimensions" (2D box resize) is retired in 3D — dimensions are
-    // edited via the Inspector. Keep a detached button so tool plumbing works.
-    const dimensions = (
-      <Button icon={BoxSelect} label="Edit Dimensions" title="Edit Dimensions" />
-    ) as HTMLButtonElement;
-    dimensions.style.display = "none";
-
-    type Tool = keyof typeof tools;
-    const tools = { combined, dimensions };
-
-    let activeTool: Tool = "combined";
-    const setActiveTool = (tool: Tool, force = false) => {
-      const prevTool = activeTool;
-      if (prevTool === tool && !force) return;
-      activeTool = tool;
-
-      for (const [name, button] of Object.entries(tools)) {
-        delete button.dataset.active;
-        if (tool === name) button.dataset.active = "";
-      }
-
-      const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
-      const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
-      const target = gizmo?.target ?? boxresize?.target;
-      const auxTargets = gizmo?.auxTargets ?? boxresize?.auxTargets ?? [];
-
-      gizmo?.destroy();
-      boxresize?.destroy();
-
-      if (tool === "dimensions") {
-        const newGizmo = this.game.local.spawn({
-          type: BoxResizeGizmo,
-          name: BoxResizeGizmo.name,
-        });
-
-        newGizmo.target = target;
-        newGizmo.auxTargets = auxTargets;
-      } else {
-        const newGizmo = this.game.local.spawn({
-          type: Gizmo,
-          name: Gizmo.name,
-        });
-
-        newGizmo.mode = tool ?? "combined";
-        newGizmo.target = target;
-        newGizmo.auxTargets = auxTargets;
-      }
-    };
-
-    this.#setActiveTool = setActiveTool;
-
-    setActiveTool(activeTool, true);
-    for (const [key, tool] of Object.entries(tools)) {
-      tool.addEventListener("click", () => setActiveTool(key as keyof typeof tools));
+  /** Spawn or re-activate the 3D transform gizmo. */
+  #ensureGizmo(): void {
+    if (!this.game.local.children.get(Gizmo.name)?.cast(Gizmo)) {
+      const g = this.game.local.spawn({ type: Gizmo, name: Gizmo.name });
+      g.mode = "combined";
     }
+  }
+
+  #drawGizmoButtons(): BaseElement {
+    const button = (
+      <button type="button" title="Edit Transform (Q)" data-active="">
+        <Icon icon={Move3D} />
+        Edit Transform
+      </button>
+    ) as HTMLButtonElement;
+
+    // Spawn the gizmo immediately so the viewport is interactive on load.
+    this.#ensureGizmo();
 
     return (
       <div id="gizmo-buttons">
-        {combined}
-        {dimensions}
+        {button}
       </div>
     );
   }
@@ -457,40 +387,38 @@ export class Toolbar implements InspectorUIWidget {
     );
   }
 
-  #formatVector(vector: IVector2, fixed = 2): string {
-    return `[${vector.x.toFixed(fixed)}, ${vector.y.toFixed(fixed)}]`;
-  }
-
+  /** Overlay showing the 3D camera position and field-of-view in the editor viewport. */
   #drawCursorOverlay(): BaseElement {
-    const cameraPos = elem("span", {}, [this.#formatVector(Vector2.ZERO)]);
-    const cursorPos = elem("span", {}, [this.#formatVector(Vector2.ZERO)]);
-    const zoomLevel = elem("span", {}, ["1.00 \u00d7"]);
+    const fmt = (n: number) => n.toFixed(2);
+
+    const xEl = elem("span", {}, ["0.00"]);
+    const yEl = elem("span", {}, ["0.00"]);
+    const zEl = elem("span", {}, ["0.00"]);
+    const fovEl = elem("span", {}, ["75°"]);
 
     this.game.on(InternalGameTick, () => {
       const camera = Camera.getActive(this.game);
-      if (!camera) return; // no active camera?
-      cameraPos.textContent = this.#formatVector(camera.focus);
-      const zoom = camera.cast(Camera).zoom;
-      zoomLevel.textContent = `${zoom.toFixed(2)} \u00d7`;
-    });
+      if (!camera) return;
 
-    this.game.inputs.on(MouseMove, ({ cursor }) => {
-      cursorPos.textContent = this.#formatVector(cursor.world);
+      // In orbit mode (editor viewport) show the focus point; otherwise show
+      // the camera entity's own world position.
+      const pos = camera.orbit ? camera.focus : camera.transform.position;
+      xEl.textContent = fmt(pos.x);
+      yEl.textContent = fmt(pos.y);
+      zEl.textContent = fmt(pos.z);
+      fovEl.textContent = `${camera.fov.toFixed(0)}°`;
     });
 
     return (
       <div id="cursor-overlay">
         <Icon icon={Move} />
-        <span>Camera</span>
-        {cameraPos}
-
-        <Icon icon={MousePointer2} />
-        <span>Cursor</span>
-        {cursorPos}
+        <span>X</span>{xEl}
+        <span>Y</span>{yEl}
+        <span>Z</span>{zEl}
 
         <Icon icon={ZoomIn} />
-        <span>Zoom</span>
-        {zoomLevel}
+        <span>FOV</span>
+        {fovEl}
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import { ClientGame, Entity, Root } from "@rebur/engine";
-import { BoxResizeGizmo, Gizmo } from "../../common/entities/mod.ts";
+import { Gizmo } from "../../common/entities/mod.ts";
 import { EditorRootFacadeEntity } from "../../common/mod.ts";
 
 export const internalSelectedService = Symbol.for("rebur.engine.internalSelectedService");
@@ -38,10 +38,7 @@ export class SelectedEntityService {
   }
 
   get #gizmo() {
-    const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
-    const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
-
-    return gizmo ?? boxresize;
+    return this.game.local.children.get("Gizmo")?.cast(Gizmo);
   }
 
   constructor(private game: ClientGame) {

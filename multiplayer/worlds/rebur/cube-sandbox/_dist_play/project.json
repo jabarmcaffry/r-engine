@@ -1,0 +1,383 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "engine_revision": "2024-08.001",
+    "title": "Cube Sandbox",
+    "category": "Games",
+    "description": "Explore a 3D world of colorful floating cubes"
+  },
+  "scenes": {
+    "main": {
+      "registration": [],
+      "world": [
+        {
+          "ref": "ent_camera01",
+          "type": "@core/Camera",
+          "name": "Camera",
+          "values": {
+            "active": true,
+            "zoom": 0.6
+          }
+        },
+        {
+          "ref": "ent_ambient01",
+          "type": "@core/AmbientLight",
+          "name": "AmbientLight",
+          "values": {
+            "intensity": 0.5
+          }
+        },
+        {
+          "ref": "ent_dirlight01",
+          "type": "@core/DirectionalLight",
+          "name": "DirectionalLight",
+          "transform": {
+            "position": {
+              "x": 10,
+              "y": 20,
+              "z": 0
+            },
+            "rotation": {
+              "x": -0.3827,
+              "y": 0,
+              "z": 0,
+              "w": 0.9239
+            }
+          },
+          "values": {
+            "intensity": 1.2
+          }
+        },
+        {
+          "ref": "ent_ground01",
+          "type": "@core/Mesh",
+          "name": "Ground",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": -1,
+              "z": 0
+            }
+          },
+          "values": {
+            "boxWidth": 30,
+            "boxHeight": 0.5,
+            "boxDepth": 30,
+            "color": 6710886,
+            "roughness": 0.9,
+            "castShadow": false
+          }
+        },
+        {
+          "ref": "ent_cube01",
+          "type": "@core/Mesh",
+          "name": "RedCube",
+          "transform": {
+            "position": {
+              "x": -4,
+              "y": 1,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.3827,
+              "z": 0,
+              "w": 0.9239
+            }
+          },
+          "values": {
+            "boxWidth": 2,
+            "boxHeight": 2,
+            "boxDepth": 2,
+            "color": 16711680,
+            "roughness": 0.6
+          }
+        },
+        {
+          "ref": "ent_cube02",
+          "type": "@core/Mesh",
+          "name": "BlueCube",
+          "transform": {
+            "position": {
+              "x": 3,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0,
+              "w": 0.9899
+            }
+          },
+          "values": {
+            "boxWidth": 1.5,
+            "boxHeight": 3,
+            "boxDepth": 1.5,
+            "color": 255,
+            "roughness": 0.5,
+            "metalness": 0.1
+          }
+        },
+        {
+          "ref": "ent_cube03",
+          "type": "@core/Mesh",
+          "name": "GreenCube",
+          "transform": {
+            "position": {
+              "x": 0,
+              "y": 3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.7071,
+              "z": 0,
+              "w": 0.7071
+            }
+          },
+          "values": {
+            "boxWidth": 2.5,
+            "boxDepth": 2.5,
+            "color": 65280,
+            "roughness": 0.7
+          }
+        },
+        {
+          "ref": "ent_cube04",
+          "type": "@core/Mesh",
+          "name": "YellowCube",
+          "transform": {
+            "position": {
+              "x": -6,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0.2,
+              "y": 0.2,
+              "z": 0,
+              "w": 0.9592
+            }
+          },
+          "values": {
+            "boxWidth": 1.8,
+            "boxHeight": 1.8,
+            "boxDepth": 1.8,
+            "color": 16776960,
+            "roughness": 0.5,
+            "metalness": 0.2
+          }
+        },
+        {
+          "ref": "ent_cube05",
+          "type": "@core/Mesh",
+          "name": "OrangeCube",
+          "transform": {
+            "position": {
+              "x": 5,
+              "y": 1.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.5,
+              "z": 0.1,
+              "w": 0.8602
+            }
+          },
+          "values": {
+            "boxWidth": 2,
+            "boxHeight": 2,
+            "boxDepth": 2,
+            "color": 16753920,
+            "roughness": 0.6
+          }
+        },
+        {
+          "ref": "ent_cube06",
+          "type": "@core/Mesh",
+          "name": "PurpleCube",
+          "transform": {
+            "position": {
+              "x": -2,
+              "y": 4,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0.1,
+              "y": 0.3,
+              "z": 0.1,
+              "w": 0.9434
+            }
+          },
+          "values": {
+            "boxWidth": 1.5,
+            "boxHeight": 1.5,
+            "boxDepth": 1.5,
+            "color": 8388736,
+            "roughness": 0.4,
+            "metalness": 0.3
+          }
+        },
+        {
+          "ref": "ent_cube07",
+          "type": "@core/Mesh",
+          "name": "CyanCube",
+          "transform": {
+            "position": {
+              "x": 7,
+              "y": 3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.1961,
+              "z": 0,
+              "w": 0.9806
+            }
+          },
+          "values": {
+            "boxWidth": 2,
+            "boxHeight": 2.5,
+            "boxDepth": 2,
+            "color": 65535,
+            "roughness": 0.5,
+            "metalness": 0.1
+          }
+        },
+        {
+          "ref": "ent_cube08",
+          "type": "@core/Mesh",
+          "name": "PinkCube",
+          "transform": {
+            "position": {
+              "x": -7,
+              "y": 1.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0.2,
+              "y": 0,
+              "z": 0.2,
+              "w": 0.9592
+            }
+          },
+          "values": {
+            "boxWidth": 1.5,
+            "boxHeight": 2.5,
+            "boxDepth": 1.5,
+            "color": 16711935,
+            "roughness": 0.6
+          }
+        },
+        {
+          "ref": "ent_cube09",
+          "type": "@core/Mesh",
+          "name": "TealCube",
+          "transform": {
+            "position": {
+              "x": 2,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.3827,
+              "z": 0,
+              "w": 0.9239
+            }
+          },
+          "values": {
+            "boxWidth": 2.5,
+            "boxHeight": 1.5,
+            "boxDepth": 2.5,
+            "color": 32896,
+            "roughness": 0.7,
+            "metalness": 0.1
+          }
+        },
+        {
+          "ref": "ent_cube10",
+          "type": "@core/Mesh",
+          "name": "LimeCube",
+          "transform": {
+            "position": {
+              "x": -3,
+              "y": 5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0.3,
+              "y": 0.3,
+              "z": 0,
+              "w": 0.9055
+            }
+          },
+          "values": {
+            "boxWidth": 1.2,
+            "boxHeight": 1.2,
+            "boxDepth": 1.2,
+            "color": 12582656,
+            "roughness": 0.5,
+            "metalness": 0.2
+          }
+        },
+        {
+          "ref": "ent_cube11",
+          "type": "@core/Mesh",
+          "name": "SilverCube",
+          "transform": {
+            "position": {
+              "x": 4,
+              "y": 0.5,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0.1,
+              "y": 0.4,
+              "z": 0,
+              "w": 0.9106
+            }
+          },
+          "values": {
+            "boxWidth": 3,
+            "boxDepth": 3,
+            "color": 12632256,
+            "roughness": 0.2,
+            "metalness": 0.8
+          }
+        },
+        {
+          "ref": "ent_cube12",
+          "type": "@core/Mesh",
+          "name": "GoldCube",
+          "transform": {
+            "position": {
+              "x": -8,
+              "y": 3,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.7071,
+              "z": 0.1,
+              "w": 0.7004
+            }
+          },
+          "values": {
+            "boxWidth": 2,
+            "boxHeight": 2,
+            "boxDepth": 2,
+            "color": 16766720,
+            "roughness": 0.3,
+            "metalness": 0.9
+          }
+        }
+      ],
+      "local": [],
+      "server": [],
+      "prefabs": []
+    }
+  }
+}

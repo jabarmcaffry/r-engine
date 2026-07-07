@@ -8,7 +8,7 @@ import {
   type ITransform,
 } from "@rebur/engine";
 import { NIL_UUID } from "@std/uuid/constants";
-import { BoxResizeGizmoResizeEnd, GizmoUpdateEnd } from "../../common/entities/mod.ts";
+import { GizmoUpdateEnd } from "../../common/entities/mod.ts";
 import {
   EditorMetadataEntity,
   LocalRootFacade,
@@ -396,20 +396,6 @@ export function setupKeyboardShortcuts(
     } as unknown as UndoRedoOperation);
   });
 
-  game.on(BoxResizeGizmoResizeEnd, ({ entity, previous: prev }) => {
-    const transform = entity.globalTransform.bare();
-    const previous = {
-      ...transform,
-      position: { x: prev.position.x, y: prev.position.y, z: prev.position.z },
-      scale: { x: prev.scale.x, y: prev.scale.y, z: prev.scale.z },
-    } satisfies ITransform;
-    UndoRedoManager._.push({
-      t: "transform-change",
-      entityRef: entity.ref,
-      transform,
-      previous,
-    } as unknown as UndoRedoOperation);
-  });
   // #endregion
 
   // #region Key Events

@@ -13,7 +13,7 @@ import {
   Vector2,
   Vec3,
 } from "@rebur/engine";
-import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
+import { Gizmo } from "../common/entities/mod.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
 import { EditorMetadataEntity } from "../common/mod.ts";
 import { InspectorUI } from "./ui/inspector.ts";
@@ -216,8 +216,6 @@ export class CameraPanBehavior extends Behavior {
           continue;
         if (EditorMetadataEntity.getLockedBy(entity) !== undefined) continue;
         if (entity instanceof Gizmo || entity.parent instanceof Gizmo) continue;
-        if (entity instanceof BoxResizeGizmo || entity.parent instanceof BoxResizeGizmo)
-          continue;
 
         const bounds = entity.bounds;
         if (!bounds) continue;
@@ -317,8 +315,6 @@ export class CameraPanBehavior extends Behavior {
           continue;
         if (EditorMetadataEntity.getLockedBy(entity) !== undefined) continue;
         if (entity instanceof Gizmo || entity.parent instanceof Gizmo) continue;
-        if (entity instanceof BoxResizeGizmo || entity.parent instanceof BoxResizeGizmo)
-          continue;
 
         const bounds = entity.bounds;
         if (!bounds) continue;
@@ -495,16 +491,11 @@ export class CameraPanBehavior extends Behavior {
     this.#clearAllHighlights();
 
     const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
-    const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
 
     if (selectedEntities.length > 0) {
       if (gizmo) {
         gizmo.target = selectedEntities[0];
         gizmo.auxTargets = selectedEntities.slice(1);
-      }
-      if (boxresize) {
-        boxresize.target = selectedEntities[0];
-        boxresize.auxTargets = selectedEntities.slice(1);
       }
       if (this.ui) {
         this.ui.selectedEntity.entities = selectedEntities;
@@ -513,10 +504,6 @@ export class CameraPanBehavior extends Behavior {
       if (gizmo) {
         gizmo.target = undefined;
         gizmo.auxTargets = [];
-      }
-      if (boxresize) {
-        boxresize.target = undefined;
-        boxresize.auxTargets = [];
       }
       if (this.ui) {
         this.ui.selectedEntity.entities = [];
@@ -543,8 +530,7 @@ export class CameraPanBehavior extends Behavior {
     if (!wasMouseDownOverCanvas) return;
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {
       const gizmo = this.game.local.children.get("Gizmo")?.cast(Gizmo);
-      const boxresize = this.game.local.children.get("BoxResizeGizmo")?.cast(BoxResizeGizmo);
-      if (!gizmo && !boxresize) return;
+      if (!gizmo) return;
 
       const entities = this.game.entities
         .lookupByPosition(event.cursor.world)
@@ -566,7 +552,7 @@ export class CameraPanBehavior extends Behavior {
       }
 
       const currentTime = Date.now();
-      const target = gizmo?.target ?? boxresize?.target;
+      const target = gizmo?.target;
 
       let currentIdx = target ? entities.indexOf(target) : 0;
       let queryEntity = entities[currentIdx];
@@ -598,16 +584,10 @@ export class CameraPanBehavior extends Behavior {
             gizmo.target = newTarget;
             gizmo.auxTargets = [];
           }
-          if (boxresize) {
-            boxresize.target = newTarget;
-            boxresize.auxTargets = [];
-          }
         } else {
           // Don't add the target entity to aux targets if it's already the main target
           if (gizmo && gizmo.target !== newTarget)
             gizmo.auxTargets = [...gizmo.auxTargets, newTarget];
-          if (boxresize && boxresize.target !== newTarget)
-            boxresize.auxTargets = [...boxresize.auxTargets, newTarget];
         }
 
         if (this.ui) this.ui.selectedEntity.entities = newEntities;
@@ -615,10 +595,6 @@ export class CameraPanBehavior extends Behavior {
         if (gizmo) {
           gizmo.target = newTarget;
           gizmo.auxTargets = [];
-        }
-        if (boxresize) {
-          boxresize.target = newTarget;
-          boxresize.auxTargets = [];
         }
         if (this.ui) this.ui.selectedEntity.entities = newTarget ? [newTarget] : [];
       }
