@@ -1,6 +1,6 @@
 import * as z from "@rebur/vendor/zod.ts";
 
-export const CURRENT_SCHEMA_VERSION: number = 1;
+export const CURRENT_SCHEMA_VERSION: number = 2;
 
 /** nanoid: ent_* */
 export const EntityReferenceSchema = z.string().startsWith("ent_").describe("Entity Reference");
@@ -9,14 +9,25 @@ export const BehaviorReferenceSchema = z
   .string()
   .startsWith("bhv_")
   .describe("Behavior Reference");
-/** e.g. "@core/Sprite", "@my-game/MyCustomEntity" */
+/** e.g. "@core/Mesh", "@my-game/MyCustomEntity" */
 export const EntityTypeSchema = z.string().describe("Entity Type");
 
 export const ResourceLocationSchema = z.string().describe("Resource URI");
 
-export const VectorSchema = z.object({
+// ---------------------------------------------------------------------------
+// 3D math schemas
+// ---------------------------------------------------------------------------
+export const Vec3Schema = z.object({
   x: z.number(),
   y: z.number(),
+  z: z.number(),
+});
+
+export const QuatSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  z: z.number(),
+  w: z.number(),
 });
 
 type Primitive = string | number | boolean | null | undefined;
@@ -40,11 +51,13 @@ const JsonValueSchema = z.union([PrimitiveSchema, JsonArraySchema, JsonObjectSch
 
 export const ValueSchema = JsonValueSchema;
 
+// ---------------------------------------------------------------------------
+// 3D transform schema (position, rotation as quaternion, scale)
+// ---------------------------------------------------------------------------
 export const TransformSchema = z.object({
-  position: VectorSchema.default({ x: 0, y: 0 }),
-  scale: VectorSchema.default({ x: 1, y: 1 }),
-  rotation: z.number().default(0),
-  z: z.number().default(0),
+  position: Vec3Schema.default({ x: 0, y: 0, z: 0 }),
+  rotation: QuatSchema.default({ x: 0, y: 0, z: 0, w: 1 }),
+  scale: Vec3Schema.default({ x: 1, y: 1, z: 1 }),
 });
 export type SceneDescTransform = z.input<typeof TransformSchema>;
 

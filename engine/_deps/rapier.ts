@@ -1,6 +1,6 @@
-import RAPIER from "npm:@dimforge/rapier2d-compat@0.19.1";
-export * from "npm:@dimforge/rapier2d-compat@0.19.1";
-export { default } from "npm:@dimforge/rapier2d-compat@0.19.1";
+import RAPIER from "npm:@dimforge/rapier3d-compat@0.14.0";
+export * from "npm:@dimforge/rapier3d-compat@0.14.0";
+export { default } from "npm:@dimforge/rapier3d-compat@0.14.0";
 
 let initializing = false;
 let initialized = false;

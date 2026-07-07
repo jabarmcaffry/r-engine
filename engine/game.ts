@@ -1,5 +1,3 @@
-import { initRapier } from "@rebur/vendor/rapier.ts";
-
 import type {
   BehaviorConstructor,
   ClientKV,
@@ -17,34 +15,40 @@ import type {
 } from "@rebur/engine";
 import {
   BehaviorLoader,
-  ClickableEntity,
   DefaultSignalHandlerImpls,
   EntityStore,
   GamePostRender,
   GamePostTick,
   GamePreTick,
   GameRender,
-  GameRenderer,
   GameShutdown,
   GameStatusChange,
   GameTick,
   Inputs,
   InternalGameTick,
   LocalRoot,
-  PhysicsEngine,
   PrefabsRoot,
   ServerHttpAPI,
   ServerRoot,
   Time,
-  UIManager,
   Value,
   ValueRegistry,
   WorldRoot,
 } from "@rebur/engine";
 import * as internal from "@rebur/engine/internal";
 import { urlWithParams } from "@rebur/util/url.ts";
-import * as PIXI from "@rebur/vendor/pixi.ts";
+import { initRapier } from "@rebur/vendor/rapier.ts";
 import { SyncedObjectRegistry } from "./synced-objects/registry.ts";
+
+// 3D backends — imported directly so there is no circular dependency
+import type { IPhysicsBackend } from "./physics/api.ts";
+import { RapierPhysicsBackend } from "./physics/backends/rapier/backend.ts";
+import type { IRendererBackend } from "./renderer/api.ts";
+import { ThreeRendererBackend } from "./renderer/backends/three/backend.ts";
+import type { IAudioBackend } from "./audio/api.ts";
+import { HowlerAudioBackend } from "./audio/backends/howler/backend.ts";
+import { EntityCollision } from "./signals/entity-collision.ts";
+import { Vec3 } from "./math/vec3.ts";
 
 export interface GameOptions {
   instanceId: string;
@@ -90,8 +94,6 @@ export abstract class BaseGame implements ISignalHandler {
     if (!(this instanceof ServerGame || this instanceof ClientGame))
       throw new Error("BaseGame is sealed to ServerGame and ClientGame!");
 
-    // now that we know we are ServerGame | ClientGame, we can safely cast to Game
-
     this.instanceId = opts.instanceId;
     this.worldId = opts.worldId;
 
@@ -121,8 +123,8 @@ export abstract class BaseGame implements ISignalHandler {
 
   #initialized: boolean = false;
 
-  #physics: PhysicsEngine | undefined;
-  get physics(): PhysicsEngine {
+  #physics: IPhysicsBackend | undefined;
+  get physics(): IPhysicsBackend {
     if (this.#physics) return this.#physics;
     throw new Error("physics are not yet initialized!");
   }
@@ -191,13 +193,17 @@ export abstract class BaseGame implements ISignalHandler {
   }
 
   // #region Lifecycle
-  async initialize() {
+  async initialize(tps?: number) {
     if (this.#initialized) return;
     this.#initialized = true;
 
+    // Rapier WASM must be ready before we create the world.
     await initRapier();
 
-    this.#physics = new PhysicsEngine(this as unknown as Game);
+    this.#physics = new RapierPhysicsBackend(
+      { x: 0, y: -9.81, z: 0 },
+      tps ?? this.time.TPS,
+    );
   }
 
   [internal.entityTickingOrderDirty]: boolean = true;
@@ -234,7 +240,7 @@ export abstract class BaseGame implements ISignalHandler {
 
     const entityTickingOrder = this[internal.entityTickingOrder];
     if (this[internal.entityTickingOrderDirty]) {
-      entityTickingOrder.length = 0; // size list down to 0 but keep capacity (avoid expensive realloc on array grow!)
+      entityTickingOrder.length = 0;
       this[internal.submitEntityTickingOrder](entityTickingOrder);
       this[internal.entityTickingOrderDirty] = false;
     }
@@ -242,23 +248,22 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.time[internal.timeTick]();
 
-    // run the pre tick phase, then a physics update, then the tick phase
-    // so e.g. in Rigidbody2D we can move the body to the entity's transform,
-    // have the physics world update, and then move the transform to the new position of the body.
-
+    // Pre-tick: move transforms into physics world, run physics step, pull results back.
     this.fire(GamePreTick);
 
     for (let i = 0; i < entityCount; i++)
       entityTickingOrder[i][internal.interpolationStartTick]();
     for (let i = 0; i < entityCount; i++)
       entityTickingOrder[i][internal.applyNetworkInterpolation]();
+
     this.physics.tick();
+    this.#drainCollisionEvents();
+
     for (let i = 0; i < entityCount; i++) {
       entityTickingOrder[i].onUpdate();
     }
 
     this.fire(GameTick);
-
     this.fire(GamePostTick);
 
     for (const entity of this.entities) {
@@ -267,12 +272,28 @@ export abstract class BaseGame implements ISignalHandler {
 
     this.fire(InternalGameTick);
 
-    // TODO stupid hack. how do I actually get this?
     if (this.#needCheckForEditMode) {
       if (this.world.children.has("EditEntities")) {
         this.isEditMode = true;
       }
       this.#needCheckForEditMode = false;
+    }
+  }
+
+  #drainCollisionEvents(): void {
+    for (const ev of this.physics.drainCollisionEvents()) {
+      const e1 = this.entities.lookupByRef(ev.entityRef1);
+      const e2 = this.entities.lookupByRef(ev.entityRef2);
+      if (!e1 || !e2) continue;
+
+      const c1 = new Vec3(ev.contact1.x, ev.contact1.y, ev.contact1.z);
+      const c2 = new Vec3(ev.contact2.x, ev.contact2.y, ev.contact2.z);
+      const n1 = new Vec3(ev.normal1.x, ev.normal1.y, ev.normal1.z);
+      const n2 = new Vec3(ev.normal2.x, ev.normal2.y, ev.normal2.z);
+      const f = new Vec3(ev.force.x, ev.force.y, ev.force.z);
+
+      e1.fire(EntityCollision, ev.started, e2, c1, n1, f);
+      e2.fire(EntityCollision, ev.started, e1, c2, n2, f);
     }
   }
 
@@ -282,7 +303,7 @@ export abstract class BaseGame implements ISignalHandler {
     this.world.destroy();
     this.setStatus(GameStatus.Shutdown);
     this.fire(GameShutdown);
-    this.physics.shutdown();
+    this.physics.dispose();
   }
 
   [Symbol.dispose]() {
@@ -320,9 +341,7 @@ export class ServerGame extends BaseGame {
   readonly remote: ServerRoot = new ServerRoot(this);
   readonly local: undefined;
 
-  /**
-   * Alias of {@link remote}
-   */
+  /** Alias of {@link remote} */
   get server() {
     return this.remote;
   }
@@ -360,22 +379,40 @@ export class ClientGame extends BaseGame {
   public isServer = (): this is ServerGame => false;
 
   readonly container: HTMLDivElement;
-  readonly renderer!: GameRenderer;
 
-  readonly ui: UIManager = new UIManager(this);
+  /** Three.js renderer backend. Only exists when !headless. */
+  readonly renderer!: IRendererBackend;
+
+  /** Howler audio backend. Only exists when !headless. */
+  readonly audio!: IAudioBackend;
 
   readonly network: ClientNetworking;
 
   readonly kv: ClientKV;
 
-  headless = false; // used for dummygames to avoid creating tons of webgl contexts
+  /** When true, no WebGL context is created (used for dummy games in editor tooling). */
+  headless = false;
+
+  readonly local: LocalRoot = new LocalRoot(this);
+  readonly remote: undefined;
+
+  /** Alias of {@link remote} */
+  get server() {
+    return this.remote;
+  }
 
   constructor(opts: ClientGameOptions, headless = false) {
     super(opts);
 
     this.container = opts.container;
     this.headless = headless;
-    if (!this.headless) this.renderer = new GameRenderer(this);
+
+    if (!this.headless) {
+      (this as { renderer: IRendererBackend }).renderer = new ThreeRendererBackend(
+        opts.container,
+      );
+      (this as { audio: IAudioBackend }).audio = new HowlerAudioBackend();
+    }
 
     this.#cachebust = opts.cacheBuster;
     this.network = opts.network;
@@ -386,31 +423,20 @@ export class ClientGame extends BaseGame {
 
   [internal.inputsShutdownFn]: (() => void) | undefined;
 
-  async initialize(options: Partial<PIXI.ApplicationOptions> = {}) {
+  async initialize() {
     await super.initialize();
-    if (!this.headless) await this.renderer[internal.rendererInit](options);
     this[internal.inputsShutdownFn] = this.inputs[internal.inputsRegisterHandlers]();
-    this.ui[internal.uiInit]();
   }
 
   override shutdown() {
     this[internal.inputsShutdownFn]?.();
-    this.ui[internal.uiDestroy]();
     this.local.destroy();
     super.shutdown();
-    ClickableEntity[internal.clickableTeardownGame](this);
-    if (!this.headless) this.renderer.app.destroy({ removeView: true });
+    if (!this.headless) {
+      this.renderer.dispose();
+      this.audio.dispose();
+    }
     this.network.disconnect();
-  }
-
-  readonly local: LocalRoot = new LocalRoot(this);
-  readonly remote: undefined;
-
-  /**
-   * Alias of {@link remote}
-   */
-  get server() {
-    return this.remote;
   }
 
   [internal.submitEntityTickingOrder](entities: Entity[]) {
@@ -456,7 +482,7 @@ export class ClientGame extends BaseGame {
     }
 
     this.fire(GameRender);
-    this.renderer[internal.rendererRender]();
+    if (!this.headless) this.renderer.render();
     this.fire(GamePostRender);
   }
 }

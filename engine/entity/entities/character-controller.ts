@@ -1,108 +1,91 @@
-import type { EntityContext } from "@rebur/engine";
-import { Collider, Entity, EntityDestroyed, GamePostTick, Vector2 } from "@rebur/engine";
-import * as internal from "@rebur/engine/internal";
-import { KinematicCharacterController, QueryFilterFlags } from "@rebur/vendor/rapier.ts";
+import {
+  Entity,
+  EntitySpawned,
+  EntityDestroyed,
+  type EntityContext,
+} from "@rebur/engine";
+import type { ColliderHandle, CharacterControllerHandle, PhysicsShape } from "../../physics/api.ts";
+import { Vec3 } from "../../math/vec3.ts";
 
-export class CharacterController extends Collider {
+export class CharacterController extends Entity {
   static {
     Entity.registerType(this, "@core");
   }
 
-  public static override readonly icon = "🚶‍♀️";
+  static readonly icon = "🚶";
 
-  public offset: number = 0.0625;
+  /** Skin offset above ground to prevent snagging. */
+  offset: number = 0.01;
+  radius: number = 0.5;
+  height: number = 1.8;
 
-  #controller: KinematicCharacterController | undefined;
-  #prevPosition = this.pos.clone();
+  #colliderHandle: ColliderHandle | undefined;
+  #ctrlHandle: CharacterControllerHandle | undefined;
 
-  teleport = false;
-
-  #isGrounded = false;
-  public get isGrounded(): boolean {
-    return this.#isGrounded;
-  }
-
-  public get correctedPosition(): Vector2 {
-    const delta = this.pos.sub(this.#prevPosition);
-    if (!this.#controller) return new Vector2({ x: 0, y: 0 });
-    this.#controller.computeColliderMovement(this.collider, delta);
-    const corrected = this.#controller.computedMovement();
-    return this.#prevPosition.add(corrected);
-  }
+  get bounds() { return undefined; }
+  get colliderHandle(): ColliderHandle | undefined { return this.#colliderHandle; }
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(CharacterController, "offset", {
-      description: "Controls how far the collider is offset from the ground.",
+
+    this.defineValue(CharacterController, "offset", { description: "Skin offset above ground." });
+    this.defineValue(CharacterController, "radius", { description: "Capsule radius." });
+    this.defineValue(CharacterController, "height", { description: "Capsule height." });
+
+    this.on(EntitySpawned, () => {
+      const shape: PhysicsShape = {
+        type: "capsule",
+        halfHeight: this.height / 2,
+        radius: this.radius,
+      };
+      this.#colliderHandle = this.game.physics.createCollider(
+        this.ref,
+        { shape, mass: 1, friction: 0.7, activeEvents: true },
+        undefined,
+      );
+      const t = this.globalTransform;
+      this.game.physics.setColliderTranslation(this.#colliderHandle, t.position);
+      this.game.physics.setColliderRotation(this.#colliderHandle, t.rotation);
+
+      this.#ctrlHandle = this.game.physics.createCharacterController(this.ref, this.offset);
     });
-  }
-
-  override onInitialize(): void {
-    super.onInitialize();
-
-    // ugly hack dont worry about it
-    let hasCollider;
-    try {
-      const _ = this.collider;
-      hasCollider = true;
-    } catch {
-      hasCollider = false;
-    }
-
-    if (hasCollider) {
-      this.#controller = this.game.physics.world.createCharacterController(this.offset);
-      // this.#controller.enableSnapToGround(0.1);
-      // TODO: Make this and sliding configurable.
-      // sliding is super buggy especially with the rect collider.
-      this.#controller.enableAutostep(0.25, 1, false);
-    }
 
     this.on(EntityDestroyed, () => {
-      if (!this.#controller) return;
-      this.game.physics.world.removeCharacterController(this.#controller);
+      if (this.#ctrlHandle !== undefined) {
+        this.game.physics.destroyCharacterController(this.#ctrlHandle);
+        this.#ctrlHandle = undefined;
+      }
+      if (this.#colliderHandle !== undefined) {
+        this.game.physics.destroyCollider(this.#colliderHandle);
+        this.#colliderHandle = undefined;
+      }
     });
-
-    this.listen(this.game, GamePostTick, () => this.#onPostUpdate());
   }
 
-  #onPostUpdate() {
-    if (!this.#controller) return;
+  /**
+   * Move by desired velocity (units/s). Returns actual velocity after collision.
+   */
+  move(desiredVelocity: Vec3, delta: number): Vec3 {
+    if (this.#ctrlHandle === undefined || this.#colliderHandle === undefined) return Vec3.ZERO.clone();
 
-    if (!this.teleport) {
-      try {
-        const delta = this.pos.sub(this.#prevPosition);
-        this.#controller.computeColliderMovement(
-          this.collider,
-          delta,
-          QueryFilterFlags["EXCLUDE_SENSORS"],
-        );
-        this.#isGrounded = this.#controller.computedGrounded();
+    const desired = desiredVelocity.scale(delta);
+    const actual = this.game.physics.moveCharacter(
+      this.#ctrlHandle,
+      this.#colliderHandle,
+      desired,
+      delta,
+    );
 
-        this.game.physics[internal.emitCharacterControllerCollisions](
-          this.collider,
-          this.#controller,
-        );
+    const t = this.globalTransform;
+    const newPos = t.position.add(actual);
+    t.position.assign(newPos);
+    this.game.physics.setColliderTranslation(this.#colliderHandle, newPos);
 
-        const authority = this.authority ?? "server";
-        const hasAuthority = authority === this.game.network.self;
-        // const hasAuthority = true;
-        // TODO: someone who knows more about authority determine if we should
-        // only correct movement on the owning client
+    return actual.scale(1 / delta);
+  }
 
-        if (hasAuthority) {
-          const corrected = this.#controller.computedMovement();
-          const newPosition = this.#prevPosition.add(corrected);
-          this.pos.assign(newPosition);
-        }
-      } catch (_) {
-        // this throws for exactly one tick after destroying the entity. catch and ignore
-        // TODO: ELEGANT_DESTROY Figure out why this happens
-        // this.destroyed is false at the top of this function but true in this catch block??
-      }
-    } else {
-      this.teleport = false;
-    }
-
-    this.#prevPosition.assign(this.pos);
+  get isGrounded(): boolean {
+    if (this.#ctrlHandle === undefined) return false;
+    return this.game.physics.isGrounded(this.#ctrlHandle);
   }
 }

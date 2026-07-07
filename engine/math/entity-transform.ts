@@ -1,119 +1,92 @@
-import type { IVector2 } from "@rebur/engine";
-import { Vector2 } from "@rebur/engine";
-import {
-  transformForceUpdate,
-  transformOnChanged,
-  vectorForceUpdate,
-  vectorOnChanged,
-} from "@rebur/engine/internal";
+import * as internal from "@rebur/engine/internal";
+import { Vec3, type IVec3 } from "./vec3.ts";
+import { Quat, type IQuat } from "./quat.ts";
 
 export interface ITransform {
-  position: IVector2;
-  rotation: number;
-  scale: IVector2;
-  z: number;
+  position: IVec3;
+  rotation: IQuat;
+  scale: IVec3;
 }
 
-export type TransformOptions = {
-  position?: Partial<IVector2>;
-  scale?: Partial<IVector2>;
-  rotation?: number;
-  z?: number;
-};
+/** Options accepted by `setTransform` / `setGlobalTransform` — all fields optional. */
+export interface TransformOptions {
+  position?: IVec3;
+  rotation?: IQuat;
+  scale?: IVec3;
+}
 
-export class Transform {
-  #position = new Vector2(0, 0);
-  get position(): Vector2 {
-    return this.#position;
-  }
-  set position(value: IVector2) {
-    this.#position.assign(value);
-  }
+export class Transform implements ITransform {
+  #position: Vec3;
+  #rotation: Quat;
+  #scale: Vec3;
 
-  #scale = new Vector2(1, 1);
-  get scale(): Vector2 {
-    return this.#scale;
-  }
-  set scale(value: IVector2) {
-    this.#scale.assign(value);
-  }
-
-  #rotation: number = 0;
-  get rotation(): number {
-    return this.#rotation;
-  }
-  set rotation(value: number) {
-    if (this.#rotation === value) return;
-    this.#rotation = value;
-    this[transformOnChanged]();
+  /**
+   * Accepts any of:
+   * - no args → identity
+   * - an `ITransform` (or another `Transform`) → copies all three fields
+   * - `TransformOptions` (partial ITransform) → copies provided fields, defaults for missing
+   */
+  constructor(source?: Partial<ITransform> | null) {
+    this.#position = new Vec3(source?.position ?? Vec3.ZERO);
+    this.#rotation = new Quat(source?.rotation ?? Quat.IDENTITY);
+    this.#scale = new Vec3(source?.scale ?? Vec3.ONE);
   }
 
-  #z: number = 0;
-  get z(): number {
-    return this.#z;
+  get position(): Vec3 { return this.#position; }
+  set position(v: IVec3) {
+    this.#position.assign(v);
+    this[internal.transformOnChanged]?.();
   }
+
+  get rotation(): Quat { return this.#rotation; }
+  set rotation(q: IQuat) {
+    this.#rotation.assign(q);
+    this[internal.transformOnChanged]?.();
+  }
+
+  get scale(): Vec3 { return this.#scale; }
+  set scale(v: IVec3) {
+    this.#scale.assign(v);
+    this[internal.transformOnChanged]?.();
+  }
+
+  /** Back-compat shim: the old Transform had a standalone `z` layer field.
+   *  In 3D it maps to `position.z`.  */
+  get z(): number { return this.#position.z; }
   set z(value: number) {
-    if (this.#z === value) return;
-    this.#z = value;
-    this[transformOnChanged]();
+    this.#position.z = value;
+    this[internal.transformOnChanged]?.();
   }
 
-  #assignSignalListeners() {
-    this.#position[vectorOnChanged] = () => {
-      this[transformOnChanged]();
-    };
+  [internal.transformOnChanged]?: () => void;
+  [internal.transformForceUpdate]?: (t: ITransform) => void;
+  [internal.transformFromNetwork]?: (t: ITransform) => void;
 
-    this.#scale[vectorOnChanged] = () => {
-      this[transformOnChanged]();
-    };
-  }
-
-  constructor(opts?: TransformOptions) {
-    if (opts?.position) {
-      const x = opts.position.x ?? 0;
-      const y = opts.position.y ?? 0;
-
-      this.#position = new Vector2(x, y);
-    }
-
-    if (opts?.scale) {
-      const x = opts.scale.x ?? 1;
-      const y = opts.scale.y ?? 1;
-
-      this.#scale = new Vector2(x, y);
-    }
-
-    if (opts?.rotation) this.#rotation = opts.rotation;
-    if (opts?.z) this.#z = opts.z;
-
-    this.#assignSignalListeners();
-  }
-
-  [transformOnChanged]: () => void = () => {};
-  [transformForceUpdate](transform: Transform): void {
-    // update without issuing onChanged()
-    this.#position[vectorForceUpdate](transform.position.x, transform.position.y);
-    this.#scale[vectorForceUpdate](transform.scale.x, transform.scale.y);
-    this.#rotation = transform.rotation;
-    this.#z = transform.z;
-
-    this.#assignSignalListeners();
-  }
-
-  clone(): Transform {
-    return new Transform(this);
+  assign(other: Partial<ITransform>): this {
+    if (other.position) this.#position.assign(other.position);
+    if (other.rotation) this.#rotation.assign(other.rotation);
+    if (other.scale)    this.#scale.assign(other.scale);
+    this[internal.transformOnChanged]?.();
+    return this;
   }
 
   bare(): ITransform {
     return {
-      position: this.#position.bare(),
-      rotation: this.#rotation,
-      scale: this.#scale.bare(),
-      z: this.#z,
+      position: { x: this.#position.x, y: this.#position.y, z: this.#position.z },
+      rotation: { x: this.#rotation.x, y: this.#rotation.y, z: this.#rotation.z, w: this.#rotation.w },
+      scale:    { x: this.#scale.x,    y: this.#scale.y,    z: this.#scale.z },
     };
   }
 
-  toJSON() {
-    return this.bare();
+  clone(): Transform {
+    return new Transform({ position: this.#position, rotation: this.#rotation, scale: this.#scale });
+  }
+
+  equals(other: Partial<ITransform>, epsilon = 1e-6): boolean {
+    return (
+      (!other.position || this.#position.equals(other.position, epsilon)) &&
+      (!other.rotation || this.#rotation.equals(other.rotation, epsilon)) &&
+      (!other.scale    || this.#scale.equals(other.scale, epsilon))
+    );
   }
 }

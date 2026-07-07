@@ -12,7 +12,8 @@ import type {
   Game,
   IBounds,
   ISignalHandler,
-  IVector2,
+  IVec3,
+  IQuat,
   Inputs,
   JsonValue,
   Root,
@@ -52,11 +53,11 @@ import {
   EntityTransformUpdate,
   GameStatus,
   Transform,
+  Vec3,
+  Quat,
   Value,
   ValueTypeAdapter,
-  Vector2,
   inferValueTypeTag,
-  lerpAngle,
   transformLocalToWorld,
   transformWorldToLocal,
 } from "@rebur/engine";
@@ -608,9 +609,8 @@ export abstract class Entity implements ISignalHandler {
       enabled: this.#enabled,
       transform: {
         position: this.transform.position.bare(),
-        rotation: this.transform.rotation,
+        rotation: this.transform.rotation.bare(),
         scale: this.transform.scale.bare(),
-        z: this.transform.z,
       },
       values: entityValues,
       // @ts-expect-error hard-cast string -> Exclude<keyof this, …>
@@ -702,9 +702,8 @@ export abstract class Entity implements ISignalHandler {
   cloneInto(other: Entity, overrides: Partial<EntityDefinition<this>> = {}): this {
     const transform = {
       position: overrides.transform?.position ?? this.transform.position.bare(),
-      rotation: overrides.transform?.rotation ?? this.transform.rotation,
+      rotation: overrides.transform?.rotation ?? this.transform.rotation.bare(),
       scale: overrides.transform?.scale ?? this.transform.scale.bare(),
-      z: overrides.transform?.z ?? this.transform.z,
     };
 
     const { values: _, ...rest } = overrides;
@@ -749,30 +748,25 @@ export abstract class Entity implements ISignalHandler {
   // #region Transform
   readonly transform: Transform;
   readonly globalTransform: Transform;
-  get pos(): Vector2 {
+  get pos(): Vec3 {
     return this.globalTransform.position;
   }
-  set pos(value: Vector2) {
+  set pos(value: IVec3) {
     this.globalTransform.position = value;
   }
   get z(): number {
-    return this.globalTransform.z;
+    return this.globalTransform.position.z;
   }
   set z(value: number) {
-    this.globalTransform.z = value;
+    this.globalTransform.position.z = value;
   }
 
-  #prevPosition: IVector2;
-  #prevRotation: number;
-  #prevScale: IVector2;
+  #prevPosition: Vec3;
+  #prevRotation: Quat;
+  #prevScale: Vec3;
   #interpolated: Transform;
 
-  get interpolated(): {
-    // TODO: Readonly Vectors
-    readonly position: Vector2;
-    readonly rotation: number;
-    readonly scale: Vector2;
-  } {
+  get interpolated(): Transform {
     return this.#interpolated;
   }
 
@@ -783,30 +777,18 @@ export abstract class Entity implements ISignalHandler {
    */
   setTransform(opts: TransformOptions): void {
     this[internal.entityTeleportingThisTick] = true;
-    if (opts.position?.x !== undefined) {
-      this.transform.position.x = opts.position.x;
-      this.#prevPosition.x = opts.position.x;
+    if (opts.position !== undefined) {
+      this.transform.position.assign(opts.position);
+      this.#prevPosition.assign(opts.position);
     }
-    if (opts.position?.y !== undefined) {
-      this.transform.position.y = opts.position.y;
-      this.#prevPosition.y = opts.position.y;
-    }
-
     if (opts.rotation !== undefined) {
-      this.transform.rotation = opts.rotation;
-      this.#prevRotation = opts.rotation;
+      this.transform.rotation.assign(opts.rotation);
+      this.#prevRotation.assign(opts.rotation);
     }
-
-    if (opts.scale?.x !== undefined) {
-      this.transform.scale.x = opts.scale.x;
-      this.#prevScale.x = opts.scale.x;
+    if (opts.scale !== undefined) {
+      this.transform.scale.assign(opts.scale);
+      this.#prevScale.assign(opts.scale);
     }
-    if (opts.scale?.y !== undefined) {
-      this.transform.scale.y = opts.scale.y;
-      this.#prevScale.y = opts.scale.y;
-    }
-
-    if (opts.z !== undefined) this.transform.z = opts.z;
   }
 
   /**
@@ -816,30 +798,18 @@ export abstract class Entity implements ISignalHandler {
    */
   setGlobalTransform(opts: TransformOptions): void {
     this[internal.entityTeleportingThisTick] = true;
-    if (opts.position?.x !== undefined) {
-      this.globalTransform.position.x = opts.position.x;
-      this.#prevPosition.x = opts.position.x;
+    if (opts.position !== undefined) {
+      this.globalTransform.position.assign(opts.position);
+      this.#prevPosition.assign(opts.position);
     }
-    if (opts.position?.y !== undefined) {
-      this.globalTransform.position.y = opts.position.y;
-      this.#prevPosition.y = opts.position.y;
-    }
-
     if (opts.rotation !== undefined) {
-      this.globalTransform.rotation = opts.rotation;
-      this.#prevRotation = opts.rotation;
+      this.globalTransform.rotation.assign(opts.rotation);
+      this.#prevRotation.assign(opts.rotation);
     }
-
-    if (opts.scale?.x !== undefined) {
-      this.globalTransform.scale.x = opts.scale.x;
-      this.#prevScale.x = opts.scale.x;
+    if (opts.scale !== undefined) {
+      this.globalTransform.scale.assign(opts.scale);
+      this.#prevScale.assign(opts.scale);
     }
-    if (opts.scale?.y !== undefined) {
-      this.globalTransform.scale.y = opts.scale.y;
-      this.#prevScale.y = opts.scale.y;
-    }
-
-    if (opts.z !== undefined) this.globalTransform.z = opts.z;
   }
   // #endregion
 
@@ -995,9 +965,9 @@ export abstract class Entity implements ISignalHandler {
     const enabled = enabled_ && this.#enabled;
 
     if (enabled) {
-      this.#prevPosition = this.globalTransform.position.bare();
-      this.#prevRotation = this.globalTransform.rotation;
-      this.#prevScale = this.globalTransform.scale.bare();
+      this.#prevPosition = this.globalTransform.position.clone();
+      this.#prevRotation = this.globalTransform.rotation.clone();
+      this.#prevScale = this.globalTransform.scale.clone();
       this.#interpolated = new Transform(this.globalTransform);
     }
 
@@ -1124,9 +1094,9 @@ export abstract class Entity implements ISignalHandler {
       this.globalTransform[internal.transformForceUpdate](worldSpaceTransform);
     }
 
-    this.#prevPosition = this.globalTransform.position.bare();
-    this.#prevRotation = this.globalTransform.rotation;
-    this.#prevScale = this.globalTransform.scale.bare();
+    this.#prevPosition = this.globalTransform.position.clone();
+    this.#prevRotation = this.globalTransform.rotation.clone();
+    this.#prevScale = this.globalTransform.scale.clone();
     this.#interpolated = new Transform(this.globalTransform);
 
     this.game.entities[internal.entityStoreRegister](this);
@@ -1319,14 +1289,9 @@ export abstract class Entity implements ISignalHandler {
 
   setPrevPositionForSelfAndDescendants() {
     const tr = this.globalTransform;
-    const pos = tr.position;
-    const scale = tr.scale;
-    this.#prevPosition.x = pos.x;
-    this.#prevPosition.y = pos.y;
-
-    this.#prevRotation = tr.rotation;
-    this.#prevScale.x = scale.x;
-    this.#prevScale.y = scale.y;
+    this.#prevPosition.assign(tr.position);
+    this.#prevRotation.assign(tr.rotation);
+    this.#prevScale.assign(tr.scale);
 
     this.gotNetTransformOnTickNumber = this.game.time.ticks;
 
@@ -1337,13 +1302,9 @@ export abstract class Entity implements ISignalHandler {
 
   [internal.interpolationStartTick]() {
     const tr = this.globalTransform;
-    const pos = tr.position;
-    this.#prevPosition.x = pos.x;
-    this.#prevPosition.y = pos.y;
-    this.#prevRotation = tr.rotation;
-    const scale = tr.scale;
-    this.#prevScale.x = scale.x;
-    this.#prevScale.y = scale.y;
+    this.#prevPosition.assign(tr.position);
+    this.#prevRotation.assign(tr.rotation);
+    this.#prevScale.assign(tr.scale);
   }
   [internal.applyNetworkInterpolation]() {
     if (this.game.isEditMode) {
@@ -1358,16 +1319,13 @@ export abstract class Entity implements ISignalHandler {
           const t = age / INTERP_TIME_TICKS;
           const newTransform = new Transform(this.#netTransformTo);
           newTransform.position.assign(
-            Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+            this.#netTransformFrom.position.lerp(this.#netTransformTo.position, t),
           );
-          newTransform.rotation = lerpAngle(
-            this.#netTransformFrom.rotation,
-            this.#netTransformTo.rotation,
-            t,
+          newTransform.rotation.assign(
+            this.#netTransformFrom.rotation.slerp(this.#netTransformTo.rotation, t),
           );
           this.transform[internal.transformForceUpdate](newTransform);
           this.#updateTransform(false, this, this.#netTransformSource);
-          // this.transform[internal.transformOnChanged]();
         }
       }
     } else {
@@ -1382,12 +1340,10 @@ export abstract class Entity implements ISignalHandler {
           const t = age / INTERP_TIME_TICKS;
           const newTransform = new Transform(this.#netTransformTo);
           newTransform.position.assign(
-            Vector2.lerp(this.#netTransformFrom.position, this.#netTransformTo.position, t),
+            this.#netTransformFrom.position.lerp(this.#netTransformTo.position, t),
           );
-          newTransform.rotation = lerpAngle(
-            this.#netTransformFrom.rotation,
-            this.#netTransformTo.rotation,
-            t,
+          newTransform.rotation.assign(
+            this.#netTransformFrom.rotation.slerp(this.#netTransformTo.rotation, t),
           );
           this.transform[internal.transformForceUpdate](newTransform);
           this.#updateTransform(false, this, this.#netTransformSource);
@@ -1397,17 +1353,13 @@ export abstract class Entity implements ISignalHandler {
   }
   [internal.interpolationStartFrame](partial: number) {
     this.#interpolated.position.assign(
-      Vector2.lerp(this.#prevPosition, this.globalTransform.position, partial),
+      this.#prevPosition.lerp(this.globalTransform.position, partial),
     );
-
-    this.#interpolated.rotation = lerpAngle(
-      this.#prevRotation,
-      this.globalTransform.rotation,
-      partial,
+    this.#interpolated.rotation.assign(
+      this.#prevRotation.slerp(this.globalTransform.rotation, partial),
     );
-
     this.#interpolated.scale.assign(
-      Vector2.lerp(this.#prevScale, this.globalTransform.scale, partial),
+      this.#prevScale.lerp(this.globalTransform.scale, partial),
     );
   }
 

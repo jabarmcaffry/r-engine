@@ -5,3 +5,6 @@ export * from "./entity-transform.ts";
 export * from "./lerp.ts";
 export * from "./random.ts";
 export * from "./spatial-transforms.ts";
+
+export * from "./vec3.ts";
+export * from "./quat.ts";

@@ -40,8 +40,7 @@ import * as internal from "@rebur/engine/internal";
 import { setupSyncedObjects } from "../synced-objects/decorator.ts";
 import { setupSyncedValues } from "../value/decorator.ts";
 
-// deno-lint-ignore no-unused-vars
-import type { Clickable } from "@rebur/engine"; // this is used in jsdoc
+// (Clickable entity type removed in 3D migration)
 import { InferSyncedObjectType } from "../synced-objects/inference.ts";
 
 export interface BehaviorContext {

@@ -69,8 +69,9 @@ export abstract class UIBehavior extends Behavior {
     }
 
     /* ---- subsequent renders: diff-and-patch ---- */
-    morphdom(this.uiElement, newTree, {
-      onBeforeElUpdated(fromEl, toEl) {
+    // deno-lint-ignore no-explicit-any
+    (morphdom as any)(this.uiElement, newTree, {
+      onBeforeElUpdated(fromEl: Element, toEl: Element) {
         // #region listener handling
         // please see key.startsWith("on") in element.ts
         for (const prop of Object.keys(toEl)) {

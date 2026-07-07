@@ -1,24 +1,16 @@
 import {
-  Collider,
   Entity,
-  EntityContext,
+  EntitySpawned,
   EntityDestroyed,
-  enumAdapter,
-  Vector2,
+  EntityEnableChanged,
+  type EntityContext,
 } from "@rebur/engine";
 import * as internal from "@rebur/engine/internal";
-import RAPIER from "@rebur/vendor/rapier.ts";
+import type { RigidBodyHandle } from "../../physics/api.ts";
+import { Vec3 } from "../../math/vec3.ts";
+import { Quat } from "../../math/quat.ts";
 
-type RigidBodyType = (typeof rigidbodyTypes)[number];
-const rigidbodyTypes = [
-  "dynamic",
-  "fixed",
-  // "kinematic-position",
-  // "kinematic-velocity",
-  // TODO: Implement these nicely
-] as const;
-
-const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
+export type RigidBodyTypeValue = "dynamic" | "fixed" | "kinematic-position" | "kinematic-velocity";
 
 export class Rigidbody extends Entity {
   static {
@@ -26,119 +18,121 @@ export class Rigidbody extends Entity {
   }
 
   static readonly icon = "⚙️";
-  readonly bounds = undefined;
 
-  type: RigidBodyType = "dynamic";
+  type: RigidBodyTypeValue = "dynamic";
+  gravityScale: number = 1;
+  linearDamping: number = 0;
+  angularDamping: number = 0;
+  ccd: boolean = false;
 
-  #body: RAPIER.RigidBody | undefined;
-  get body(): RAPIER.RigidBody {
-    if (!this.#body) throw new Error("attempted to access .body on a prefab object");
-    return this.#body;
+  #bodyHandle: RigidBodyHandle | undefined;
+
+  get bounds() { return undefined; }
+
+  /** Readable by Collider children to parent themselves to this body. */
+  get bodyHandle(): RigidBodyHandle | undefined {
+    return this.#bodyHandle;
   }
 
   constructor(ctx: EntityContext) {
     super(ctx);
-    this.defineValue(Rigidbody, "type", {
-      type: RigidbodyTypeAdapter,
-      description: "The type of the rigid body (e.g., dynamic, fixed).",
-    });
 
-    this.#initializeBody();
+    this.defineValue(Rigidbody, "type", { description: "Physics body type: dynamic | fixed | kinematic-position | kinematic-velocity." });
+    this.defineValue(Rigidbody, "gravityScale", { description: "Gravity scale multiplier." });
+    this.defineValue(Rigidbody, "linearDamping", { description: "Linear velocity damping." });
+    this.defineValue(Rigidbody, "angularDamping", { description: "Angular velocity damping." });
+    this.defineValue(Rigidbody, "ccd", { description: "Continuous collision detection." });
 
-    const typeValue = this.values.get("type");
-    typeValue?.onChanged(() => {
-      if (!this.#body) {
-        this.#initializeBody();
-        return;
-      }
-
-      const type = this.#body.bodyType();
-      const bodyType: RigidBodyType | undefined =
-        type === 0 ? "dynamic" : type === 1 ? "fixed" : undefined;
-
-      if (!bodyType) throw new Error("unsupported rigid body type");
-      if (this.type !== bodyType) {
-        this.#initializeBody();
-        return;
-      }
+    this.on(EntitySpawned, () => {
+      const t = this.globalTransform;
+      this.#bodyHandle = this.game.physics.createBody(this.ref, {
+        type: this.type,
+        position: { x: t.position.x, y: t.position.y, z: t.position.z },
+        rotation: { x: t.rotation.x, y: t.rotation.y, z: t.rotation.z, w: t.rotation.w },
+        gravityScale: this.gravityScale,
+        linearDamping: this.linearDamping,
+        angularDamping: this.angularDamping,
+        ccd: this.ccd,
+      });
     });
 
     this.on(EntityDestroyed, () => {
-      if (this.#body) {
-        this.game.physics.world.removeRigidBody(this.#body);
-        this.#body = undefined;
+      if (this.#bodyHandle === undefined) return;
+      this.game.physics.destroyBody(this.#bodyHandle);
+      this.#bodyHandle = undefined;
+    });
+
+    this.on(EntityEnableChanged, () => {
+      if (this.#bodyHandle !== undefined && this.enabled) {
+        this.game.physics.wakeUp(this.#bodyHandle);
       }
     });
   }
 
   [internal.applyNetworkInterpolation](): void {
     super[internal.applyNetworkInterpolation]();
-    this[internal.entityPreparePhysicsUpdate]();
+    this.#pushTransformToPhysics();
   }
 
   onUpdate(): void {
-    this[internal.entityApplyPhysicsUpdate]();
+    this.#pullTransformFromPhysics();
     super.onUpdate();
   }
 
-  [internal.entityPreparePhysicsUpdate]() {
-    if (!this.game.physics.enabled) return;
-    if (!this.#body) return;
-
-    this.#body.setTranslation(
-      {
-        x: this.globalTransform.position.x,
-        y: this.globalTransform.position.y,
-      },
-      false,
-    );
-    this.#body.setRotation(this.globalTransform.rotation, false);
+  #pushTransformToPhysics(): void {
+    if (!this.game.physics.enabled || this.#bodyHandle === undefined) return;
+    const t = this.globalTransform;
+    this.game.physics.setBodyPosition(this.#bodyHandle, t.position);
+    this.game.physics.setBodyRotation(this.#bodyHandle, t.rotation);
   }
 
-  [internal.entityApplyPhysicsUpdate]() {
-    if (!this.game.physics.enabled || !this.#body) return;
+  #pullTransformFromPhysics(): void {
+    if (!this.game.physics.enabled || this.#bodyHandle === undefined) return;
+    if (this.authority === undefined && this.game.isClient()) return;
 
-    const authority = this.authority ?? "server";
-    if (authority !== this.game.network.self) return;
-
-    this.globalTransform.position = new Vector2(this.#body.translation());
-    this.globalTransform.rotation = this.#body.rotation();
+    const pos = this.game.physics.getBodyPosition(this.#bodyHandle);
+    const rot = this.game.physics.getBodyRotation(this.#bodyHandle);
+    this.globalTransform.position.assign(pos);
+    this.globalTransform.rotation.assign(rot);
   }
 
-  #initializeBody() {
-    const linvel = this.#body?.linvel();
-    const angvel = this.#body?.angvel();
+  get linearVelocity(): Vec3 {
+    if (this.#bodyHandle === undefined) return Vec3.ZERO.clone();
+    return this.game.physics.getBodyLinearVelocity(this.#bodyHandle);
+  }
 
-    if (this.#body) {
-      this.game.physics.world.removeRigidBody(this.#body);
-      this.#body = undefined;
-    }
+  set linearVelocity(v: Vec3) {
+    if (this.#bodyHandle !== undefined)
+      this.game.physics.setBodyLinearVelocity(this.#bodyHandle, v);
+  }
 
-    if (!this.enabled) return;
+  get angularVelocity(): Vec3 {
+    if (this.#bodyHandle === undefined) return Vec3.ZERO.clone();
+    return this.game.physics.getBodyAngularVelocity(this.#bodyHandle);
+  }
 
-    let desc: RAPIER.RigidBodyDesc;
-    if (this.type === "dynamic") desc = RAPIER.RigidBodyDesc.dynamic();
-    else if (this.type === "fixed") desc = RAPIER.RigidBodyDesc.fixed();
-    else if (this.type === "kinematic-position")
-      desc = RAPIER.RigidBodyDesc.kinematicPositionBased();
-    else if (this.type === "kinematic-velocity")
-      desc = RAPIER.RigidBodyDesc.kinematicVelocityBased();
-    else throw new Error("invalid rigidbody type");
+  set angularVelocity(v: Vec3) {
+    if (this.#bodyHandle !== undefined)
+      this.game.physics.setBodyAngularVelocity(this.#bodyHandle, v);
+  }
 
-    desc = desc
-      .setTranslation(this.globalTransform.position.x, this.globalTransform.position.y)
-      .setRotation(this.globalTransform.rotation);
+  applyImpulse(impulse: Vec3): void {
+    if (this.#bodyHandle !== undefined)
+      this.game.physics.applyImpulse(this.#bodyHandle, impulse);
+  }
 
-    if (linvel) desc.setLinvel(linvel.x, linvel.y);
-    if (angvel) desc.setAngvel(angvel);
+  applyForce(force: Vec3): void {
+    if (this.#bodyHandle !== undefined)
+      this.game.physics.applyForce(this.#bodyHandle, force);
+  }
 
-    const body = this.game.physics.world.createRigidBody(desc);
+  applyTorqueImpulse(torque: Vec3): void {
+    if (this.#bodyHandle !== undefined)
+      this.game.physics.applyTorqueImpulse(this.#bodyHandle, torque);
+  }
 
-    this.game.physics.registerBody(this, body);
-    this.#body = body;
-
-    [...this.children.values()]
-      .filter(child => child instanceof Collider)
-      .forEach(child => child[internal.colliderReparentBody]());
+  wakeUp(): void {
+    if (this.#bodyHandle !== undefined)
+      this.game.physics.wakeUp(this.#bodyHandle);
   }
 }
