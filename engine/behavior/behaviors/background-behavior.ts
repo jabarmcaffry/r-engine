@@ -1,68 +1,27 @@
-import {
-  Behavior,
-  BehaviorContext,
-  Camera,
-  Sprite,
-  TilingSprite,
-  Vector2,
-  Vector2Adapter,
-} from "@rebur/engine";
+/**
+ * BackgroundBehavior — parallax scrolling background.
+ *
+ * TODO: 3D migration — the 2D Sprite/TilingSprite-based implementation has been
+ * disabled. A 3D equivalent (e.g. a large plane mesh that tracks the camera) is
+ * needed before this behavior is usable again.
+ */
+import { Behavior, BehaviorContext, Vector2, Vector2Adapter } from "@rebur/engine";
 
 export class BackgroundBehavior extends Behavior {
   parallax: Vector2 = Vector2.ZERO;
 
-  // TODO: AnimatedSprite2D
-  #sprite: Sprite | TilingSprite;
-  #origin = Vector2.ZERO;
-
   constructor(ctx: BehaviorContext) {
     super(ctx);
-
-    try {
-      this.#sprite = this.entity.cast(Sprite);
-    } catch {
-      // Ignore
-    }
-
-    try {
-      this.#sprite = this.entity.cast(TilingSprite);
-    } catch {
-      // Ignore
-    }
-
-    // @ts-expect-error: unassigned class member
-    if (!this.#sprite) {
-      throw new Error("Background can only be used on Sprite type entities");
-    }
-
     this.defineValue(BackgroundBehavior, "parallax", { type: Vector2Adapter });
   }
 
   onInitialize(): void {
-    this.#origin.assign(this.entity.pos);
+    // TODO: 3D migration — disabled; was initialising a Sprite/TilingSprite origin
   }
 
   onFrame(): void {
-    const camera = Camera.getActive(this.game);
-    if (!camera) return;
-
-    const cam = new Vector2(camera.smoothed.position);
-    const sprite = this.#sprite;
-    const tileScale = sprite instanceof TilingSprite ? sprite.tileScale : { x: 1, y: 1 };
-
-    const distance = cam.mul(this.parallax);
-    const inverse = cam.mul(Vector2.ONE.sub(this.parallax));
-
-    sprite.setGlobalTransform({ position: this.#origin.add(distance) });
-
-    const width = sprite.width * tileScale.x;
-    const height = sprite.height * tileScale.y;
-
-    if (inverse.x > this.#origin.x + width) this.#origin.x += width;
-    else if (inverse.x < this.#origin.x - width) this.#origin.x -= width;
-
-    if (inverse.y > this.#origin.y + height) this.#origin.y += height;
-    else if (inverse.y < this.#origin.y - height) this.#origin.y -= height;
+    // TODO: 3D migration — disabled; was using 2D Sprite/TilingSprite APIs and
+    // camera.smoothed.position which do not exist in the 3D renderer.
   }
 }
 // game[internal.behaviorLoader].registerInternalBehavior(BackgroundBehavior, "@core");

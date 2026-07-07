@@ -159,7 +159,7 @@ export class Inputs implements ISignalHandler {
   #onTouchStart = (ev: TouchEvent) => {
     // Ensure the touch event is on the game canvas
     // @ts-expect-error: we know it's a client game
-    if (ev.target !== this.#game.renderer.app.canvas) {
+    if (ev.target !== this.#game.renderer.canvas) {
       return;
     }
 
@@ -169,7 +169,7 @@ export class Inputs implements ISignalHandler {
 
     // Get the canvas and its bounding rectangle
     // @ts-expect-error: we know it's a client game
-    const canvas = this.#game.renderer.app.canvas as HTMLCanvasElement;
+    const canvas = this.#game.renderer.canvas as HTMLCanvasElement;
     const canvasRect = canvas.getBoundingClientRect();
 
     // Calculate canvas-relative coordinates
@@ -201,7 +201,7 @@ export class Inputs implements ISignalHandler {
 
   #onMouse = (ev: MouseEvent, pressed: boolean) => {
     // @ts-expect-error: we know its a client game
-    if (ev.target !== this.#game.renderer.app.canvas) {
+    if (ev.target !== this.#game.renderer.canvas) {
       return;
     }
 
@@ -251,7 +251,7 @@ export class Inputs implements ISignalHandler {
     const mouse = { x: ev.clientX, y: ev.clientY } satisfies IVector2;
 
     // @ts-expect-error: we know its a client game
-    const canvas = this.#game.renderer.app.canvas as HTMLCanvasElement;
+    const canvas = this.#game.renderer.canvas as HTMLCanvasElement;
     const canvasRect = canvas.getBoundingClientRect();
     const canvasCoords = {
       x: mouse.x - canvasRect.x,
@@ -338,7 +338,7 @@ export class Inputs implements ISignalHandler {
     globalThis.addEventListener("mouseout", this.#onMouseOut, { signal });
     document.addEventListener("visibilitychange", this.#onVisibilityChange, { signal });
 
-    const canvas = this.#game.renderer.app.canvas;
+    const canvas = this.#game.renderer.canvas;
     canvas.addEventListener("contextmenu", this.#onContextMenu, { signal });
 
     return () => {

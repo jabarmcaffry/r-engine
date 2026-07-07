@@ -79,3 +79,29 @@ CSS files in `editor/client/components/` and `client/src/css/` use `rebur-*` sel
 ## Script Editor integration
 
 Files are fetched/saved via `GET/PUT /api/v1/edit/{instanceId}/files/{path}`. The `instanceId` comes from `game.instanceId` (ClientGame), and `serverUrl` from `connectionDetails` (imported from `@rebur/client/util/server-url.ts`). The message event `{ action: "goToTab", tab: "scripts", fileName }` is dispatched by `window.parent.postMessage` in both `file-tree.tsx` (double-click file) and `behavior-editor.ts` (double-click script field) — since editor and parent are the same frame, `window.addEventListener("message")` in `main.ts` catches it.
+
+## 3D migration — renderer API
+
+`IRendererBackend` (engine/renderer/api.ts) has `canvas: HTMLCanvasElement` directly — no `.app.canvas` (that was the PixiJS 2D renderer). All entity/input code must use `game.renderer.canvas`.
+
+**How to apply:** Any new code accessing the canvas must use `game.renderer.canvas`, not `game.renderer.app.canvas`.
+
+## 3D migration — Camera.getActive
+
+`Camera.getActive(game)` is now a static method on `engine/entity/entities/camera.ts`. It calls `game.entities.lookupByType(Camera).find(c => c.active)`. Many 2D entities (sprite, tiling-sprite, render-container, rich-text, animated-sprite, physics-debug) still call `Camera.getActive` — this is fine since the method now exists.
+
+**Why:** The original 2D camera had `getActive` as a static method; it was removed during the 3D migration but is needed by many entity types still partially 2D.
+
+## 3D migration — Camera.screenToWorld stub
+
+`Camera.screenToWorld(screen)` currently returns `new Vector2(screen.x, screen.y)` (screen position as proxy). This keeps mouse/click events firing. A proper Three.js `Raycaster` implementation is needed for true world-space coordinates.
+
+**Why:** Mouse/click events only fire when `cursor.world` is defined; returning `undefined` would break all click interactions.
+
+## 3D migration — UILayer/UIPanel element
+
+`UILayer` and `UIPanel` now expose an `element: HTMLDivElement` getter and mount it to `(game as ClientGame).container` on `EntitySpawned`. This is the DOM anchor for `UIBehavior` children. The div uses `position:absolute` fill with `pointer-events:none` so it overlays the Three.js canvas without blocking renderer input.
+
+## 3D migration — wasd-movement-behavior Vec3
+
+WASD movement now uses `Vec3` (not `Vector2`). Forward/back is `z ∓ 1` (Three.js -Z forward convention). Use `movement.normalized().scale(speed)` — Vec3 uses `.scale(n)` for scalar multiply, `.normalized()` (not `.normalize()`).

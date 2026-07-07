@@ -272,7 +272,8 @@ export class AnimatedSprite extends PixiEntity {
     this.listen(this.game, GameRender, () => {
       if (!this.#sprite || !this.game.isClient()) return;
       if (this.enabled && !this.game.paused.value) {
-        this.#sprite.update(this.game.renderer.app.ticker);
+        // TODO: 3D migration — PixiJS ticker removed; advance animation via time.delta if needed
+        // this.#sprite.update(this.game.renderer.app.ticker);
       }
 
       updateSize();

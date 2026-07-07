@@ -4,6 +4,8 @@ import {
   EntityDestroyed,
   EntityEnableChanged,
   type EntityContext,
+  type Game,
+  Vector2,
 } from "@rebur/engine";
 import type { CameraHandle } from "../../renderer/api.ts";
 
@@ -53,6 +55,25 @@ export class Camera extends Entity {
       if (!game.isClient() || this.#cameraHandle === undefined) return;
       if (enabled && this.active) game.renderer.setActiveCamera(this.#cameraHandle);
     });
+  }
+
+  /**
+   * Returns the first Camera entity that has `active === true`.
+   * Used by inputs, behaviors, and editor code that need the active viewpoint.
+   */
+  static getActive(game: Game): Camera | undefined {
+    return game.entities.lookupByType(Camera).find(c => c.active);
+  }
+
+  /**
+   * Convert a screen-space point to a world-space position.
+   *
+   * TODO: 3D migration — implement Three.js Raycaster for true world coordinates.
+   * For now this returns the screen position so mouse/click events continue to fire
+   * and UI hit-testing works while the proper 3D raycast is implemented.
+   */
+  screenToWorld(screen: { x: number; y: number }): Vector2 | undefined {
+    return new Vector2(screen.x, screen.y);
   }
 
   activate(): void {

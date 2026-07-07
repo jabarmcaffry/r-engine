@@ -69,7 +69,7 @@ export abstract class ClickableEntity extends Entity {
 
     if (this.game.isClient()) {
       if (!ClickableEntity.#GameRenderListeners.has(this.game)) {
-        const canvas = this.game.renderer.app.canvas;
+        const canvas = this.game.renderer.canvas as HTMLCanvasElement;
 
         // TODO: Make z sorting optional
         const fn = (_: GameRender) => {
