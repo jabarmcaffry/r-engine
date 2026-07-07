@@ -1,5 +1,6 @@
 // ---- 3D entity types -------------------------------------------------------
 export * from "./empty.ts";
+export * from "./clickable.ts";
 
 // Renderer-backed
 export * from "./mesh.ts";
@@ -25,6 +26,7 @@ export * from "./camera.ts";
 // Physics-backed
 export * from "./rigidbody.ts";
 export * from "./collider.ts";
+export * from "./complex-collider.ts";
 export * from "./character-controller.ts";
 
 // Audio-backed

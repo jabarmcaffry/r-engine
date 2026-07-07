@@ -75,10 +75,6 @@ export class CameraPanBehavior extends Behavior {
     });
   }
 
-  #ignoreTilemap(): boolean {
-    return false;
-  }
-
   #setDrag(value: Vector2 | undefined) {
     this.#drag = value;
 
@@ -114,8 +110,6 @@ export class CameraPanBehavior extends Behavior {
       this.#wasGizmo = local.length > 0;
 
       if (!this.#wasGizmo && event.cursor.world) {
-        if (this.#ignoreTilemap()) return;
-
         const entities = this.game.entities
           .lookupByPosition(event.cursor.world)
           .filter(entity => entity.enabled)
@@ -568,8 +562,6 @@ export class CameraPanBehavior extends Behavior {
       this.#finishSelectionBox();
       return;
     }
-
-    if (this.#ignoreTilemap()) return;
 
     if (!wasMouseDownOverCanvas) return;
     if (!this.#drag && event.button === "left" && event.cursor.world && !this.#wasGizmo) {

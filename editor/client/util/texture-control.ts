@@ -1,7 +1,6 @@
 import { connectionDetails } from "@rebur/client/util/server-url.ts";
 import { ClientGame } from "@rebur/engine";
 import { element as elem } from "@rebur/ui";
-import * as PIXI from "@rebur/vendor/pixi.ts";
 import * as z from "@rebur/vendor/zod.ts";
 import { ChevronDown, icon } from "../_icons.tsx";
 import { createInputFieldWithDefault } from "./easy-input.ts";
@@ -132,8 +131,12 @@ export function createTextureControl(
 
     try {
       const resolvedUrl = game.resolveResource(url);
-      const texture = await PIXI.Assets.load(resolvedUrl);
-      if (!(texture instanceof PIXI.Texture)) throw new TypeError("Not a texture");
+      await new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Image failed to load"));
+        img.src = resolvedUrl;
+      });
       imgPreview.src = resolvedUrl;
     } catch {
       imgPreview.classList.add("hidden");

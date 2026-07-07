@@ -7,7 +7,6 @@ import {
   EntityContext,
   enumAdapter,
   IBounds,
-  PixiEntity,
   Value,
 } from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
@@ -17,7 +16,7 @@ import { Facades } from "./manager.ts";
 type ClickableShape = enumAdapter.Union<typeof ClickableShapeAdapter>;
 const ClickableShapeAdapter = enumAdapter(["Rectangle", "Circle"]);
 
-export class EditorFacadeClickable extends PixiEntity {
+export class EditorFacadeClickable extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(Clickable, this);
@@ -46,7 +45,7 @@ export class EditorFacadeClickable extends PixiEntity {
   #debug: DebugSquare | DebugCircle | undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeClickable, "active", {
       description: "Indicates whether the clickable entity is active.",
     });
@@ -58,13 +57,11 @@ export class EditorFacadeClickable extends PixiEntity {
     const isRect: Value["hidden"] = values => values.get("shape")?.value !== "Rectangle";
     this.defineValue(EditorFacadeClickable, "width", {
       hidden: isRect,
-      description:
-        "Defines the width of the clickable entity (only used if shape is Rectangle).",
+      description: "Defines the width of the clickable entity (only used if shape is Rectangle).",
     });
     this.defineValue(EditorFacadeClickable, "height", {
       hidden: isRect,
-      description:
-        "Defines the height of the clickable entity (only used if shape is Rectangle).",
+      description: "Defines the height of the clickable entity (only used if shape is Rectangle).",
     });
 
     const isCircle: Value["hidden"] = values => values.get("shape")?.value !== "Circle";
@@ -84,7 +81,7 @@ export class EditorFacadeClickable extends PixiEntity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
     this.#debug =
       this.shape === "Rectangle"
@@ -117,7 +114,7 @@ type _HasAllValues = EnsureCompatible<
   EntityValueProps<EditorFacadeClickable>
 >;
 
-export class EditorFacadeClickableRect extends PixiEntity {
+export class EditorFacadeClickableRect extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(ClickableRect, this);
@@ -125,7 +122,6 @@ export class EditorFacadeClickableRect extends PixiEntity {
 
   static readonly icon = ClickableRect.icon;
   get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
     return new Bounds(this.width, this.height);
   }
 
@@ -135,7 +131,7 @@ export class EditorFacadeClickableRect extends PixiEntity {
   #debug: DebugSquare | undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeClickableRect, "width", {
       description: "Defines the width of the clickable rectangle.",
     });
@@ -146,7 +142,7 @@ export class EditorFacadeClickableRect extends PixiEntity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
     this.#debug = new DebugSquare({ entity: this });
 
@@ -162,7 +158,7 @@ type _HasAllValuesRect = EnsureCompatible<
   EntityValueProps<EditorFacadeClickableRect>
 >;
 
-export class EditorFacadeClickableCircle extends PixiEntity {
+export class EditorFacadeClickableCircle extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(ClickableCircle, this);
@@ -170,7 +166,6 @@ export class EditorFacadeClickableCircle extends PixiEntity {
 
   static readonly icon = ClickableCircle.icon;
   get bounds(): IBounds | undefined {
-    // TODO: Reuse the same object
     const size = this.radius * 2;
     return new Bounds(size, size);
   }
@@ -181,7 +176,7 @@ export class EditorFacadeClickableCircle extends PixiEntity {
   #debug: DebugCircle | undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeClickableCircle, "radius", {
       description: "Defines the radius of the clickable circle.",
     });
@@ -192,7 +187,7 @@ export class EditorFacadeClickableCircle extends PixiEntity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
     this.#debug = new DebugCircle({ entity: this });
 

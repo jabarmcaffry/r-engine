@@ -5,7 +5,6 @@ import {
   EntityContext,
   EntityDestroyed,
   enumAdapter,
-  PixiEntity,
 } from "@rebur/engine";
 import {
   InitSelectedEntityService,
@@ -18,7 +17,7 @@ import { Facades } from "./manager.ts";
 type ColliderShape = enumAdapter.Union<typeof ColliderShapeAdapter>;
 const ColliderShapeAdapter = enumAdapter(["Rectangle", "Circle" /*, "Capsule" */]);
 
-export class EditorFacadeCollider extends PixiEntity {
+export class EditorFacadeCollider extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(Collider, this);
@@ -34,7 +33,7 @@ export class EditorFacadeCollider extends PixiEntity {
   readonly bounds = Bounds.ONE;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeCollider, "isSensor", {
       description:
         "Determines if the collider is a sensor (detects collisions without affecting physics).",
@@ -75,32 +74,28 @@ export class EditorFacadeCollider extends PixiEntity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
-    this.#debug = this.createDebugShape();
+    this.#debug = this.#createDebugShape();
 
     const shapeValue = this.values.get("shape");
-    shapeValue?.onChanged(() => this.onShapeChanged());
+    shapeValue?.onChanged(() => this.#onShapeChanged());
   }
 
-  onShapeChanged(): void {
-    if (!this.container) return;
-
+  #onShapeChanged(): void {
     if (this.#debug) {
       this.#debug.destroy();
       this.#debug = undefined;
     }
-
-    this.#debug = this.createDebugShape();
+    this.#debug = this.#createDebugShape();
   }
 
-  private createDebugShape(): DebugSquare | DebugCircle | DebugCapsule {
-    const pixelLine = true;
+  #createDebugShape(): DebugSquare | DebugCircle | DebugCapsule {
     return this.shape === "Rectangle"
-      ? new DebugSquare({ entity: this, pixelLine })
+      ? new DebugSquare({ entity: this })
       : this.shape === "Circle"
-        ? new DebugCircle({ entity: this, pixelLine })
-        : new DebugCapsule({ entity: this, pixelLine });
+        ? new DebugCircle({ entity: this })
+        : new DebugCapsule({ entity: this });
   }
 
   #onSelectedSvc(svc: SelectedEntityService) {

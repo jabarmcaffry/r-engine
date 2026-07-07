@@ -17,7 +17,6 @@ import {
   Vector2Adapter,
 } from "@rebur/engine";
 import { element as elem } from "@rebur/ui";
-import * as PIXI from "@rebur/vendor/pixi.ts";
 import * as z from "@rebur/vendor/zod.ts";
 import "npm:vanilla-colorful/hex-alpha-color-picker.js";
 import { icon, Pipette, X } from "../_icons.tsx";
@@ -111,17 +110,10 @@ export function createValueControl(
     }
 
     case SpritesheetAdapter: {
+      // In 3D mode there is no PIXI spritesheet loader; accept any valid URL.
       const resolve = async (url: string) => {
-        try {
-          const spritesheet = await PIXI.Assets.load(game.resolveResource(url));
-          if (!(spritesheet instanceof PIXI.Spritesheet)) {
-            throw new TypeError("not a spritesheet");
-          }
-
-          return url;
-        } catch {
-          throw new TypeError("Spritesheet URL could not be resolved");
-        }
+        if (!url) throw new TypeError("Spritesheet URL must not be empty");
+        return url;
       };
 
       const getUrl = async (): Promise<string | undefined> => {
@@ -168,17 +160,10 @@ export function createValueControl(
     case AudioAdapter: {
       const opts = _opts as ValueControlOptions<string | undefined>;
 
+      // In 3D mode there is no PIXI audio loader; accept any valid URL.
       const convert = async (value: string) => {
         const url = z.literal("").or(z.url()).parse(value);
-        if (url === "") return url;
-
-        try {
-          const loaded = await PIXI.Assets.load(game.resolveResource(url));
-          if (typeof loaded !== "string") throw new Error(); // custom pixi loader returns strings
-          return url;
-        } catch {
-          throw new TypeError("Audio URL could not be resolved");
-        }
+        return url;
       };
 
       const [control, refresh] = createInputFieldWithDefault({
@@ -419,10 +404,16 @@ export function createValueControl(
         });
       }
 
+      const toHexa = (s: string): string => {
+        const hex = s.startsWith("#") ? s.slice(1) : s;
+        if (hex.length === 6) return `#${hex}ff`;
+        if (hex.length === 8) return `#${hex}`;
+        return "#ffffffff";
+      };
+
       const refresh = () => {
         const colorValue = opts.get() ?? opts.default ?? "#ffffffff";
-        const color = new PIXI.Color(colorValue);
-        const hexa = color.toHexa();
+        const hexa = toHexa(colorValue);
         picker.color = hexa;
         colorBox.style.backgroundColor = hexa;
         if (document.activeElement !== input) {

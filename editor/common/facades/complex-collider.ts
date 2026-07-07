@@ -9,7 +9,6 @@ import {
   EntityContext,
   EntityDestroyed,
   EntityTransformUpdate,
-  PixiEntity,
 } from "@rebur/engine";
 import {
   InitSelectedEntityService,
@@ -19,7 +18,7 @@ import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugPolygon } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
-export class EditorFacadeComplexCollider extends PixiEntity {
+export class EditorFacadeComplexCollider extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(ComplexCollider, this);
@@ -36,7 +35,7 @@ export class EditorFacadeComplexCollider extends PixiEntity {
   }
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeComplexCollider, "isSensor", {
       description:
         "Marks the collider as a sensor, meaning it will detect collisions but not respond physically.",
@@ -72,13 +71,13 @@ export class EditorFacadeComplexCollider extends PixiEntity {
       .map(child => [child.transform.position.x, child.transform.position.y] as const);
 
   #update = () => {
-    this.#debug?.redraw();
     this.#updateBounds();
+    this.#debug?.redraw();
   };
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
     this.on(EntityDestroyed, () => {
       for (const child of this.children.values()) {
@@ -111,7 +110,6 @@ export class EditorFacadeComplexCollider extends PixiEntity {
       this.#bounds = undefined;
       return;
     }
-
     this.#bounds = Bounds.fromPoints(points);
   }
 
@@ -122,7 +120,6 @@ export class EditorFacadeComplexCollider extends PixiEntity {
         if (entity === this) isSelected = true;
         if (entity.parent === this) isSelected = true;
       }
-
       this.#selected = isSelected;
       if (this.#debug) this.#debug.alwaysOnTop = this.#selected;
     });

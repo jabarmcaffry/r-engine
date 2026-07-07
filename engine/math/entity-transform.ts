@@ -59,8 +59,20 @@ export class Transform implements ITransform {
   }
 
   [internal.transformOnChanged]?: () => void;
-  [internal.transformForceUpdate]?: (t: ITransform) => void;
-  [internal.transformFromNetwork]?: (t: ITransform) => void;
+
+  /** Force-update all fields without triggering the onChange callback. */
+  [internal.transformForceUpdate](t: ITransform): void {
+    this.#position.assign(t.position);
+    this.#rotation.assign(t.rotation);
+    this.#scale.assign(t.scale);
+  }
+
+  /** Same as transformForceUpdate — used by network interpolation. */
+  [internal.transformFromNetwork](t: ITransform): void {
+    this.#position.assign(t.position);
+    this.#rotation.assign(t.rotation);
+    this.#scale.assign(t.scale);
+  }
 
   assign(other: Partial<ITransform>): this {
     if (other.position) this.#position.assign(other.position);

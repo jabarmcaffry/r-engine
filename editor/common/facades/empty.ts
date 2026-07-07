@@ -7,17 +7,17 @@ import {
   EntityDestroyed,
   EntityReparented,
   IBounds,
-  PixiEntity,
   Value,
 } from "@rebur/engine";
-import * as PIXI from "@rebur/vendor/pixi.ts";
+import type { MeshHandle } from "@rebur/engine";
 import { EditorFacadeComplexCollider } from "./complex-collider.ts";
 import { Facades } from "./manager.ts";
 import { SelectedEntityService } from "../../client/ui/selected-entity.ts";
 
-const SIZE = 0.2;
+/** Size of the vertex marker sphere (local units). */
+const MARKER_RADIUS = 0.08;
 
-export class EmptyFacade extends PixiEntity {
+export class EmptyFacade extends Entity {
   static readonly icon: string = Empty.icon;
 
   static {
@@ -37,26 +37,26 @@ export class EmptyFacade extends PixiEntity {
     return (
       this.parent instanceof EditorFacadeComplexCollider &&
       (selectedService.entities.includes(this.parent) ||
-        selectedService.entities.some(e => e.parent === this.parent)) // sibling or self selected
+        selectedService.entities.some(e => e.parent === this.parent))
     );
   }
 
   get bounds(): IBounds | undefined {
     if (this.isColliderChildAndSelected) {
-      if (!this.#zoomFn) return undefined;
-      const [zoom] = this.#zoomFn;
-
-      const size = SIZE / zoom.value;
-      return { width: size, height: size };
+      const d = MARKER_RADIUS * 2;
+      return { width: d, height: d };
     }
-
     return undefined;
   }
 
+  // Marker sphere shown when this is a vertex of a selected ComplexCollider.
+  #markerHandle: MeshHandle | undefined;
+
+  #selectionListener: { unsubscribe: () => void } | undefined;
   #zoomFn: [Value<number>, () => void] | undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
 
     this.defineValue(EmptyFacade, "isFolder", {
       hidden: _ => {
@@ -67,13 +67,11 @@ export class EmptyFacade extends PixiEntity {
       persistent: true,
     });
 
+    // Track camera zoom so marker size stays consistent in screen space.
     const camera = Camera.getActive(this.game);
     const zoom = camera?.values.get("zoom");
     if (zoom) {
-      const fn = () => {
-        this.#redraw();
-      };
-
+      const fn = () => this.#updateMarker();
       this.#zoomFn = [zoom as Value<number>, fn];
       zoom.onChanged(fn);
     }
@@ -82,63 +80,55 @@ export class EmptyFacade extends PixiEntity {
       if (this.#zoomFn) {
         const [zoom, fn] = this.#zoomFn;
         zoom.removeChangeListener(fn);
-
         this.#zoomFn = undefined;
       }
-
-      if (this.#selectionListener) {
-        this.#selectionListener.unsubscribe();
-      }
+      this.#selectionListener?.unsubscribe();
+      this.#destroyMarker();
     });
 
-    this.on(EntityReparented, () => {
-      this.#redraw();
-    });
+    this.on(EntityReparented, () => this.#updateMarker());
   }
-
-  #selectionListener:
-    | {
-        unsubscribe: () => void;
-      }
-    | undefined = undefined;
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
 
-    this.#gfx = new PIXI.Graphics();
-    this.container.addChild(this.#gfx);
-
-    this.#redraw();
+    if (!this.game.isClient()) return;
 
     setTimeout(() => {
       const selectedService = SelectedEntityService.serviceForGame(this.game as ClientGame);
-      this.#selectionListener = selectedService?.listen(() => {
-        this.#redraw();
-      });
+      this.#selectionListener = selectedService?.listen(() => this.#updateMarker());
+      this.#updateMarker();
     });
   }
 
-  #gfx: PIXI.Graphics | undefined;
-  #redraw(): void {
-    if (!this.#gfx) return;
-    this.#gfx.clear();
+  #updateMarker(): void {
+    if (!this.game.isClient()) return;
 
-    if (!this.enabled) return;
-    if (!this.isColliderChildAndSelected) return;
+    if (this.isColliderChildAndSelected) {
+      if (!this.#markerHandle) {
+        const t = this.globalTransform;
+        this.#markerHandle = this.game.renderer.createMesh(
+          `__empty_marker_${this.ref}`,
+          { type: "sphere", radius: MARKER_RADIUS, segments: 8 },
+          { color: "#ffcf36", transparent: false, wireframe: false },
+        );
+        this.game.renderer.setMeshTransform(
+          this.#markerHandle,
+          t.position,
+          t.rotation,
+          { x: 1, y: 1, z: 1 },
+        );
+        this.game.renderer.setMeshVisible(this.#markerHandle, this.enabled);
+      }
+    } else {
+      this.#destroyMarker();
+    }
+  }
 
-    if (!this.#zoomFn) return;
-    const [zoom] = this.#zoomFn;
-
-    const size = SIZE / zoom.value;
-    this.#gfx.alpha = 0.8;
-    this.#gfx
-      .regularPoly(0, 0, size / 2, 4)
-      .fill("#ffcf36")
-      .stroke({
-        color: 0x000000,
-        width: 0.1 * size,
-        alignment: 0,
-      });
+  #destroyMarker(): void {
+    if (this.#markerHandle !== undefined) {
+      this.game.renderer.destroyMesh(this.#markerHandle);
+      this.#markerHandle = undefined;
+    }
   }
 }

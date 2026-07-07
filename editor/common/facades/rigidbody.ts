@@ -1,4 +1,4 @@
-import { Entity, EntityContext, enumAdapter, PixiEntity, Rigidbody } from "@rebur/engine";
+import { Entity, EntityContext, enumAdapter, Rigidbody } from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { Facades } from "./manager.ts";
 
@@ -13,7 +13,7 @@ const rigidbodyTypes = [
 
 export const RigidbodyTypeAdapter = enumAdapter(rigidbodyTypes);
 
-export class EditorFacadeRigidbody extends PixiEntity {
+export class EditorFacadeRigidbody extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(Rigidbody, this);
@@ -25,7 +25,7 @@ export class EditorFacadeRigidbody extends PixiEntity {
   readonly bounds = undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeRigidbody, "type", {
       type: RigidbodyTypeAdapter,
       description: "Defines the type of the rigidbody, such as dynamic or fixed.",

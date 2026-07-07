@@ -5,7 +5,6 @@ import {
   EntityContext,
   EntityDestroyed,
   enumAdapter,
-  PixiEntity,
   Vector2,
 } from "@rebur/engine";
 import {
@@ -19,7 +18,7 @@ import { Facades } from "./manager.ts";
 type ScaleFilterMode = enumAdapter.Union<typeof ScaleFilterModeAdapter>;
 const ScaleFilterModeAdapter = enumAdapter(["linear", "nearest"]);
 
-export class EditorFacadeCamera extends PixiEntity {
+export class EditorFacadeCamera extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(Camera, this);
@@ -47,7 +46,7 @@ export class EditorFacadeCamera extends PixiEntity {
   #debugListener: { unsubscribe: () => void } | undefined;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeCamera, "showBounds", {
       replicated: false,
       persistent: false,
@@ -104,12 +103,11 @@ export class EditorFacadeCamera extends PixiEntity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
     this.#debug = new DebugSquare({
       entity: this,
       enabled: false,
-      width: 0.04,
       disableScale: true,
       suffix: this.active ? " (active)" : "",
       getBounds: () => {
@@ -122,17 +120,14 @@ export class EditorFacadeCamera extends PixiEntity {
         }
 
         if (w / h > 1) {
-          // wide
           vec.x *= w / h;
           return { width: vec.x, height: vec.y };
         } else {
-          // tall
           vec.y /= w / h;
           return { width: vec.x, height: vec.y };
         }
       },
     });
-    this.#debug.alwaysOnTop = true;
 
     const showBounds = this.values.get("showBounds");
     showBounds?.onChanged(() => {
@@ -169,6 +164,7 @@ export class EditorFacadeCamera extends PixiEntity {
     });
   }
 }
+
 
 type _HasAllValues = EnsureCompatible<
   Omit<EntityValueProps<Camera>, "container" | "smoothed" | "frustum">,

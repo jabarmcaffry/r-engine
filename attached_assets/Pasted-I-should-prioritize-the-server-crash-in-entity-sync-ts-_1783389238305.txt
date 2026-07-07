@@ -1,0 +1,30 @@
+I should prioritize the server crash in entity-sync.ts first, then tackle the editor files that reference the deleted tilemap facade.
+
+For entity-sync.ts, I need to strip out the tilemap-related imports and remove the entire tilemap sync block. For panning-and-selection.ts, I'm removing the EditorFacadeTilemap import, the tilemap ignore method, and the tilemap sorting logic. The bottom-tabs.tsx file is more involved since it has TileMapViewer and other tilemap components that need to be removed.
+
+Scene-graph.ts just needs a couple of lines removed, but empty.ts is trickier—EmptyFacade extends PixiEntity, which is still exported from the engine even though PIXI itself was removed. I need to figure out what PixiEntity is and whether it can stay or needs to be replaced.
+
+Let me tackle this systematically: fix entity-sync.ts, panning-and-selection.ts, scene-graph.ts, and bottom-tabs.tsx to remove tilemap references, delete tilemap-viewer.ts, update the signals module, then handle the PixiEntity issue in empty.ts and _debug.ts separately.
+
+First, I need to check if Vector2 is actually used elsewhere in panning-and-selection.ts before I remove that import.
+Doing all remaining fixes at once — entity-sync cleanup, editor tilemap removal, and PixiEntity issues.
+Let me batch-fix all remaining issues in one massive parallel set of edits.
+Now fix panning-and-selection.ts and bottom-tabs.tsx simultaneously.
+Now rewrite bottom-tabs.tsx to strip all tilemap references, and check for remaining issues in parallel.
+Good — let me fix player-join-states.ts and restart workflows in parallel.
+Two more files need fixing. Let me read and fix them simultaneously.
+Let me fix all remaining tilemap references at once.
+Good progress — the build is only showing a warning now. Let me fix the remaining undo-redo tilemap cases and check if the entity-sync edit persisted correctly.
+Let me fix the remaining modify-tilemap case in undo-redo.ts and restart both workflows.
+All tilemap references are gone. Let me restart both workflows and check the build.
+Both servers are up. Let me wait for the builds to complete, then check for TypeScript errors.
+Let me check for build errors and take a screenshot of the current state.
+The dashboard shows exactly 3 new 3D worlds with both servers running. Now let me run the required code review.
+Three critical issues to fix. Let me read the relevant code to plan the fixes.
+Let me read all the code I need to fix the three critical issues simultaneously.
+Now fix all three critical issues in parallel — gizmo mode property, pointer passthrough, and undo/redo quaternion correction.
+Let me check the current build state and verify the fixes compiled correctly.
+New crash — ComplexCollider missing from engine. Let me check the engine exports and fix it.
+ComplexCollider exists in the engine but isn't exported. Let me add it and check for other missing exports.
+Let me add the missing engine exports and check what else the facade files need.
+Let me fix the missing engine exports and check all the imports facades need.

@@ -9,7 +9,7 @@
  * TODO: Remove this file once all instanceof PixiEntity checks are removed from
  *       the editor (prefab-viewer.tsx etc.).
  */
-import { Entity } from "@rebur/engine";
+import { Entity } from "./entity.ts";
 
 /** @deprecated All entities now use the Three.js backend. Use Entity instead. */
 export abstract class PixiEntity extends Entity {

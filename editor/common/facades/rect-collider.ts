@@ -3,14 +3,13 @@ import {
   Entity,
   EntityContext,
   IBounds,
-  PixiEntity,
   RectCollider,
 } from "@rebur/engine";
 import { EnsureCompatible, EntityValueProps } from "./_compatibility.ts";
 import { DebugSquare } from "./_debug.ts";
 import { Facades } from "./manager.ts";
 
-export class EditorFacadeRectCollider extends PixiEntity {
+export class EditorFacadeRectCollider extends Entity {
   static {
     Entity.registerType(this, "@editor");
     Facades.register(RectCollider, this);
@@ -22,7 +21,7 @@ export class EditorFacadeRectCollider extends PixiEntity {
   readonly bounds: IBounds = Bounds.ONE;
 
   constructor(ctx: EntityContext) {
-    super(ctx, false);
+    super(ctx);
     this.defineValue(EditorFacadeRectCollider, "isSensor", {
       description:
         "Indicates whether the collider acts as a sensor, detecting collisions without physical response.",
@@ -33,7 +32,7 @@ export class EditorFacadeRectCollider extends PixiEntity {
 
   onInitialize(): void {
     super.onInitialize();
-    if (!this.container) return;
+    if (!this.game.isClient()) return;
 
     this.#debug = new DebugSquare({ entity: this });
   }
