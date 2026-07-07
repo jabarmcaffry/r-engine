@@ -17,3 +17,4 @@ export * from "./rpc.ts";
 export * from "./signals/mod.ts";
 export * from "./synced-objects/mod.ts";
 export * from "./time.ts";
+export * from "./preload.ts";

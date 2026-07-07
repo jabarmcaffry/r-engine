@@ -4,7 +4,7 @@ import { Application, Router, Status } from "@oak/oak";
 import { oakCors } from "@oak/oak";
 
 import { z } from "@rebur/vendor/zod.ts";
-import * as uuid from "jsr:@std/uuid@1.0.9";
+import * as uuid from "@std/uuid";
 import { serveWorlds } from "../common-host/routes/worlds.ts";
 import {
   handleJsonAPIErrors,

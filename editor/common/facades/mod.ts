@@ -2,6 +2,7 @@ import "./camera.ts";
 import "./character-controller.ts";
 import "./clickable.ts";
 import "./collider.ts";
+import "./default-character.ts";
 import "./edit-roots.ts";
 import "./empty.ts";
 import "./render-container.ts";

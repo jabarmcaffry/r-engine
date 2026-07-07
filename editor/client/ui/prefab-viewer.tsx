@@ -9,6 +9,7 @@ import {
   EntityReparented,
   getFacadeRoot,
   Vector2,
+  Vec3,
 } from "@rebur/engine";
 import { EditorMetadataEntity } from "../../common/mod.ts";
 import { EmptyFacade } from "../../common/facades/empty.ts";
@@ -32,7 +33,7 @@ export class PrefabViewer {
   prefabsRoot!: Entity;
   #iconPicker: IconPicker;
   #currentFolder: Entity | null = null;
-  #refreshTimeout: number | undefined;
+  #refreshTimeout: ReturnType<typeof setTimeout> | undefined;
   #entityListeners = new Set<string>();
   #breadcrumbContainer!: HTMLDivElement;
   #dragPreviewEntities: Entity[] = [];
@@ -318,7 +319,7 @@ export class PrefabViewer {
         event.dataTransfer.setDragImage(emptyImage, 0, 0);
       }
 
-      const canvas = this.game.renderer.app.canvas;
+      const canvas = this.game.renderer.canvas;
       const canvasRect = canvas.getBoundingClientRect();
       const canvasCoords = {
         x: event.clientX - canvasRect.x,
@@ -326,8 +327,8 @@ export class PrefabViewer {
       };
 
       const screenPos = new Vector2(canvasCoords);
-      const camera = Camera.getActive(this.game);
-      const worldPos = camera ? camera.screenToWorld(screenPos) : new Vector2(0, 0);
+      const ground = this.game.renderer.screenToGroundPoint(screenPos.x, screenPos.y);
+      const worldPos = ground ? new Vec3(ground) : new Vec3(0, 0, 0);
 
       this.#createDragPreview(worldPos);
     };
@@ -335,7 +336,7 @@ export class PrefabViewer {
     const drag = (event: DragEvent) => {
       if (!this.currentDragSource) return;
 
-      const canvas = this.game.renderer.app.canvas;
+      const canvas = this.game.renderer.canvas;
       const canvasRect = canvas.getBoundingClientRect();
       const canvasCoords = {
         x: event.clientX - canvasRect.x,
@@ -343,8 +344,8 @@ export class PrefabViewer {
       };
 
       const screenPos = new Vector2(canvasCoords);
-      const camera = Camera.getActive(this.game);
-      const worldPos = camera ? camera.screenToWorld(screenPos) : new Vector2(0, 0);
+      const ground = this.game.renderer.screenToGroundPoint(screenPos.x, screenPos.y);
+      const worldPos = ground ? new Vec3(ground) : new Vec3(0, 0, 0);
 
       this.#updateDragPreviewPosition(worldPos);
     };
@@ -376,8 +377,8 @@ export class PrefabViewer {
       }
 
       const screenPos = new Vector2(canvasCoords);
-      const camera = Camera.getActive(this.game);
-      const worldPos = camera ? camera.screenToWorld(screenPos) : undefined;
+      const ground = this.game.renderer.screenToGroundPoint(screenPos.x, screenPos.y);
+      const worldPos = ground ? new Vec3(ground) : undefined;
 
       let parentEntity: Entity | undefined;
 
@@ -763,7 +764,7 @@ export class PrefabViewer {
     });
   }
 
-  #createDragPreview(worldPos: Vector2) {
+  #createDragPreview(worldPos: Vec3) {
     if (!this.currentDragSource) return;
 
     this.#cleanupDragPreview();
@@ -794,7 +795,7 @@ export class PrefabViewer {
     }
   }
 
-  #updateDragPreviewPosition(worldPos: Vector2) {
+  #updateDragPreviewPosition(worldPos: Vec3) {
     if (this.#dragPreviewEntities.length === 0) return;
 
     for (const preview of this.#dragPreviewEntities) {

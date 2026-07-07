@@ -21,6 +21,7 @@ export * from "./camera.ts";
 export * from "./rigidbody.ts";
 export * from "./collider.ts";
 export * from "./character-controller.ts";
+export * from "./default-character.ts";
 
 // Audio-backed
 export * from "./audio-source.ts";
@@ -29,5 +30,6 @@ export * from "./audio-source.ts";
 export * from "./ui-layer.ts";
 export * from "./ui-panel.ts";
 
-// Editor-only helpers (bounds debug etc.)
+// Editor-only helpers (bounds/physics debug etc.)
 export * from "./bounds-debug.ts";
+export * from "./physics-debug.ts";

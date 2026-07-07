@@ -11,6 +11,7 @@ import {
   MouseUp,
   Scroll,
   Vector2,
+  Vec3,
 } from "@rebur/engine";
 import { BoxResizeGizmo, Gizmo } from "../common/entities/mod.ts";
 import { EmptyFacade } from "../common/facades/empty.ts";
@@ -42,7 +43,7 @@ export class CameraPanBehavior extends Behavior {
   #drag: Vector2 | undefined = undefined;
   #wasGizmo: boolean = false;
   #space = this.game.inputs.create("@editor/cameragrip", "Camera Grip", "Space");
-  #selectionBox: { start: Vector2; current: Vector2; startScreen: Vector2; currentScreen: Vector2; el: HTMLDivElement } | undefined;
+  #selectionBox: { start: Vec3; current: Vec3; startScreen: Vector2; currentScreen: Vector2; el: HTMLDivElement } | undefined;
   #selectionHighlights: Set<Entity> = new Set();
 
   onInitialize(): void {
@@ -128,7 +129,7 @@ export class CameraPanBehavior extends Behavior {
 
   #lastClickTime = 0;
 
-  #startSelectionBox(worldPos: Vector2, screenPos?: Vector2) {
+  #startSelectionBox(worldPos: Vec3, screenPos?: Vector2) {
     if (!this.game.isClient()) return;
 
     this.#clearAllHighlights();
@@ -140,7 +141,7 @@ export class CameraPanBehavior extends Behavior {
     el.style.cssText = "position:absolute;pointer-events:none;border:1px solid rgba(34,162,255,0.8);background:rgba(34,162,255,0.1);box-sizing:border-box;";
     container.appendChild(el);
 
-    const sp = screenPos ?? worldPos;
+    const sp = screenPos ?? new Vector2(worldPos.x, worldPos.z);
 
     this.#selectionBox = {
       start: worldPos.clone(),
@@ -176,7 +177,7 @@ export class CameraPanBehavior extends Behavior {
     this.#selectionHighlights.clear();
   }
 
-  #updateSelectionBox(worldPos: Vector2, screenPos?: Vector2) {
+  #updateSelectionBox(worldPos: Vec3, screenPos?: Vector2) {
     if (!this.#selectionBox || !this.game.isClient()) return;
 
     this.#selectionBox.current = worldPos;
@@ -556,16 +557,6 @@ export class CameraPanBehavior extends Behavior {
           if (depthA !== depthB) return depthA - depthB;
           return b.z - a.z;
         })
-        .toSorted((a, b) => {
-          // special case: prioritize complex collider verticies if they're visible
-          if (a instanceof EmptyFacade && a.isColliderChildAndSelected) {
-            return -1;
-          }
-          if (b instanceof EmptyFacade && b.isColliderChildAndSelected) {
-            return 1;
-          }
-          return 0;
-        })
 
       if (entities[0] && entities[0].parent instanceof EmptyFacade) {
         if (this.#lastParentPrepended !== entities[0].parent) {
@@ -578,9 +569,6 @@ export class CameraPanBehavior extends Behavior {
       const target = gizmo?.target ?? boxresize?.target;
 
       let currentIdx = target ? entities.indexOf(target) : 0;
-      if (entities[0] instanceof EmptyFacade && entities[0].isColliderChildAndSelected) {
-        currentIdx = 0; // special case: prioritize complex collider verticies if they're visible
-      }
       let queryEntity = entities[currentIdx];
 
       const timeDiff = currentTime - this.#lastClickTime;
@@ -655,9 +643,8 @@ export class CameraPanBehavior extends Behavior {
     const delta = this.#drag.sub(cursor.screen);
     this.#setDrag(cursor.screen.clone());
 
-    const worldDelta = this.#camera
-      .screenToWorld(delta)
-      .sub(this.#camera.screenToWorld(Vector2.ZERO));
+    const d = this.#camera.screenToWorld(delta).sub(this.#camera.screenToWorld(Vector2.ZERO));
+    const worldDelta = new Vec3(d.x, 0, d.y);
 
     this.#camera.focus.assign(this.#camera.focus.add(worldDelta));
   }
@@ -696,9 +683,10 @@ export class CameraPanBehavior extends Behavior {
         const deltaY = ev.shiftKey ? 0 : delta.y;
         const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
 
-        const worldDelta = this.#camera
+        const d = this.#camera
           .screenToWorld(scrollDelta)
           .sub(this.#camera.screenToWorld(Vector2.ZERO));
+        const worldDelta = new Vec3(d.x, 0, d.y);
 
         this.#camera.focus.assign(this.#camera.focus.add(worldDelta));
       } else {
@@ -713,7 +701,7 @@ export class CameraPanBehavior extends Behavior {
         const cursorPos = this.game.inputs.cursor.world;
         if (delta.y < 0 && cursorPos) {
           const cursorDelta = cursorPos.sub(this.#camera.focus);
-          this.#camera.focus = this.#camera.focus.add(cursorDelta.mul(1 / 10));
+          this.#camera.focus = this.#camera.focus.add(cursorDelta.scale(1 / 10));
         }
       }
     }
@@ -729,9 +717,10 @@ export class CameraPanBehavior extends Behavior {
         const deltaY = delta.y;
         const scrollDelta = new Vector2(deltaX, deltaY).mul(scale);
 
-        const worldDelta = this.#camera
+        const d = this.#camera
           .screenToWorld(scrollDelta)
           .sub(this.#camera.screenToWorld(Vector2.ZERO));
+        const worldDelta = new Vec3(d.x, 0, d.y);
 
         this.#camera.focus.assign(this.#camera.focus.add(worldDelta));
       } else {
@@ -749,7 +738,7 @@ export class CameraPanBehavior extends Behavior {
         const cursorPos = this.game.inputs.cursor.world;
         if (cursorPos) {
           const beforeZoom = cursorPos.sub(this.#camera.focus);
-          const afterZoom = beforeZoom.mul(zoomFactor);
+          const afterZoom = beforeZoom.scale(zoomFactor);
           const adjustment = beforeZoom.sub(afterZoom);
           this.#camera.focus.assign(this.#camera.focus.add(adjustment));
         }

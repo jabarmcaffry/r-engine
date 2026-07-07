@@ -12,7 +12,7 @@ export class AudioSource extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🔊";
+  static readonly icon: string = "🔊";
 
   clip: string = "";
   volume: number = 1;

@@ -53,7 +53,7 @@ export class ReloadPrompt implements InspectorUIWidget {
       }, 500);
     });
 
-    let timeout: number | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     const resetTimer = () => {
       if (timeout !== undefined) clearTimeout(timeout);
       timeout = setTimeout(() => {

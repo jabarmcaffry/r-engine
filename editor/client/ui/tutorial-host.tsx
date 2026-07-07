@@ -1,4 +1,4 @@
-import { Vector2, type ClientGame } from "@rebur/engine";
+import { Vec3, type ClientGame } from "@rebur/engine";
 import type { InspectorUI, InspectorUIWidget } from "./inspector.ts";
 
 interface GlobalGames {
@@ -124,7 +124,7 @@ const tutorial1: TutorialStep[] = [
       highlight("prefab-tab-Player", false);
       if (hasEntity("local/Player")) {
         const player = games().edit.entities.lookupById("world/EditEntities/local/Player")!;
-        player.pos = new Vector2(3, -14.6);
+        player.pos = new Vec3(3, 0, -14.6);
       }
       games().edit.entities.lookupById("world/EditEntities/local/HintAddPlayer")!.enabled =
         false;
@@ -344,7 +344,7 @@ export class TutorialHost implements InspectorUIWidget {
   private card: HTMLElement | null = null;
   private contentEl!: HTMLDivElement;
   private counterEl!: HTMLSpanElement;
-  private polling: number | null = null;
+  private polling: ReturnType<typeof setInterval> | null = null;
   private projectId: string = "";
 
   static maskSections(sectionIds: string[]): void {

@@ -327,8 +327,7 @@ export class AppMenu {
         gamesDiv.dataset.aspectDisabled = "";
       }
 
-      const aspect: AspectRatio = camera.lockAspectRatio ? camera.aspectRatio : "unlocked";
-      setAspectRatio(aspect, true);
+      setAspectRatio("unlocked", true);
     });
 
     // restore aspect ratio

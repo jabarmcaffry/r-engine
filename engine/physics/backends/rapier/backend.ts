@@ -454,6 +454,13 @@ export class RapierPhysicsBackend implements IPhysicsBackend {
     return this.#bodyToRef.get(toRapierBody(bodyHandle));
   }
 
+  // ---- Debug ---------------------------------------------------------------
+
+  debugRender(): { vertices: Float32Array; colors: Float32Array } {
+    const buffers = this.#world.debugRender();
+    return { vertices: buffers.vertices, colors: buffers.colors };
+  }
+
   // ---- Lifecycle ---------------------------------------------------------
 
   dispose(): void {

@@ -17,7 +17,7 @@ export class Rigidbody extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "⚙️";
+  static readonly icon: string = "⚙️";
 
   type: RigidBodyTypeValue = "dynamic";
   gravityScale: number = 1;

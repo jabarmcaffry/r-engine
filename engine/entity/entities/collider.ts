@@ -15,7 +15,7 @@ export class Collider extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🧱";
+  static readonly icon: string = "🧱";
 
   shape: ColliderShapeType = "box";
   isSensor: boolean = false;

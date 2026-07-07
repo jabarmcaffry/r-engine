@@ -204,6 +204,7 @@ function applyMaterialUpdate(mat: THREE.Material, desc: Partial<MaterialDesc>): 
 // ---------------------------------------------------------------------------
 export class ThreeRendererBackend implements IRendererBackend {
   readonly canvas: HTMLCanvasElement;
+  #container: HTMLDivElement;
   #renderer: THREE.WebGLRenderer;
   #scene: THREE.Scene;
   #gridHelper: THREE.GridHelper;
@@ -217,9 +218,16 @@ export class ThreeRendererBackend implements IRendererBackend {
   #boxHelpers = new Map<string, THREE.BoxHelper>();
 
   constructor(container: HTMLDivElement) {
+    this.#container = container;
     this.#renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.#renderer.setPixelRatio(globalThis.devicePixelRatio ?? 1);
     this.#renderer.setSize(container.clientWidth || 800, container.clientHeight || 600);
+
+    // Self-resize whenever the container's layout changes (also fixes the
+    // initial 0x0 size when the renderer is constructed before first layout).
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => this.resize()).observe(container);
+    }
     this.#renderer.shadowMap.enabled = true;
     this.#renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.#renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -254,10 +262,24 @@ export class ThreeRendererBackend implements IRendererBackend {
     this.#renderer.render(this.#scene, cam);
   }
 
-  resize(width: number, height: number): void {
-    this.#renderer.setSize(width, height);
+  /**
+   * Resize the drawing buffer. With no numeric arguments (legacy callers pass
+   * a boolean or nothing) the size is measured from the container element.
+   */
+  resize(width?: number | boolean, height?: number): void {
+    let w: number, h: number;
+    if (typeof width === "number" && typeof height === "number") {
+      w = width;
+      h = height;
+    } else {
+      w = this.#container.clientWidth || globalThis.innerWidth || 800;
+      h = this.#container.clientHeight || globalThis.innerHeight || 600;
+    }
+    if (w <= 0 || h <= 0) return;
+
+    this.#renderer.setSize(w, h);
     for (const cam of this.#cameras.values()) {
-      cam.aspect = width / height;
+      cam.aspect = w / h;
       cam.updateProjectionMatrix();
     }
   }
@@ -503,6 +525,35 @@ export class ThreeRendererBackend implements IRendererBackend {
     const helper = new THREE.BoxHelper(targetMesh, color);
     this.#scene.add(helper);
     this.#boxHelpers.set(entityRef, helper);
+  }
+
+  // ---- Debug lines -----------------------------------------------------------
+
+  #debugLines = new Map<string, THREE.LineSegments>();
+
+  setDebugLines(id: string, vertices: Float32Array, colors: Float32Array): void {
+    let lines = this.#debugLines.get(id);
+    if (!lines) {
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.LineBasicMaterial({ vertexColors: true });
+      lines = new THREE.LineSegments(geometry, material);
+      lines.frustumCulled = false;
+      this.#scene.add(lines);
+      this.#debugLines.set(id, lines);
+    }
+    lines.geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+    lines.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 4));
+    lines.geometry.attributes["position"].needsUpdate = true;
+    lines.geometry.attributes["color"].needsUpdate = true;
+  }
+
+  removeDebugLines(id: string): void {
+    const lines = this.#debugLines.get(id);
+    if (!lines) return;
+    lines.geometry.dispose();
+    (lines.material as THREE.Material).dispose();
+    this.#scene.remove(lines);
+    this.#debugLines.delete(id);
   }
 
   // ---- Picking ---------------------------------------------------------------

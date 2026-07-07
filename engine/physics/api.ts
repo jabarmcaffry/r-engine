@@ -132,6 +132,10 @@ export interface IPhysicsBackend {
   ): RaycastHit | undefined;
   overlapShape(shape: PhysicsShape, pos: IVec3, rot: IQuat): string[];
 
+  // ---- Debug ---------------------------------------------------------------
+  /** Wireframe line data for all colliders (pairs of vertices + RGBA colors). */
+  debugRender(): { vertices: Float32Array; colors: Float32Array };
+
   // ---- World settings ----------------------------------------------------
   setGravity(gravity: IVec3): void;
 

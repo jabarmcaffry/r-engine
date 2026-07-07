@@ -4,5 +4,12 @@
     "@rebur/engine/internal": "../engine/internal.ts",
     "@rebur/vendor/": "../engine/_deps/",
     "@rebur/util/": "../util/"
+  },
+  "compilerOptions": {
+    "lib": [
+      "deno.window",
+      "dom"
+    ],
+    "noImplicitOverride": false
   }
 }

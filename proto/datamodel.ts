@@ -20,18 +20,28 @@ export const BehaviorDefinitionSchema = z.object({
   ref: z.string(),
 });
 
-export const Vector2Schema = z
+// `z` defaults to 0 so scenes saved by the 2D-era engine still load.
+export const Vec3Schema = z
   .object({
     x: z.number(),
     y: z.number(),
+    z: z.number().default(0),
   })
-  .describe("Vector2");
+  .describe("Vec3");
+
+export const QuatSchema = z
+  .object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number(),
+    w: z.number(),
+  })
+  .describe("Quat");
 
 export const TransformSchema = z.object({
-  position: Vector2Schema.default({ x: 0, y: 0 }),
-  rotation: z.number().default(0),
-  scale: Vector2Schema.default({ x: 1, y: 1 }),
-  z: z.number().default(0),
+  position: Vec3Schema.default({ x: 0, y: 0, z: 0 }),
+  rotation: QuatSchema.default({ x: 0, y: 0, z: 0, w: 1 }),
+  scale: Vec3Schema.default({ x: 1, y: 1, z: 1 }),
 });
 
 // we need to do a little ceremony since EntityDefinitionSchema is recursively defined

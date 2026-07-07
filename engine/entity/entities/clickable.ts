@@ -166,7 +166,7 @@ export class Clickable extends ClickableEntity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "👆";
+  static readonly icon: string = "👆";
   get bounds(): IBounds | undefined {
     if (this.shape === "Rectangle") {
       return new Bounds(this.width, this.height);
@@ -255,7 +255,7 @@ export class ClickableRect extends ClickableEntity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "👆";
+  static readonly icon: string = "👆";
   get bounds(): IBounds | undefined {
     // TODO: Reuse the same object
     return new Bounds(this.width, this.height);
@@ -287,7 +287,7 @@ export class ClickableCircle extends ClickableEntity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "👆";
+  static readonly icon: string = "👆";
   get bounds(): IBounds | undefined {
     // TODO: Reuse the same object
     const size = this.radius * 2;

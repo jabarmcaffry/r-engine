@@ -170,7 +170,7 @@ const wasm = new Uint8Array(buf);
 
       if (compress) {
         const wasm = encoding.decodeBase64(b64);
-        const stream = new Blob([wasm]).stream().pipeThrough(new CompressionStream("gzip"));
+        const stream = new Blob([wasm as BlobPart]).stream().pipeThrough(new CompressionStream("gzip"));
         const compressed = await new Blob(await Array.fromAsync(stream)).arrayBuffer();
         const b64c = encoding.encodeBase64(compressed);
 

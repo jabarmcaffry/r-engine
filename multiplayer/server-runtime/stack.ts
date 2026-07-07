@@ -1,10 +1,5 @@
 import type { WorkerInitData } from "../server-common/worker-data.ts";
 
-declare global {
-  interface ErrorConstructor {
-    prepareStackTrace?: (error: Error, callsites: unknown[]) => string;
-  }
-}
 
 export const rewriteStackTraces = (workerData: WorkerInitData) => {
   if (!workerData.rewriteStackTraces) return;
@@ -17,7 +12,8 @@ export const rewriteStackTraces = (workerData: WorkerInitData) => {
 
   const mapLine = (line: string): string => line.replace(`(${worldDirectory}`, "(res:/");
 
-  Error.prepareStackTrace = (error, stack) => {
+  // deno-lint-ignore no-explicit-any
+  Error.prepareStackTrace = (error: Error, stack: any[]) => {
     const result = original(error, stack);
     return result.split("\n").map(mapLine).join("\n");
   };

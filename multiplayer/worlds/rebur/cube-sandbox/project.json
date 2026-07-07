@@ -14,14 +14,6 @@
           "ref": "ent_camera01",
           "type": "@core/Camera",
           "name": "Camera",
-          "transform": {
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            }
-          },
           "values": {
             "active": true,
             "zoom": 0.6
@@ -31,14 +23,6 @@
           "ref": "ent_ambient01",
           "type": "@core/AmbientLight",
           "name": "AmbientLight",
-          "transform": {
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            }
-          },
           "values": {
             "intensity": 0.5
           }
@@ -50,7 +34,8 @@
           "transform": {
             "position": {
               "x": 10,
-              "y": 20
+              "y": 20,
+              "z": 0
             },
             "rotation": {
               "x": -0.3827,
@@ -70,13 +55,8 @@
           "transform": {
             "position": {
               "x": 0,
-              "y": -1
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
+              "y": -1,
+              "z": 0
             }
           },
           "values": {
@@ -95,7 +75,8 @@
           "transform": {
             "position": {
               "x": -4,
-              "y": 1
+              "y": 1,
+              "z": 0
             },
             "rotation": {
               "x": 0,
@@ -119,7 +100,8 @@
           "transform": {
             "position": {
               "x": 3,
-              "y": 2
+              "y": 2,
+              "z": 0
             },
             "rotation": {
               "x": 0.1,
@@ -144,7 +126,8 @@
           "transform": {
             "position": {
               "x": 0,
-              "y": 3
+              "y": 3,
+              "z": 0
             },
             "rotation": {
               "x": 0,
@@ -167,7 +150,8 @@
           "transform": {
             "position": {
               "x": -6,
-              "y": 2
+              "y": 2,
+              "z": 0
             },
             "rotation": {
               "x": 0.2,
@@ -192,7 +176,8 @@
           "transform": {
             "position": {
               "x": 5,
-              "y": 1.5
+              "y": 1.5,
+              "z": 0
             },
             "rotation": {
               "x": 0,
@@ -216,7 +201,8 @@
           "transform": {
             "position": {
               "x": -2,
-              "y": 4
+              "y": 4,
+              "z": 0
             },
             "rotation": {
               "x": 0.1,
@@ -241,7 +227,8 @@
           "transform": {
             "position": {
               "x": 7,
-              "y": 3
+              "y": 3,
+              "z": 0
             },
             "rotation": {
               "x": 0,
@@ -266,7 +253,8 @@
           "transform": {
             "position": {
               "x": -7,
-              "y": 1.5
+              "y": 1.5,
+              "z": 0
             },
             "rotation": {
               "x": 0.2,
@@ -290,7 +278,8 @@
           "transform": {
             "position": {
               "x": 2,
-              "y": 2
+              "y": 2,
+              "z": 0
             },
             "rotation": {
               "x": 0,
@@ -315,7 +304,8 @@
           "transform": {
             "position": {
               "x": -3,
-              "y": 5
+              "y": 5,
+              "z": 0
             },
             "rotation": {
               "x": 0.3,
@@ -340,7 +330,8 @@
           "transform": {
             "position": {
               "x": 4,
-              "y": 0.5
+              "y": 0.5,
+              "z": 0
             },
             "rotation": {
               "x": 0.1,
@@ -364,7 +355,8 @@
           "transform": {
             "position": {
               "x": -8,
-              "y": 3
+              "y": 3,
+              "z": 0
             },
             "rotation": {
               "x": 0,

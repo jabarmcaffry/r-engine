@@ -50,3 +50,21 @@ export function decodeHex(hex: string): Uint8Array {
   }
   return bytes;
 }
+
+const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+export function encodeBase58(data: BinarySource): string {
+  const bytes = toBytes(data);
+  let zeros = 0;
+  while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+
+  let value = 0n;
+  for (const byte of bytes) value = (value << 8n) | BigInt(byte);
+
+  let encoded = "";
+  while (value > 0n) {
+    encoded = BASE58_ALPHABET[Number(value % 58n)] + encoded;
+    value /= 58n;
+  }
+  return "1".repeat(zeros) + encoded;
+}

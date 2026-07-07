@@ -10,6 +10,7 @@ export const initServerEnv = async (root: string | URL, token = "token"): Promis
     `
 REBUR_MULTIPLAYER_AUTH_TOKEN="${token}"
 REBUR_NEXT_GAME_JWT_SECRET="${token}"
+IS_DEV="true"
 `.trim() + "\n";
 
   await Deno.writeTextFile(serverEnvLocal, env);

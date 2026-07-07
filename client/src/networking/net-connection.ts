@@ -66,7 +66,7 @@ export class ClientConnection {
   peers = new Map<ConnectionId, ConnectionInfo>();
 
   ping: number = 0;
-  pingInterval: number | undefined;
+  pingInterval: ReturnType<typeof setInterval> | undefined;
 
   constructor(
     public id: ConnectionId,

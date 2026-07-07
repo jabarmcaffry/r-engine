@@ -21,7 +21,7 @@ export class RenderContainer extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "🎨";
+  static readonly icon: string = "🎨";
   readonly bounds = undefined;
 
   /** Kept for data compat — no effect in 3D. */

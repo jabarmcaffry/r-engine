@@ -27,7 +27,7 @@ export class Camera extends Entity {
     Entity.registerType(this, "@core");
   }
 
-  static readonly icon = "📷";
+  static readonly icon: string = "📷";
 
   active: boolean = true;
   fov: number = 75;

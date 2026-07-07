@@ -144,13 +144,18 @@ export class OakResponse {
 // Context
 // ---------------------------------------------------------------------------
 export type State = Record<string, any>;
-export type RouteParams<_R extends string = string> = Record<string, string | undefined>;
+export type RouteParams<_R extends string = string> = Record<string, string>;
 
 export interface SendOptions {
   root: string;
   path?: string;
   index?: string;
   hidden?: boolean;
+  /** Accepted for Oak compatibility; caching hints are not implemented. */
+  immutable?: boolean;
+  maxage?: number;
+  /** Accepted for Oak compatibility; content type is derived from the extension. */
+  contentTypes?: Record<string, string>;
 }
 
 export class Context<S extends State = State, P extends RouteParams = RouteParams> {
@@ -302,10 +307,10 @@ export class Router<S extends State = State> {
         const match = route.pattern.exec(pathname);
         if (!match) continue;
 
-        const params: Record<string, string | undefined> = {};
+        const params: Record<string, string> = {};
         route.paramNames.forEach((param, i) => {
           const raw = match[i + 1];
-          params[param.name] = raw === undefined ? undefined : decodeURIComponent(raw);
+          params[param.name] = raw === undefined ? "" : decodeURIComponent(raw);
         });
         ctx.params = params as any;
 

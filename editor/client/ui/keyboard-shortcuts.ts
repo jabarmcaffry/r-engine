@@ -400,8 +400,8 @@ export function setupKeyboardShortcuts(
     const transform = entity.globalTransform.bare();
     const previous = {
       ...transform,
-      position: prev.position.bare(),
-      scale: prev.scale.bare(),
+      position: { x: prev.position.x, y: prev.position.y, z: prev.position.z },
+      scale: { x: prev.scale.x, y: prev.scale.y, z: prev.scale.z },
     } satisfies ITransform;
     UndoRedoManager._.push({
       t: "transform-change",

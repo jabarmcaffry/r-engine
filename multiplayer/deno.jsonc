@@ -38,5 +38,6 @@
   "compilerOptions": {
     "lib": ["deno.window", "dom"],
     "useUnknownInCatchVariables": false,
+    "noImplicitOverride": false,
   },
 }
